@@ -1512,17 +1512,26 @@ async function downloadPDF(sym) {
     btn.disabled = true;
     btn.textContent = '📄 PDF 생성 중...';
     try {
+        const name = _chartData?.name || sym;
         const res = await fetch(`${API}/api/pdf/report`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ symbol: sym, period: periodSelect.value }),
+            body: JSON.stringify({
+                symbol: sym,
+                period: periodSelect.value,
+                name: name,
+            }),
         });
-        if (!res.ok) throw new Error('PDF 생성 실패');
+        if (!res.ok) {
+            let msg = 'PDF 생성 실패';
+            try { const j = await res.json(); msg = j.detail || msg; } catch (_) {}
+            throw new Error(msg);
+        }
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${sym.replace('.', '_')}_분석보고서.pdf`;
+        a.download = `${sym.replace(/\./g, '_')}_분석보고서.pdf`;
         a.click();
         URL.revokeObjectURL(url);
     } catch (e) {
