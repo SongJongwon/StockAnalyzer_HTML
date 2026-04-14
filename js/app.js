@@ -1316,18 +1316,26 @@ function _buildChart(d, currencyMode) {
     const bbUTrace = { x: dates, y: bbUs, type: 'scatter', mode: 'lines', name: 'BB 상단', line: { color: 'gray', width: 1, dash: 'dot' }, legendgroup: 'bb' };
     const bbLTrace = { x: dates, y: bbLs, type: 'scatter', mode: 'lines', name: 'BB 하단', line: { color: 'gray', width: 1, dash: 'dot' }, fill: 'tonexty', fillcolor: 'rgba(128,128,128,0.08)', legendgroup: 'bb' };
 
-    // ── 전략 라인 (scatter trace로 범례 + Hide/Show 가능) ──
+    // ── 전략 라인 (라인만 표시, 우측 annotation으로 가격 레이블) ──
     const hline = (y, color, name) => ({
         x: [dates[0], dates[dates.length-1]], y: [y, y],
         type: 'scatter', mode: 'lines', name: name,
-        line: { color: color, width: 1, dash: 'dash' },
-        legendgroup: 'strategy', showlegend: true,
+        line: { color: color, width: 1.2, dash: 'dash' },
+        legendgroup: 'strategy', showlegend: false,
     });
 
-    const entryTrace = hline(entry, '#44aaff', `매수목표 (${prefix}${fmtPrice(entry)})`);
-    const t1Trace = hline(t1, '#ffaa00', `1차 목표 (${prefix}${fmtPrice(t1)})`);
-    const t2Trace = hline(t2, '#ffffff', `2차 목표 (${prefix}${fmtPrice(t2)})`);
-    const slTrace = hline(sl, '#FF4444', `손절선 (${prefix}${fmtPrice(sl)})`);
+    const entryTrace = hline(entry, '#44aaff', `매수목표`);
+    const t1Trace = hline(t1, '#ffaa00', `1차 목표`);
+    const t2Trace = hline(t2, '#aaaaaa', `2차 목표`);
+    const slTrace = hline(sl, '#FF4444', `손절선`);
+
+    // 우측 차트 바깥에 가격 레이블 annotation
+    const strategyAnnotations = [
+        { x: 1.002, y: entry, xref: 'paper', yref: 'y', text: `매수 ${prefix}${fmtPrice(entry)}`, showarrow: false, font: { color: '#44aaff', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: t1,    xref: 'paper', yref: 'y', text: `1차  ${prefix}${fmtPrice(t1)}`,    showarrow: false, font: { color: '#ffaa00', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: t2,    xref: 'paper', yref: 'y', text: `2차  ${prefix}${fmtPrice(t2)}`,    showarrow: false, font: { color: '#aaaaaa', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: sl,    xref: 'paper', yref: 'y', text: `손절 ${prefix}${fmtPrice(sl)}`,    showarrow: false, font: { color: '#FF4444', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+    ];
 
     // ── MACD 서브차트 ──
     const histColors = macdHists.map(h => h >= 0 ? '#00C851' : '#FF4444');
@@ -1354,13 +1362,12 @@ function _buildChart(d, currencyMode) {
             itemclick: 'toggle', itemdoubleclick: 'toggleothers',
             bgcolor: 'rgba(0,0,0,0)',
         },
-        margin: { l: 55, r: 55, t: 60, b: 30 },
+        margin: { l: 55, r: 115, t: 60, b: 30 },
         xaxis: { rangeslider: { visible: false }, domain: [0, 1], gridcolor: cc.grid },
-        yaxis: { domain: [0.42, 1], title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true },
-        xaxis2: { anchor: 'y2', gridcolor: cc.grid },
-        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid },
-        xaxis3: { anchor: 'y3', gridcolor: cc.grid },
-        yaxis3: { domain: [0, 0.20], title: { text: 'RSI', font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100] },
+        yaxis:  { domain: [0.42, 1],    title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true },
+        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid, anchor: 'x' },
+        yaxis3: { domain: [0, 0.20],    title: { text: 'RSI',  font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100], anchor: 'x' },
+        annotations: strategyAnnotations,
         shapes: [
             // RSI 30-70 밴드
             { type: 'rect', y0: 30, y1: 70, x0: 0, x1: 1, xref: 'paper', yref: 'y3', fillcolor: 'rgba(128,128,128,0.05)', line: { width: 0 } },
