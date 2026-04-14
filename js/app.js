@@ -401,13 +401,18 @@ async function runAnalysis() {
     let query = searchInput.value.trim();
     if (!query) return;
 
+    // "네이버 (035420.KS)" 형식이 그대로 넘어오면 티커 부분만 추출
+    const parenMatch = query.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+    if (parenMatch) {
+        query = parenMatch[2].trim();   // 괄호 안의 티커 사용
+    }
+
     // 한글 종목명 → 티커 자동 변환 (원래 한글명 보존)
-    let krName = null;
-    const resolved = resolveKrName(query);
+    let krName = parenMatch ? parenMatch[1].trim() : null;
+    const resolved = !krName ? resolveKrName(query) : null;
     if (resolved && resolved !== query) {
-        krName = query;      // "네이버" 보존
-        query = resolved;    // "035420.KS" 로 변환
-        searchInput.value = resolved;
+        krName = query;
+        query = resolved;
     }
 
     const period = periodSelect.value;
@@ -441,6 +446,8 @@ async function runAnalysis() {
         const data = await res.json();
         data.symbol = symbol;
         data.name = name;
+        // 입력창에 "네이버 (035420.KS)" 형식으로 표시
+        searchInput.value = name !== symbol ? `${name} (${symbol})` : symbol;
         renderAnalysis(data, resultDiv);
     } catch (e) {
         resultDiv.innerHTML = `<div class="error-msg">
