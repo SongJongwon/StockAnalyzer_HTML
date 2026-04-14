@@ -3,7 +3,7 @@
    Complete JS matching A version functionality
    ═══════════════════════════════════════════════════════════ */
 
-const API = window.location.origin;
+const API = "https://stockanalyzer-bwa7.onrender.com";
 
 // ── State ──
 let exchangeRate = 1380.0;
