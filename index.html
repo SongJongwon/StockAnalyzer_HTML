@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📈 주식 기술적 분석기</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Left Sidebar (A버전과 동일) -->
+        <aside id="sidebar" class="sidebar">
+            <button id="sidebarCollapse" class="sidebar-collapse-btn" title="사이드바 접기">«</button>
+            <div class="sidebar-inner">
+                <!-- 자동 업데이트 설정 -->
+                <div class="sidebar-section">
+                    <h3>⏱️ 자동 업데이트</h3>
+                    <div class="refresh-control">
+                        <input type="number" id="refreshInterval" value="30" min="1" max="9999" class="refresh-input">
+                        <select id="refreshUnit" class="refresh-select">
+                            <option value="1">초</option>
+                            <option value="60" selected>분</option>
+                            <option value="3600">시간</option>
+                        </select>
+                    </div>
+                    <div id="refreshStatus" class="caption mt-8">🔄 30분마다 자동 업데이트</div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- 뉴스 토글 -->
+                <button id="newsToggle" class="sidebar-toggle-btn">🔔 뉴스 알림 숨기기</button>
+
+                <div id="newsPanel">
+                    <div class="sidebar-section">
+                        <h3>📰 실시간 뉴스 알림</h3>
+                        <p class="caption">출처: 네이버금융 · 인베스팅닷컴(한국어)</p>
+                    </div>
+
+                    <!-- 급등 예상 종목 -->
+                    <div class="sidebar-section">
+                        <h4>⚡ 급등 예상 종목</h4>
+                        <div id="triggeredStocks">
+                            <div class="loading">로딩 중...</div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <!-- 최신 뉴스 -->
+                    <div class="sidebar-section">
+                        <h4>🗞️ 최신 뉴스</h4>
+                        <div id="newsSourceFilter" class="news-source-filter"></div>
+                        <div id="newsList"></div>
+                    </div>
+
+                    <button id="refreshNews" class="btn-secondary sidebar-refresh-btn">🔄 뉴스 새로고침</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 사이드바 펼치기 버튼 (접혔을 때만 표시) -->
+        <button id="sidebarExpand" class="sidebar-expand-btn" title="사이드바 펼치기">»</button>
+
+        <!-- Main Content -->
+        <main id="mainContent">
+            <!-- 우측 상단 메뉴 (Streamlit 햄버거 메뉴 재현) -->
+            <div class="top-menu">
+                <button id="topMenuBtn" class="top-menu-btn" title="Main menu">⋮</button>
+                <div id="topMenuDropdown" class="top-menu-dropdown">
+                    <!-- 테마 모드 전환 -->
+                    <div class="menu-theme-row">
+                        <button class="theme-mode-btn active" data-mode="system" title="Use system setting">🖥️</button>
+                        <button class="theme-mode-btn" data-mode="light" title="Light">☀️</button>
+                        <button class="theme-mode-btn" data-mode="dark" title="Dark">🌙</button>
+                    </div>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuRerun">
+                        <span class="menu-icon">↻</span> Rerun
+                        <span class="menu-shortcut">R</span>
+                    </button>
+                    <button class="menu-item" id="menuAutoRerun">
+                        <span class="menu-icon">○</span> Auto rerun
+                    </button>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuClearCache">
+                        <span class="menu-icon">🗑</span> Clear cache
+                    </button>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuPrint">
+                        <span class="menu-icon">🖨</span> Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- 전체 타이틀 (A버전과 동일) -->
+            <h1 class="app-title">📈 주식 기술적 분석기</h1>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="tab-analysis">🔍 종목 분석</button>
+                <button class="tab" data-tab="tab-watchlist">⭐ 추천 종목</button>
+                <button class="tab" data-tab="tab-themes">🎯 테마주</button>
+                <button class="tab" data-tab="tab-global">🌍 글로벌 시장 & 뉴스분석</button>
+            </div>
+
+            <!-- Tab 1: 종목 분석 (검색바가 내부에 위치) -->
+            <div id="tab-analysis" class="tab-content active">
+                <!-- 검색바 (A버전: 3:1 컬럼) -->
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <label class="input-label">티커 또는 종목명 입력</label>
+                        <input type="text" id="searchInput" placeholder="예: AAPL, 삼성전자, 온다스, TSLA, 비트코인">
+                    </div>
+                    <div class="search-period-wrap">
+                        <label class="input-label">기간</label>
+                        <select id="periodSelect">
+                            <option value="3mo">3개월</option>
+                            <option value="6mo" selected>6개월</option>
+                            <option value="1y">1년</option>
+                            <option value="2y">2년</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="searchBtn" class="btn-analyze">분석하기</button>
+
+                <div class="welcome" id="welcomeMsg">
+                    <p class="muted">티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.</p>
+                </div>
+                <div id="analysisResult" style="display:none;"></div>
+            </div>
+
+            <!-- Tab 2: 추천 종목 -->
+            <div id="tab-watchlist" class="tab-content">
+                <div class="section-header">
+                    <h3>⭐ 카테고리별 추천 종목</h3>
+                    <p class="caption">기술적 지표 기반 실시간 분석 · 매수·매도가는 볼린저밴드 지지/저항 기준</p>
+                    <button id="refreshWatchlist" class="btn-secondary mt-8">🔄 데이터 새로고침</button>
+                </div>
+                <div id="watchlistContent">
+                    <div class="loading">추천 종목 로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- Tab 3: 테마주 -->
+            <div id="tab-themes" class="tab-content">
+                <div class="section-header">
+                    <h3>🎯 테마별 종목</h3>
+                    <p class="caption">테마를 선택하면 현재 매수 신호 강도 순으로 종목을 정렬합니다. ⭐ 즐겨찾기한 테마는 상단에 고정됩니다.</p>
+                </div>
+                <h4>테마 선택</h4>
+                <div id="themeButtons" class="theme-grid"></div>
+                <hr class="divider">
+                <div id="themeContent"></div>
+            </div>
+
+            <!-- Tab 4: 글로벌 시장 -->
+            <div id="tab-global" class="tab-content">
+                <div class="section-header">
+                    <h3>🌍 글로벌 시장 지수</h3>
+                    <p class="caption">데이터 출처: Yahoo Finance (investing.com과 동일 기준 지수) · 5분 단위 자동 갱신</p>
+                    <button id="refreshIndices" class="btn-secondary mt-8">🔄 시장 새로고침</button>
+                </div>
+                <div id="indicesGrid" class="indices-grid">
+                    <div class="loading">글로벌 지수 로딩 중...</div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="section-header">
+                    <h3>📰 네이버 금융 최신 뉴스</h3>
+                    <p class="caption">출처: finance.naver.com · 15분 단위 갱신</p>
+                    <button id="refreshNaverNews" class="btn-secondary mt-8">🔄 뉴스 새로고침</button>
+                </div>
+                <div id="naverNewsContent">
+                    <div class="loading">뉴스 로딩 중...</div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="section-header">
+                    <h3>🚀 뉴스 기반 상승 예상 종목</h3>
+                    <p class="caption">네이버 금융 최신 뉴스 키워드 분석 · 매수 신호 종목만 표시</p>
+                </div>
+                <div id="naverSignals">
+                    <div class="loading">신호 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- 하단 면책조항 -->
+            <div class="disclaimer caption mt-16">
+                본 분석은 참고용이며 투자 권유가 아닙니다. 모든 투자의 책임은 투자자 본인에게 있습니다.
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
