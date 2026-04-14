@@ -114,19 +114,42 @@ function resolveKrName(query) {
 // ── Autocomplete state ──
 let acItems = [];
 let acIndex = -1;
+let acDebounceTimer = null;
 
 function renderAutocomplete() {
     const list = document.getElementById('autocompleteList');
     if (!list) return;
     const q = searchInput.value.trim();
-    acItems = searchKrDict(q);
     acIndex = -1;
-    if (!q || acItems.length === 0) { list.style.display = 'none'; return; }
-    list.innerHTML = acItems.slice(0, 8).map((item, i) =>
+    if (!q) { list.style.display = 'none'; return; }
+
+    // 로컬 KR_DICT 우선 즉시 표시
+    const local = searchKrDict(q).map(item => ({ name: item.name, ticker: item.ticker }));
+    if (local.length > 0) showAcList(local);
+
+    // 한글 포함 시 백엔드 suggest API 호출 (디바운스 200ms)
+    if (/[가-힣]/.test(q)) {
+        clearTimeout(acDebounceTimer);
+        acDebounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API}/api/stock/suggest?q=${encodeURIComponent(q)}`);
+                if (!res.ok) return;
+                const items = await res.json();
+                if (items.length > 0) showAcList(items);
+            } catch (_) {}
+        }, 200);
+    }
+}
+
+function showAcList(items) {
+    const list = document.getElementById('autocompleteList');
+    if (!list) return;
+    acItems = items.slice(0, 8);
+    list.innerHTML = acItems.map((item, i) =>
         `<div class="autocomplete-item" data-i="${i}">
             <span class="ac-name">${item.name}</span>
             <span class="ac-right">
-                <span class="ac-en">${item.en}</span>
+                ${item.en ? `<span class="ac-en">${item.en}</span>` : ''}
                 <span class="ac-ticker">${item.ticker}</span>
             </span>
         </div>`
@@ -159,7 +182,8 @@ function moveAcSelection(dir) {
 function selectAcItem(i) {
     const item = acItems[i];
     if (!item) return;
-    searchInput.value = item.ticker;
+    // 한글명을 input에 입력하면 runAnalysis에서 보존됨
+    searchInput.value = item.name || item.ticker;
     hideAutocomplete();
     runAnalysis();
 }
@@ -377,12 +401,15 @@ async function runAnalysis() {
     let query = searchInput.value.trim();
     if (!query) return;
 
-    // 한글 종목명 → 티커 자동 변환
+    // 한글 종목명 → 티커 자동 변환 (원래 한글명 보존)
+    let krName = null;
     const resolved = resolveKrName(query);
-    if (resolved) {
-        query = resolved;
+    if (resolved && resolved !== query) {
+        krName = query;      // "네이버" 보존
+        query = resolved;    // "035420.KS" 로 변환
         searchInput.value = resolved;
     }
+
     const period = periodSelect.value;
     const welcomeMsg = document.getElementById('welcomeMsg');
     const resultDiv = document.getElementById('analysisResult');
@@ -391,7 +418,7 @@ async function runAnalysis() {
     resultDiv.innerHTML = '<div class="loading">종목 검색 중...</div>';
 
     try {
-        // 1단계: 검색 → 티커 확보 (A버전과 동일 흐름)
+        // 1단계: 검색 → 티커 확보
         const searchRes = await fetch(`${API}/api/stock/search?q=${encodeURIComponent(query)}`);
         if (!searchRes.ok) {
             const err = await searchRes.json().catch(() => ({}));
@@ -399,16 +426,13 @@ async function runAnalysis() {
         }
         const searchData = await searchRes.json();
         const symbol = searchData.symbol;
-        const name = searchData.name || symbol;
+        // 한글명 우선, 그 다음 백엔드 이름, 마지막으로 티커
+        const name = krName || searchData.name || symbol;
 
         // 검색 결과 안내
-        if (name && name !== symbol && name !== query) {
-            resultDiv.innerHTML = `<div class="loading">검색어 '${query}' → ${name} (${symbol}) 분석 중...</div>`;
-        } else {
-            resultDiv.innerHTML = `<div class="loading">${symbol} 분석 중...</div>`;
-        }
+        resultDiv.innerHTML = `<div class="loading">${name} (${symbol}) 분석 중...</div>`;
 
-        // 2단계: 분석 (검색된 티커로)
+        // 2단계: 분석
         const res = await fetch(`${API}/api/stock/analyze/${encodeURIComponent(symbol)}?period=${period}`);
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
