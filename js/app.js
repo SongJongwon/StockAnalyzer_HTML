@@ -1813,6 +1813,9 @@ function toggleThemeRow(sid) {
     wrap.dataset.rendered = '1';
     wrap.innerHTML = _buildThemeDetailHtml(r, sid);
 
+    // 트레이딩 전략 서브탭 초기화
+    setupSubTabs('tst-' + sid);
+
     // AI 분석 자동 요청
     _loadThemeAI(sid, r);
 }
@@ -1843,6 +1846,38 @@ function _buildThemeDetailHtml(r, sid) {
     const maMsg   = ma_s === '매수' ? '정배열 (MA20 > MA60)' : (ma_s === '매도' ? '역배열' : 'MA 혼조');
     const stkMsg  = `스토캐스틱 ${stk_s === '매수' ? '과매도' : stk_s === '매도' ? '과매수' : '중립'} (K:${fmt(r.stoch_k, 1)})`;
 
+    // 전략 계산용 데이터 객체 (renderShortTermStrategy / renderSwingStrategy 호환)
+    const d = {
+        close: r.close, rsi: r.rsi, macd: r.macd, macd_sig: r.macd_sig,
+        bb_u: r.bb_u, bb_m: r.bb_m, bb_l: r.bb_l,
+        ma20: r.ma20, ma60: r.ma60,
+        stoch_k: r.stoch_k, stoch_d: r.stoch_d,
+        vwap: r.close, // 근사값
+        macd_cross: false, macd_death: false,
+        recent_low: r.bb_l,
+        fibonacci: [],
+        financials: {},
+    };
+
+    // 매매 전략 advice (renderAnalysis와 동일 로직)
+    let advTitle, advColor, advDesc;
+    if (buy_cnt >= 3) {
+        advTitle = '<span class="ms green">check_circle</span> 매수 고려 가능'; advColor = '#00C851';
+        advDesc = `${buy_cnt}개 지표 매수 신호. `;
+        if (bb_s === '매수') advDesc += 'BB 하단 지지. ';
+        if (rsi_s === '매수') advDesc += 'RSI 과매도. ';
+        if (ma_s === '매수') advDesc += 'MA 정배열.';
+    } else if (sell_cnt >= 3) {
+        advTitle = '<span class="ms red">block</span> 매수 비추천 (관망)'; advColor = '#FF4444';
+        advDesc = `${sell_cnt}개 지표 매도 신호. `;
+        if (bb_s === '매도') advDesc += 'BB 상단 과열. ';
+        if (rsi_s === '매도') advDesc += 'RSI 과매수. ';
+        if (ma_s === '매도') advDesc += 'MA 역배열.';
+    } else {
+        advTitle = '<span class="ms orange">hourglass_empty</span> 관망 (추세 확인 후 진입)'; advColor = '#FFA500';
+        advDesc = '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 시 매수 신호.';
+    }
+
     return `
     <div class="theme-detail-inner">
         ${r.desc ? `<p class="theme-detail-desc">${r.desc}</p>` : ''}
@@ -1853,8 +1888,14 @@ function _buildThemeDetailHtml(r, sid) {
             <div class="sub">매수 신호 ${buy_cnt}개 · 매도 신호 ${sell_cnt}개 · 중립 ${5 - buy_cnt - sell_cnt}개</div>
         </div>
 
+        <!-- 매매 전략 배너 -->
+        <div class="action-banner" style="background:${advColor}18;border-color:${advColor};margin-bottom:14px;">
+            <div class="title" style="color:${advColor};">${advTitle}</div>
+            <div class="detail">${advDesc}</div>
+        </div>
+
         <!-- 지표 카드 5개 -->
-        <h4 class="subheader" style="font-size:0.95em;margin-bottom:8px;"><span class="ms">bar_chart</span> 지표별 분석</h4>
+        <h3 class="subheader"><span class="ms">bar_chart</span> 지표별 분석</h3>
         <div class="indicators-grid" style="margin-bottom:16px;">
             ${renderIndicatorCard('RSI (14)',   rsi_s,  rsiMsg,  fmt(r.rsi, 1))}
             ${renderIndicatorCard('MACD',       macd_s, macdMsg, fmt(r.macd, 3))}
@@ -1863,13 +1904,27 @@ function _buildThemeDetailHtml(r, sid) {
             ${renderIndicatorCard('스토캐스틱', stk_s,  stkMsg,  `K: ${fmt(r.stoch_k,1)} / D: ${fmt(r.stoch_d,1)}`)}
         </div>
 
-        <!-- 매매 정보 -->
-        <div class="strategy-grid-4" style="margin-bottom:16px;">
-            ${renderTargetCard('매수 목표가', r.entry,   '#44aaff', '볼밴 하단 or MA20', sym)}
-            ${renderTargetCard('1차 목표가', r.target1,  '#00C851', `+${fmt(r.ret_short, 1)}%`, sym)}
-            ${renderTargetCard('2차 목표가', r.target2,  '#ffaa00', `+${fmt(r.ret_mid,   1)}%`, sym)}
-            ${renderTargetCard('손절선',     r.entry * 0.96, '#FF4444', '매수가 -4%', sym)}
+        <!-- 매매 가격 정보 -->
+        <h3 class="subheader"><span class="ms">payments</span> 매매 전략</h3>
+        <div class="strategy-grid" style="margin-bottom:16px;">
+            ${renderStrategyCard('매수 목표가', r.entry,        '#44aaff', 'BB 하단 / MA20 지지', sym)}
+            ${renderStrategyCard('1차 목표가',  r.target1,      '#00C851', `기대수익 +${fmt(r.ret_short, 1)}% | BB 중심`, sym)}
+            ${renderStrategyCard('2차 목표가',  r.target2,      '#ffaa00', `기대수익 +${fmt(r.ret_mid,   1)}% | BB 상단`, sym)}
+            ${renderStrategyCard('손절 기준가', r.entry * 0.96, '#FF4444', '손실 -4% | 매수가 -4%', sym)}
         </div>
+        <hr class="divider">
+
+        <!-- 트레이딩 전략 서브탭 -->
+        <h3 class="subheader"><span class="ms">bar_chart</span> 트레이딩 전략 분석</h3>
+        <div class="sub-tabs" id="tst-${sid}">
+            <button class="sub-tab active" data-subtab="ts-short-${sid}"><span class="ms">bolt</span> 단기 (1일~2주)</button>
+            <button class="sub-tab" data-subtab="ts-swing-${sid}"><span class="ms">sync</span> 스윙 (2주~3개월)</button>
+            <button class="sub-tab" data-subtab="ts-long-${sid}"><span class="ms">trending_up</span> 장기 (6개월~수년)</button>
+        </div>
+        <div id="ts-short-${sid}" class="sub-tab-content active">${renderShortTermStrategy(d, sym, rate)}</div>
+        <div id="ts-swing-${sid}" class="sub-tab-content">${renderSwingStrategy(d, sym, rate)}</div>
+        <div id="ts-long-${sid}" class="sub-tab-content">${renderLongTermStrategy(d, sym, rate)}</div>
+        <hr class="divider">
 
         <!-- AI 분석 -->
         <div class="ai-analysis-box" id="ai-box-${sid}">
@@ -1879,9 +1934,9 @@ function _buildThemeDetailHtml(r, sid) {
             </div>
         </div>
 
-        <!-- 전체 분석 버튼 -->
+        <!-- 전체 분석 버튼 (차트 포함) -->
         <div style="text-align:right;margin-top:12px;">
-            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')"><span class="ms">trending_up</span> 전체 상세 분석 보기</button>
+            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')"><span class="ms">show_chart</span> 차트 · 재무 전체 분석 보기</button>
         </div>
     </div>`;
 }
@@ -1923,6 +1978,14 @@ async function _loadThemeAI(sid, r) {
         });
         const data = await res.json();
         const text = data.analysis || 'AI 분석 결과를 받지 못했습니다.';
+
+        // API 키 미설정 → AI 박스 전체 숨김 (이미 전략 분석이 표시되므로)
+        if (text.includes('ANTHROPIC_API_KEY')) {
+            const boxEl = document.getElementById(`ai-box-${sid}`);
+            if (boxEl) boxEl.style.display = 'none';
+            return;
+        }
+
         _themeAiCache[sid] = text;
         if (bodyEl) bodyEl.innerHTML = `<p class="ai-text">${text.replace(/\n/g, '<br>')}</p>`;
     } catch (e) {
