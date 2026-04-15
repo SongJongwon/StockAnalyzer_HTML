@@ -1873,11 +1873,13 @@ main {
 
 /* ── Company Info Card ── */
 .company-info-card {
-    background: var(--card);
+    background: var(--bg-alt);
     border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
     border-radius: 10px;
     padding: 12px 16px;
     margin-bottom: 14px;
+    min-height: 36px;
 }
 .co-tags {
     display: flex;

@@ -958,11 +958,11 @@ function renderAnalysis(data, container) {
         <!-- Financials Expandable -->
         <div class="expandable" id="financialsSection">
             <div class="expandable-header" onclick="toggleExpandable('financialsSection')">
-                <span><span class="ms">assignment</span> 재무제표 분석 (클릭하여 펼치기)</span>
+                <span><span class="ms">assignment</span> 재무제표 분석</span>
                 <span class="arrow">▶</span>
             </div>
             <div class="expandable-body" id="financialsBody">
-                <div class="loading">재무 데이터 로딩 중...</div>
+                <div class="loading">재무 데이터 로딩 중... <span class="caption">(Yahoo Finance 조회 중)</span></div>
             </div>
         </div>
 
@@ -1637,28 +1637,31 @@ async function loadCompanyInfo(sym) {
     if (!card) return;
     try {
         const res = await fetch(`${API}/api/stock/info/${encodeURIComponent(sym)}`);
-        if (!res.ok) throw new Error('Failed');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const info = await res.json();
         renderCompanyInfo(info, card);
-    } catch (_) {
-        card.style.display = 'none';
+    } catch (e) {
+        card.innerHTML = `<span class="caption muted">회사 정보를 불러올 수 없습니다.</span>`;
     }
 }
 
 function renderCompanyInfo(info, card) {
     const parts = [];
-    if (info.sector) parts.push(`<span class="co-tag"><span class="ms sm">category</span> ${info.sector}</span>`);
-    if (info.industry) parts.push(`<span class="co-tag"><span class="ms sm">factory</span> ${info.industry}</span>`);
-    if (info.country) parts.push(`<span class="co-tag"><span class="ms sm">public</span> ${info.country}</span>`);
+    if (info.sector)    parts.push(`<span class="co-tag"><span class="ms sm">category</span> ${info.sector}</span>`);
+    if (info.industry)  parts.push(`<span class="co-tag"><span class="ms sm">factory</span> ${info.industry}</span>`);
+    if (info.country)   parts.push(`<span class="co-tag"><span class="ms sm">public</span> ${info.country}</span>`);
     if (info.employees) parts.push(`<span class="co-tag"><span class="ms sm">group</span> ${Number(info.employees).toLocaleString()}명</span>`);
-    if (info.currency) parts.push(`<span class="co-tag"><span class="ms sm">payments</span> ${info.currency}</span>`);
+    if (info.exchange)  parts.push(`<span class="co-tag"><span class="ms sm">store</span> ${info.exchange}</span>`);
+    if (info.currency)  parts.push(`<span class="co-tag"><span class="ms sm">payments</span> ${info.currency}</span>`);
 
     let html = '';
     if (parts.length > 0) {
         html += `<div class="co-tags">${parts.join('')}</div>`;
     }
     if (info.summary) {
-        const shortSummary = info.summary.length > 300 ? info.summary.slice(0, 300) + '...' : info.summary;
+        // 영어 설명이 길면 500자로 제한
+        const maxLen = 500;
+        const shortSummary = info.summary.length > maxLen ? info.summary.slice(0, maxLen) + '...' : info.summary;
         html += `<p class="co-summary">${shortSummary}</p>`;
     }
     if (info.website) {
@@ -1666,7 +1669,7 @@ function renderCompanyInfo(info, card) {
     }
 
     if (!html) {
-        card.style.display = 'none';
+        card.innerHTML = `<span class="caption muted">회사 정보 없음</span>`;
         return;
     }
     card.innerHTML = html;
@@ -1679,11 +1682,15 @@ function renderCompanyInfo(info, card) {
 async function loadFinancials(sym) {
     try {
         const res = await fetch(`${API}/api/stock/financials/${encodeURIComponent(sym)}`);
-        if (!res.ok) throw new Error('Failed');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const fin = await res.json();
+        // 섹션 자동 펼치기 (Plotly가 보이는 상태에서 렌더링되도록)
+        const sec = document.getElementById('financialsSection');
+        if (sec && !sec.classList.contains('open')) sec.classList.add('open');
         renderFinancials(fin);
-    } catch (_) {
-        document.getElementById('financialsBody').innerHTML = '<div class="caption">재무 데이터를 불러올 수 없습니다.</div>';
+    } catch (e) {
+        const body = document.getElementById('financialsBody');
+        if (body) body.innerHTML = `<div class="caption">재무 데이터를 불러올 수 없습니다. (${e.message})</div>`;
     }
 }
 
@@ -1836,9 +1843,25 @@ function _drawFinancials() {
             yaxis: { tickformat: '.1f' },
         };
 
+        // 섹션이 열린 후 충분한 시간을 두고 렌더링 (hidden 상태에서 렌더링하면 높이 0으로 깨짐)
         setTimeout(() => {
             const el = document.getElementById('finChartContainer');
-            if (el) Plotly.newPlot(el, traces, layout, { responsive: true });
+            if (el) {
+                Plotly.newPlot(el, traces, layout, { responsive: true });
+            }
+        }, 300);
+    }
+}
+
+// 재무제표 섹션 수동 토글 시 Plotly 차트 크기 복원
+function toggleExpandable(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('open');
+    if (el.classList.contains('open') && id === 'financialsSection') {
+        setTimeout(() => {
+            const chart = document.getElementById('finChartContainer');
+            if (chart && chart._fullLayout) Plotly.relayout(chart, { autosize: true });
         }, 50);
     }
 }
@@ -2743,7 +2766,4 @@ function setupSubTabs(containerId) {
     });
 }
 
-function toggleExpandable(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('open');
-}
+// toggleExpandable is defined near renderFinancials (search above)
