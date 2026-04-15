@@ -1660,19 +1660,25 @@ async function selectTheme(name) {
     await renderThemeContent(name);
 }
 
+// ── 테마 종목 상태 ──────────────────────────────────────────
+const _themeStockMap = {};   // safeId -> full stock data
+const _themeAiCache = {};    // safeId -> AI analysis text
+
+function _safeId(ticker) {
+    return ticker.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
 async function renderThemeContent(name) {
     const container = document.getElementById('themeContent');
     const theme = themesData[name];
     if (!theme) return;
 
-    container.innerHTML = '<div class="loading">테마 종목 분석 중...</div>';
-
-    // Favorite toggle
     const isFav = favorites.has(name);
+    const escapedName = name.replace(/'/g, "\\'");
 
     let headerHtml = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-            <button onclick="toggleFavorite('${name.replace(/'/g, "\\'")}')" class="btn-icon" title="즐겨찾기">${isFav ? '⭐' : '☆'}</button>
+            <button onclick="toggleFavorite('${escapedName}')" class="btn-icon" title="즐겨찾기">${isFav ? '⭐' : '☆'}</button>
             <div>
                 <h4>${name}</h4>
                 <p class="caption">${theme.desc || ''}</p>
@@ -1680,75 +1686,243 @@ async function renderThemeContent(name) {
         </div>
     `;
 
-    // Check if we have pre-analyzed stocks
-    if (theme.analyzed_stocks) {
-        renderThemeStocks(headerHtml, theme.analyzed_stocks, container);
-    } else {
-        // Just show the raw stocks from the theme definition
-        container.innerHTML = headerHtml + '<div class="caption">서버에서 분석 데이터를 불러올 수 없습니다. 종목 목록만 표시합니다.</div>';
+    container.innerHTML = headerHtml + '<div class="loading">테마 종목 실시간 분석 중... (최초 30초 내외)</div>';
+
+    try {
+        const res = await fetch(`${API}/api/market/themes/${encodeURIComponent(name)}/analyze`);
+        if (!res.ok) throw new Error('Failed');
+        const stocks = await res.json();
+        // 캐시: 정적 테마 데이터에 분석 결과 저장
+        themesData[name].analyzed_stocks = stocks;
+        renderThemeStocksTable(headerHtml, stocks, container);
+    } catch (e) {
+        // 분석 실패 시 정적 목록만 표시
+        let html = headerHtml + '<p class="caption mb-8">실시간 분석을 불러올 수 없습니다. 정적 목록을 표시합니다.</p>';
         if (theme.stocks) {
-            let html = headerHtml + '<table class="theme-table"><thead><tr><th>종목</th><th>티커</th><th>설명</th></tr></thead><tbody>';
+            html += '<table class="theme-table"><thead><tr><th>종목</th><th>티커</th><th>설명</th></tr></thead><tbody>';
             theme.stocks.forEach(s => {
-                html += `<tr><td><b>${s.name}</b></td><td>${s.ticker}</td><td style="font-size:0.82em;color: var(--muted-dark);">${s.desc || ''}</td></tr>`;
+                html += `<tr>
+                    <td><b>${s.name}</b></td>
+                    <td style="color:var(--muted);">${s.ticker}</td>
+                    <td style="color:var(--text-secondary);">${s.desc || ''}</td>
+                </tr>`;
             });
             html += '</tbody></table>';
-            container.innerHTML = html;
         }
+        container.innerHTML = html;
     }
 }
 
-function renderThemeStocks(headerHtml, stocks, container) {
-    // Sort by buy_cnt desc
-    stocks.sort((a, b) => (b.buy_cnt || 0) - (a.buy_cnt || 0) || (a.sell_cnt || 0) - (b.sell_cnt || 0));
-
+function renderThemeStocksTable(headerHtml, stocks, container) {
     const total = stocks.length;
     const totalPages = Math.max(1, Math.ceil(total / STOCKS_PER_PAGE));
     const page = Math.min(themePage, totalPages - 1);
     const start = page * STOCKS_PER_PAGE;
     const pageRows = stocks.slice(start, start + STOCKS_PER_PAGE);
 
+    // 종목 데이터 전역 맵에 저장
+    stocks.forEach(r => { _themeStockMap[_safeId(r.ticker)] = r; });
+
     let html = headerHtml;
-    html += `<p class="text-sm mb-8"><b>총 ${total}개 종목</b> | 매수 신호 강도 순 · ${page + 1} / ${totalPages} 페이지</p>`;
-    html += `<table class="theme-table"><thead><tr>
-        <th>순위</th><th>종목</th><th>현재가</th><th>등락</th><th>RSI</th>
-        <th>매수가</th><th>목표가</th><th>단기수익</th><th>판단</th><th>매수 근거</th>
-    </tr></thead><tbody>`;
+    html += `<p class="text-sm mb-8"><b>총 ${total}개 종목</b> · 매수 신호 강도 순 · 페이지 ${page + 1} / ${totalPages}</p>`;
+    html += `<table class="theme-table">
+        <thead><tr>
+            <th style="width:44px">순위</th>
+            <th>종목</th>
+            <th>현재가</th>
+            <th>등락</th>
+            <th>RSI</th>
+            <th>매수가</th>
+            <th>목표가</th>
+            <th>단기수익</th>
+            <th>판단</th>
+            <th>매수 근거</th>
+            <th style="width:32px"></th>
+        </tr></thead><tbody>`;
 
     pageRows.forEach((r, i) => {
         const rank = start + i + 1;
         const badge = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : `#${rank}`));
+        const sid = _safeId(r.ticker);
         const cc = (r.change_pct || 0) >= 0 ? '#00C851' : '#FF4444';
         const rsiC = r.rsi < 40 ? '#00C851' : (r.rsi > 65 ? '#FF4444' : '#FFA500');
         const vColor = r.color || '#FFA500';
+        const noData = r.close === null || r.close === undefined;
 
-        html += `<tr>
+        html += `
+        <tr class="theme-stock-row" id="tsr-${sid}" onclick="toggleThemeRow('${sid}')">
             <td style="text-align:center;font-size:1.1em;">${badge}</td>
-            <td class="name-cell">
+            <td class="name-cell" style="min-width:110px;">
                 <div class="name">${r.name}</div>
                 <div class="ticker">${r.ticker}</div>
             </td>
-            <td>${fmtPrice(r.close)}</td>
-            <td style="color:${cc};">${(r.change_pct || 0) >= 0 ? '+' : ''}${Number(r.change_pct || 0).toFixed(1)}%</td>
-            <td style="color:${rsiC};">${Number(r.rsi || 0).toFixed(1)}</td>
-            <td style="color:#44aaff;">${fmtPrice(r.entry)}</td>
-            <td style="color:#ffaa00;">${fmtPrice(r.target2)}</td>
-            <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};">${Number(r.ret_short || 0).toFixed(1)}%</td>
+            <td style="font-weight:600;">${noData ? '—' : fmtPrice(r.close)}</td>
+            <td style="color:${cc};font-weight:600;">${noData ? '—' : (r.change_pct >= 0 ? '+' : '') + Number(r.change_pct).toFixed(1) + '%'}</td>
+            <td style="color:${rsiC};font-weight:600;">${noData ? '—' : Number(r.rsi).toFixed(1)}</td>
+            <td style="color:#44aaff;">${noData ? '—' : fmtPrice(r.entry)}</td>
+            <td style="color:#ffaa00;">${noData ? '—' : fmtPrice(r.target2)}</td>
+            <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};font-weight:600;">${noData ? '—' : Number(r.ret_short || 0).toFixed(1) + '%'}</td>
             <td style="color:${vColor};font-weight:bold;">${r.verdict || '—'}</td>
-            <td style="font-size:0.82em;color: var(--muted-dark);">${r.reason || '지표 혼조'}</td>
+            <td style="color:var(--text-secondary);font-size:0.88em;">${r.reason || '지표 혼조'}</td>
+            <td style="text-align:center;color:var(--muted);font-size:0.8em;" class="tsr-arrow">▶</td>
+        </tr>
+        <tr class="theme-detail-row" id="tdr-${sid}">
+            <td colspan="11" style="padding:0;">
+                <div class="theme-detail-wrap" id="tdw-${sid}"></div>
+            </td>
         </tr>`;
     });
 
     html += '</tbody></table>';
-
-    // Pagination
     html += `<div class="pagination">
         <button class="btn-secondary" onclick="themePagePrev()" ${page === 0 ? 'disabled' : ''}>◀ 이전</button>
         <span class="info">페이지 ${page + 1} / ${totalPages} · 전체 ${total}개 종목</span>
         <button class="btn-secondary" onclick="themePageNext()" ${page >= totalPages - 1 ? 'disabled' : ''}>다음 ▶</button>
     </div>`;
-
     html += '<hr class="divider"><p class="caption">본 분석은 참고용이며 투자 권유가 아닙니다.</p>';
+
     container.innerHTML = html;
+}
+
+function toggleThemeRow(sid) {
+    const detailRow = document.getElementById(`tdr-${sid}`);
+    const stockRow  = document.getElementById(`tsr-${sid}`);
+    const wrap      = document.getElementById(`tdw-${sid}`);
+    if (!detailRow || !stockRow) return;
+
+    const isOpen = stockRow.classList.contains('expanded');
+    if (isOpen) {
+        stockRow.classList.remove('expanded');
+        detailRow.style.display = 'none';
+        return;
+    }
+
+    stockRow.classList.add('expanded');
+    detailRow.style.display = 'table-row';
+
+    const r = _themeStockMap[sid];
+    if (!r) return;
+
+    // 콘텐츠가 이미 그려진 경우 재렌더 스킵
+    if (wrap.dataset.rendered === '1') return;
+    wrap.dataset.rendered = '1';
+    wrap.innerHTML = _buildThemeDetailHtml(r, sid);
+
+    // AI 분석 자동 요청
+    _loadThemeAI(sid, r);
+}
+
+function _buildThemeDetailHtml(r, sid) {
+    const close = r.close;
+    const sym   = r.ticker;
+    const rate  = exchangeRate;
+
+    if (r.close === null || r.close === undefined) {
+        return `<div style="padding:16px;color:var(--muted);">데이터를 불러올 수 없는 종목입니다.</div>`;
+    }
+
+    // 지표 계산
+    const rsi_s  = r.rsi < 40 ? '매수' : (r.rsi > 65 ? '매도' : '중립');
+    const macd_s = r.macd > r.macd_sig ? '매수' : '매도';
+    const bb_s   = close < r.bb_l ? '매수' : (close > r.bb_u ? '매도' : '중립');
+    const ma_s   = (close > r.ma20 && r.ma20 > r.ma60) ? '매수' : ((close < r.ma20 && r.ma20 < r.ma60) ? '매도' : '중립');
+    const stk_s  = (r.stoch_k < 25 && r.stoch_d < 25) ? '매수' : ((r.stoch_k > 75 && r.stoch_d > 75) ? '매도' : '중립');
+
+    const buy_cnt  = [rsi_s, macd_s, bb_s, ma_s, stk_s].filter(s => s === '매수').length;
+    const sell_cnt = [rsi_s, macd_s, bb_s, ma_s, stk_s].filter(s => s === '매도').length;
+    const vColor   = r.color || '#FFA500';
+
+    const rsiMsg  = `RSI ${fmt(r.rsi, 1)} — ${rsi_s === '매수' ? '과매도' : rsi_s === '매도' ? '과매수' : '중립'}`;
+    const macdMsg = macd_s === '매수' ? 'MACD > Signal — 상승' : 'MACD < Signal — 하락';
+    const bbMsg   = bb_s === '매수' ? '하단 이탈 — 반등 기대' : (bb_s === '매도' ? '상단 이탈 — 과열' : '중간 범위');
+    const maMsg   = ma_s === '매수' ? '정배열 (MA20 > MA60)' : (ma_s === '매도' ? '역배열' : 'MA 혼조');
+    const stkMsg  = `스토캐스틱 ${stk_s === '매수' ? '과매도' : stk_s === '매도' ? '과매수' : '중립'} (K:${fmt(r.stoch_k, 1)})`;
+
+    return `
+    <div class="theme-detail-inner">
+        ${r.desc ? `<p class="theme-detail-desc">${r.desc}</p>` : ''}
+
+        <!-- 종합 판단 배너 -->
+        <div class="verdict-banner" style="background:${vColor}22;border-color:${vColor};color:${vColor};margin-bottom:14px;">
+            <h2>종합 판단: ${r.verdict}</h2>
+            <div class="sub">매수 신호 ${buy_cnt}개 · 매도 신호 ${sell_cnt}개 · 중립 ${5 - buy_cnt - sell_cnt}개</div>
+        </div>
+
+        <!-- 지표 카드 5개 -->
+        <h4 class="subheader" style="font-size:0.95em;margin-bottom:8px;">📊 지표별 분석</h4>
+        <div class="indicators-grid" style="margin-bottom:16px;">
+            ${renderIndicatorCard('RSI (14)',   rsi_s,  rsiMsg,  fmt(r.rsi, 1))}
+            ${renderIndicatorCard('MACD',       macd_s, macdMsg, fmt(r.macd, 3))}
+            ${renderIndicatorCard('볼린저밴드', bb_s,   bbMsg,   `상단 ${fmtPrice(r.bb_u)} / 하단 ${fmtPrice(r.bb_l)}`)}
+            ${renderIndicatorCard('이동평균',   ma_s,   maMsg,   `MA20: ${fmtPrice(r.ma20)} / MA60: ${fmtPrice(r.ma60)}`)}
+            ${renderIndicatorCard('스토캐스틱', stk_s,  stkMsg,  `K: ${fmt(r.stoch_k,1)} / D: ${fmt(r.stoch_d,1)}`)}
+        </div>
+
+        <!-- 매매 정보 -->
+        <div class="strategy-grid-4" style="margin-bottom:16px;">
+            ${renderTargetCard('매수 목표가', r.entry,   '#44aaff', '볼밴 하단 or MA20', sym)}
+            ${renderTargetCard('1차 목표가', r.target1,  '#00C851', `+${fmt(r.ret_short, 1)}%`, sym)}
+            ${renderTargetCard('2차 목표가', r.target2,  '#ffaa00', `+${fmt(r.ret_mid,   1)}%`, sym)}
+            ${renderTargetCard('손절선',     r.entry * 0.96, '#FF4444', '매수가 -4%', sym)}
+        </div>
+
+        <!-- AI 분석 -->
+        <div class="ai-analysis-box" id="ai-box-${sid}">
+            <div class="ai-analysis-header">🤖 AI 분석 <span class="ai-badge">Claude AI</span></div>
+            <div class="ai-analysis-body" id="ai-body-${sid}">
+                <div class="loading" style="font-size:0.9em;">AI 분석 중...</div>
+            </div>
+        </div>
+
+        <!-- 전체 분석 버튼 -->
+        <div style="text-align:right;margin-top:12px;">
+            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')">📈 전체 상세 분석 보기</button>
+        </div>
+    </div>`;
+}
+
+async function _loadThemeAI(sid, r) {
+    const bodyEl = document.getElementById(`ai-body-${sid}`);
+    if (!bodyEl) return;
+
+    if (_themeAiCache[sid]) {
+        bodyEl.innerHTML = `<p class="ai-text">${_themeAiCache[sid]}</p>`;
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/market/ai-analysis`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ticker:     r.ticker,
+                name:       r.name,
+                desc:       r.desc || '',
+                close:      r.close,
+                change_pct: r.change_pct,
+                rsi:        r.rsi,
+                macd:       r.macd,
+                macd_sig:   r.macd_sig,
+                bb_u:       r.bb_u,
+                bb_m:       r.bb_m,
+                bb_l:       r.bb_l,
+                ma20:       r.ma20,
+                ma60:       r.ma60,
+                stoch_k:    r.stoch_k,
+                stoch_d:    r.stoch_d,
+                buy_cnt:    r.buy_cnt,
+                sell_cnt:   r.sell_cnt,
+                verdict:    r.verdict,
+                reason:     r.reason || '',
+            }),
+        });
+        const data = await res.json();
+        const text = data.analysis || 'AI 분석 결과를 받지 못했습니다.';
+        _themeAiCache[sid] = text;
+        if (bodyEl) bodyEl.innerHTML = `<p class="ai-text">${text.replace(/\n/g, '<br>')}</p>`;
+    } catch (e) {
+        if (bodyEl) bodyEl.innerHTML = `<p style="color:var(--muted);">AI 분석 요청 실패: ${e.message}</p>`;
+    }
 }
 
 function themePagePrev() {

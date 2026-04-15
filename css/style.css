@@ -1197,6 +1197,90 @@ main {
 }
 .theme-table tbody tr:hover { background: var(--card-hover); }
 
+/* 테마 종목 행 - 클릭 가능 */
+.theme-stock-row {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.theme-stock-row.expanded {
+    background: var(--bg-alt);
+}
+.theme-stock-row.expanded .tsr-arrow {
+    transform: rotate(90deg);
+    display: inline-block;
+}
+.tsr-arrow { transition: transform 0.2s; display: inline-block; }
+
+/* 테마 종목 상세 행 */
+.theme-detail-row { display: none; }
+.theme-detail-row td { padding: 0 !important; border-bottom: 2px solid var(--border) !important; }
+
+/* 상세 내용 래퍼 */
+.theme-detail-wrap {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--border);
+    animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.theme-detail-inner {
+    padding: 20px 24px;
+    max-width: 100%;
+}
+
+.theme-detail-desc {
+    font-size: 0.92em;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    line-height: 1.6;
+}
+
+/* AI 분석 박스 */
+.ai-analysis-box {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+.ai-analysis-header {
+    background: linear-gradient(90deg, #1a1a3e 0%, #0e1a2e 100%);
+    color: #88aaff;
+    padding: 10px 16px;
+    font-size: 0.92em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+[data-theme="light"] .ai-analysis-header {
+    background: linear-gradient(90deg, #e8eeff 0%, #f0f4ff 100%);
+    color: #3355bb;
+}
+.ai-badge {
+    background: #4466ff33;
+    color: #88aaff;
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid #4466ff55;
+}
+[data-theme="light"] .ai-badge { background: #dde8ff; color: #3355bb; border-color: #aac0ff; }
+.ai-analysis-body { padding: 14px 16px; }
+.ai-text {
+    font-size: 0.93em;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    margin: 0;
+    white-space: pre-wrap;
+}
+
 /* ═══════════════════════════════════════════════
    Pagination
    ═══════════════════════════════════════════════ */
@@ -1564,5 +1648,11 @@ main {
 
 [data-theme="dark"] .wl-table td,
 [data-theme="dark"] .theme-table td { border-color: var(--border); }
+
+/* 테마 상세 다크모드 */
+[data-theme="dark"] .theme-detail-wrap { background: var(--bg-alt); }
+[data-theme="dark"] .theme-stock-row.expanded { background: #161b28; }
+[data-theme="dark"] .theme-detail-desc { background: #1a1f2e; border-left-color: var(--accent); }
+[data-theme="dark"] .ai-analysis-box { border-color: #2a3050; }
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #444; }
