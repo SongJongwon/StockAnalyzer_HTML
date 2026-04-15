@@ -1755,33 +1755,54 @@ function _drawFinancials() {
     const body = document.getElementById('financialsBody');
     if (!fin || !body) return;
 
-    const isKrw = _finCurrency === 'KRW';
-    const rate = exchangeRate || 1350;
+    const displayKrw  = _finCurrency === 'KRW';          // 사용자가 선택한 표시 통화
+    const nativeKrw   = (fin.currency || 'USD') === 'KRW'; // 데이터 원본 통화
+    const rate        = exchangeRate || 1350;
 
+    /**
+     * 금액 변환 + 포맷
+     * - 원본이 KRW이고 USD로 보고 싶으면 ÷ rate
+     * - 원본이 USD이고 KRW로 보고 싶으면 × rate
+     * - 같은 통화면 그대로
+     */
     function moneyVal(v) {
         if (v == null) return '—';
-        const converted = isKrw ? v * rate : v;
-        return fmtLargeCurrency(converted, isKrw);
+        let converted = v;
+        if (nativeKrw  && !displayKrw) converted = v / rate;   // KRW → USD
+        if (!nativeKrw && displayKrw)  converted = v * rate;   // USD → KRW
+        return fmtLargeCurrency(converted, displayKrw);
+    }
+
+    /** EPS 변환: yfinance는 항상 주가 통화 기준 */
+    function epsVal(v) {
+        if (v == null) return '—';
+        let converted = v;
+        if (nativeKrw  && !displayKrw) converted = v / rate;
+        if (!nativeKrw && displayKrw)  converted = v * rate;
+        return displayKrw
+            ? `₩${Math.round(converted).toLocaleString()}`
+            : `$${converted.toFixed(2)}`;
     }
 
     // ── 통화 토글 헤더 ──────────────────────────────────────
+    const nativeLabel = nativeKrw ? '원화(KRW)' : '달러(USD)';
     const toggleHtml = `
         <div class="fin-currency-toggle">
-            <span class="caption">단위:</span>
-            <button class="fin-currency-btn ${!isKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
-            <button class="fin-currency-btn ${isKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
+            <span class="caption">표시 단위 <span style="color:var(--muted)">(원본: ${nativeLabel})</span>:</span>
+            <button class="fin-currency-btn ${!displayKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
+            <button class="fin-currency-btn ${displayKrw  ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
         </div>`;
 
     // ── 밸류에이션 ──────────────────────────────────────────
     const valItems = [
-        { label: '시가총액',     value: moneyVal(fin.market_cap) },
-        { label: 'PER (TTM)',   value: fmtX(fin.pe_trailing) },
-        { label: 'PER (Fwd)',   value: fmtX(fin.pe_forward) },
-        { label: 'PBR',         value: fmtX(fin.pb) },
-        { label: 'PSR',         value: fmtX(fin.ps) },
-        { label: 'EV/EBITDA',   value: fmtX(fin.ev_ebitda) },
-        { label: '배당수익률',  value: fmtPct(fin.div_yield) },
-        { label: 'EPS (TTM)',   value: fin.eps_ttm != null ? (isKrw ? `₩${Math.round(fin.eps_ttm * rate).toLocaleString()}` : `$${Number(fin.eps_ttm).toFixed(2)}`) : '—' },
+        { label: '시가총액',    value: moneyVal(fin.market_cap) },
+        { label: 'PER (TTM)',  value: fmtX(fin.pe_trailing) },
+        { label: 'PER (Fwd)', value: fmtX(fin.pe_forward) },
+        { label: 'PBR',        value: fmtX(fin.pb) },
+        { label: 'PSR',        value: fmtX(fin.ps) },
+        { label: 'EV/EBITDA',  value: fmtX(fin.ev_ebitda) },
+        { label: '배당수익률', value: fmtPct(fin.div_yield) },
+        { label: 'EPS (TTM)',  value: epsVal(fin.eps_ttm) },
     ];
 
     let valHtml = '<h4 class="subheader"><span class="ms">straighten</span> 밸류에이션</h4><div class="fin-val-grid">';
@@ -1792,19 +1813,19 @@ function _drawFinancials() {
 
     // ── 수익성 ──────────────────────────────────────────────
     const profItems = [
-        ['매출 (TTM)',      moneyVal(fin.rev_ttm)],
-        ['영업이익률',      fmtPct(fin.op_margin)],
-        ['순이익률',        fmtPct(fin.net_margin)],
-        ['ROE',             fmtPct(fin.roe)],
-        ['ROA',             fmtPct(fin.roa)],
+        ['매출 (TTM)',       moneyVal(fin.rev_ttm)],
+        ['영업이익률',       fmtPct(fin.op_margin)],
+        ['순이익률',         fmtPct(fin.net_margin)],
+        ['ROE',              fmtPct(fin.roe)],
+        ['ROA',              fmtPct(fin.roa)],
     ];
 
     // ── 성장성 & 현금흐름 ────────────────────────────────────
     const growthItems = [
-        ['매출 성장률 (YoY)',     fmtPct(fin.rev_growth)],
+        ['매출 성장률 (YoY)',      fmtPct(fin.rev_growth)],
         ['영업이익 성장률 (YoY)', fmtPct(fin.earn_growth)],
-        ['영업현금흐름',          moneyVal(fin.op_cf)],
-        ['잉여현금흐름 (FCF)',    moneyVal(fin.fcf)],
+        ['영업현금흐름',           moneyVal(fin.op_cf)],
+        ['잉여현금흐름 (FCF)',     moneyVal(fin.fcf)],
     ];
 
     // ── 안정성 ──────────────────────────────────────────────
@@ -1812,28 +1833,25 @@ function _drawFinancials() {
     const cr = fin.current_ratio;
     const ic = fin.interest_coverage;
     const deColor = de != null ? (de > 200 ? '#FF4444' : de > 100 ? '#FFA500' : '#00C851') : null;
-    const crColor = cr != null ? (cr < 1 ? '#FF4444' : cr < 1.5 ? '#FFA500' : '#00C851') : null;
-    const icColor = ic != null ? (ic < 1.5 ? '#FF4444' : ic < 3 ? '#FFA500' : '#00C851') : null;
+    const crColor = cr != null ? (cr < 1   ? '#FF4444' : cr < 1.5 ? '#FFA500' : '#00C851') : null;
+    const icColor = ic != null ? (ic < 1.5 ? '#FF4444' : ic < 3   ? '#FFA500' : '#00C851') : null;
     const stabItems = [
-        ['부채비율 (D/E)',   de != null ? `${de.toFixed(1)}%` : '—',   deColor],
-        ['유동비율',         cr != null ? cr.toFixed(2) : '—',          crColor],
-        ['이자보상배율',     ic != null ? `${ic.toFixed(1)}x` : '—',   icColor],
+        ['부채비율 (D/E)',  de != null ? `${de.toFixed(1)}%`  : '—', deColor],
+        ['유동비율',        cr != null ? cr.toFixed(2)         : '—', crColor],
+        ['이자보상배율',    ic != null ? `${ic.toFixed(1)}x`  : '—', icColor],
     ];
 
     let colHtml = '<div class="fin-3col">';
-
     colHtml += '<div><h4 class="subheader"><span class="ms">bar_chart</span> 수익성</h4>';
     profItems.forEach(([l, v]) => {
         colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
     });
     colHtml += '</div>';
-
     colHtml += '<div><h4 class="subheader"><span class="ms">trending_up</span> 성장성 & 현금흐름</h4>';
     growthItems.forEach(([l, v]) => {
         colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
     });
     colHtml += '</div>';
-
     colHtml += '<div><h4 class="subheader"><span class="ms">shield</span> 안정성</h4>';
     stabItems.forEach(([l, v, c]) => {
         const style = c ? ` style="color:${c};"` : '';
@@ -1844,7 +1862,8 @@ function _drawFinancials() {
     // ── 연간 차트 영역 ──────────────────────────────────────
     const hasChart = fin.income && Object.keys(fin.income).length > 0;
     const chartHtml = hasChart
-        ? `<h4 class="subheader" style="margin-top:20px;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4><div id="finChartContainer" style="height:320px;"></div>`
+        ? `<h4 class="subheader" style="margin-top:20px;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4>
+           <div id="finChartContainer" style="height:340px;"></div>`
         : '';
 
     body.innerHTML = toggleHtml + valHtml + colHtml + chartHtml;
@@ -1852,42 +1871,55 @@ function _drawFinancials() {
     // ── Plotly 차트 ─────────────────────────────────────────
     if (hasChart) {
         const years = Object.keys(fin.income).sort();
-        const divisor = isKrw ? (rate / 1e12) : 1e9;
-        const unitLabel = isKrw ? '조원' : '십억$';
 
-        const revs  = years.map(y => fin.income[y]?.revenue   != null ? fin.income[y].revenue   * (isKrw ? rate : 1) / 1e9 : null);
-        const ops   = years.map(y => fin.income[y]?.op_income  != null ? fin.income[y].op_income  * (isKrw ? rate : 1) / 1e9 : null);
-        const nets  = years.map(y => fin.income[y]?.net_income != null ? fin.income[y].net_income * (isKrw ? rate : 1) / 1e9 : null);
-        const cfs   = years.map(y => fin.cashflow?.[y]?.op_cf  != null ? fin.cashflow[y].op_cf    * (isKrw ? rate : 1) / 1e9 : null);
+        // 표시 단위 결정
+        // KRW 표시: 조원(1e12) / USD 표시: 십억달러(1e9)
+        const chartUnit  = displayKrw ? 1e12 : 1e9;
+        const unitLabel  = displayKrw ? '조원' : '십억$';
+
+        // 원본값 → 표시 통화 → 차트 단위로 나누기
+        function toChartVal(v) {
+            if (v == null) return null;
+            let cv = v;
+            if (nativeKrw  && !displayKrw) cv = v / rate;
+            if (!nativeKrw && displayKrw)  cv = v * rate;
+            return cv / chartUnit;
+        }
+
+        const revs = years.map(y => toChartVal(fin.income[y]?.revenue));
+        const ops  = years.map(y => toChartVal(fin.income[y]?.op_income));
+        const nets = years.map(y => toChartVal(fin.income[y]?.net_income));
+        const cfs  = years.map(y => toChartVal(fin.cashflow?.[y]?.op_cf));
 
         const traces = [
-            { x: years, y: revs, type: 'bar',              name: '매출',        marker: { color: '#4488ff' } },
-            { x: years, y: ops,  type: 'bar',              name: '영업이익',    marker: { color: '#00C851' } },
-            { x: years, y: nets, type: 'bar',              name: '순이익',      marker: { color: '#ffaa00' } },
-            { x: years, y: cfs,  type: 'scatter', mode: 'lines+markers', name: '영업CF', line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
+            { x: years, y: revs, type: 'bar',   name: '매출',    marker: { color: '#4488ff' } },
+            { x: years, y: ops,  type: 'bar',   name: '영업이익', marker: { color: '#00C851' } },
+            { x: years, y: nets, type: 'bar',   name: '순이익',   marker: { color: '#ffaa00' } },
+            { x: years, y: cfs,  type: 'scatter', mode: 'lines+markers',
+              name: '영업CF', line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
         ];
 
         const fc = chartColors();
         const layout = {
-            title: `연간 손익 & 현금흐름 (단위: ${unitLabel})`,
             barmode: 'group',
             template: fc.template,
             paper_bgcolor: fc.bg,
-            plot_bgcolor: fc.plot,
-            font: { color: fc.text, size: 11 },
-            height: 320,
-            margin: { l: 50, r: 10, t: 40, b: 30 },
+            plot_bgcolor:  fc.plot,
+            font:   { color: fc.text, size: 11 },
+            height: 340,
+            margin: { l: 70, r: 20, t: 30, b: 40 },
             showlegend: true,
-            legend: { orientation: 'h', y: 1.15 },
-            yaxis: { tickformat: '.1f' },
+            legend: { orientation: 'h', y: 1.12 },
+            xaxis: { type: 'category' },   // 연도를 카테고리로 → 2021.5 같은 소수점 사라짐
+            yaxis: {
+                tickformat: '.2f',
+                title: { text: unitLabel, font: { size: 11 } },
+            },
         };
 
-        // 섹션이 열린 후 충분한 시간을 두고 렌더링 (hidden 상태에서 렌더링하면 높이 0으로 깨짐)
         setTimeout(() => {
             const el = document.getElementById('finChartContainer');
-            if (el) {
-                Plotly.newPlot(el, traces, layout, { responsive: true });
-            }
+            if (el) Plotly.newPlot(el, traces, layout, { responsive: true });
         }, 300);
     }
 }
