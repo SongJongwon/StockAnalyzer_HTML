@@ -1933,6 +1933,17 @@ main {
     border-color: #7c3aed44;
 }
 
+/* ── Financials Chart Header (헤더 + 토글 한 줄) ── */
+.fin-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 /* ── Financials Currency Toggle ── */
 .fin-currency-toggle {
     display: flex;

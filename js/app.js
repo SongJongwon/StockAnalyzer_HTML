@@ -1784,14 +1784,8 @@ function _drawFinancials() {
             : `$${converted.toFixed(2)}`;
     }
 
-    // ── 통화 토글 헤더 ──────────────────────────────────────
     const nativeLabel = nativeKrw ? '원화(KRW)' : '달러(USD)';
-    const toggleHtml = `
-        <div class="fin-currency-toggle">
-            <span class="caption">표시 단위 <span style="color:var(--muted)">(원본: ${nativeLabel})</span>:</span>
-            <button class="fin-currency-btn ${!displayKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
-            <button class="fin-currency-btn ${displayKrw  ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
-        </div>`;
+    const toggleHtml = ''; // 토글은 차트 헤더 우측으로 이동
 
     // ── 밸류에이션 ──────────────────────────────────────────
     const valItems = [
@@ -1862,7 +1856,14 @@ function _drawFinancials() {
     // ── 연간 차트 영역 ──────────────────────────────────────
     const hasChart = fin.income && Object.keys(fin.income).length > 0;
     const chartHtml = hasChart
-        ? `<h4 class="subheader" style="margin-top:20px;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4>
+        ? `<div class="fin-chart-header">
+               <h4 class="subheader" style="margin:0;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4>
+               <div class="fin-currency-toggle" style="margin:0;">
+                   <span class="caption" style="color:var(--muted);">원본: ${nativeLabel} · 단위:</span>
+                   <button class="fin-currency-btn ${!displayKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
+                   <button class="fin-currency-btn ${displayKrw  ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
+               </div>
+           </div>
            <div id="finChartContainer" style="height:340px;"></div>`
         : '';
 
@@ -1901,20 +1902,22 @@ function _drawFinancials() {
 
         const fc = chartColors();
         const layout = {
+            title: {
+                text: `연간 손익 & 현금흐름 (단위: ${unitLabel})`,
+                font: { size: 13, color: fc.text },
+                x: 0.5,
+            },
             barmode: 'group',
             template: fc.template,
             paper_bgcolor: fc.bg,
             plot_bgcolor:  fc.plot,
             font:   { color: fc.text, size: 11 },
             height: 340,
-            margin: { l: 70, r: 20, t: 30, b: 40 },
+            margin: { l: 70, r: 20, t: 45, b: 40 },
             showlegend: true,
-            legend: { orientation: 'h', y: 1.12 },
-            xaxis: { type: 'category' },   // 연도를 카테고리로 → 2021.5 같은 소수점 사라짐
-            yaxis: {
-                tickformat: '.2f',
-                title: { text: unitLabel, font: { size: 11 } },
-            },
+            legend: { orientation: 'h', y: 1.18 },
+            xaxis: { type: 'category' },
+            yaxis: { tickformat: '.2f' },   // Y축 제목 제거 (차트 제목에 단위 표시)
         };
 
         setTimeout(() => {
