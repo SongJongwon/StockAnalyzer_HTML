@@ -497,7 +497,7 @@ function dualPrice(price, sym, rate) {
     return `$${fmtPrice(price)} (₩${(price * rate).toLocaleString(undefined, {maximumFractionDigits: 0})})`;
 }
 
-function signalEmoji(s) { return s === '매수' ? '🟢' : (s === '매도' ? '🔴' : '🟡'); }
+function signalEmoji(s) { return s === '매수' ? '<span class="ms green">check_circle</span>' : (s === '매도' ? '<span class="ms red">cancel</span>' : '<span class="ms orange">radio_button_unchecked</span>'); }
 function signalClass(s) { return s === '매수' ? 'positive' : (s === '매도' ? 'negative' : 'neutral'); }
 function signalColor(s) { return s === '매수' ? '#00C851' : (s === '매도' ? '#FF4444' : '#FFA500'); }
 
@@ -570,7 +570,7 @@ function renderAnalysis(data, container) {
     // Strategy advice
     let advTitle, advColor, advDesc, advEntry;
     if (verdict === '강한 매수' || verdict === '매수 우세') {
-        advTitle = '✅ 매수 고려 가능'; advColor = '#00C851';
+        advTitle = '<span class="ms green">check_circle</span> 매수 고려 가능'; advColor = '#00C851';
         advDesc = `현재 ${buy_cnt}개 지표가 매수 신호. `;
         if (bb_s === '매수') advDesc += 'BB 하단 지지 → 반등 기대. ';
         if (rsi_s === '매수') advDesc += 'RSI 과매도 → 단기 반등. ';
@@ -578,14 +578,14 @@ function renderAnalysis(data, container) {
         if (ma_s === '매수') advDesc += 'MA 정배열 → 상승 추세.';
         advEntry = `현재가 또는 매수 목표가(${dualPrice(entry, sym, rate)}) 부근 분할 매수 권장`;
     } else if (verdict === '강한 매도' || verdict === '매도 우세') {
-        advTitle = '🚫 매수 비추천 (관망 또는 익절)'; advColor = '#FF4444';
+        advTitle = '<span class="ms red">block</span> 매수 비추천 (관망 또는 익절)'; advColor = '#FF4444';
         advDesc = `현재 ${sell_cnt}개 지표 매도 신호. `;
         if (bb_s === '매도') advDesc += 'BB 상단 이탈 → 단기 과열. ';
         if (rsi_s === '매도') advDesc += 'RSI 과매수 → 조정 가능성. ';
         if (ma_s === '매도') advDesc += 'MA 역배열 → 하락 추세.';
         advEntry = `추가 하락 시 ${dualPrice(entry, sym, rate)} 부근 재진입 검토`;
     } else {
-        advTitle = '⏳ 관망 (추세 확인 후 진입)'; advColor = '#FFA500';
+        advTitle = '<span class="ms orange">hourglass_empty</span> 관망 (추세 확인 후 진입)'; advColor = '#FFA500';
         advDesc = '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 진입 시 매수 신호. 분할 접근 권장.';
         advEntry = `목표 매수가 ${dualPrice(entry, sym, rate)} 부근 분할 접근 검토`;
     }
@@ -604,7 +604,7 @@ function renderAnalysis(data, container) {
     const rrColor = rr >= 1.5 ? '#aaffaa' : '#ffaaaa';
 
     container.innerHTML = `
-        <h2 class="subheader">📌 ${name} (${sym})</h2>
+        <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
 
         <!-- Price Metrics Row -->
         <div class="metrics-row">
@@ -637,7 +637,7 @@ function renderAnalysis(data, container) {
         </div>
 
         <!-- Indicator Cards -->
-        <h3 class="subheader">📊 지표별 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> 지표별 분석</h3>
         <div class="indicators-grid">
             ${renderIndicatorCard('RSI (14)', rsi_s, rsiMsg, `${fmt(d.rsi, 1)}`)}
             ${renderIndicatorCard('MACD', macd_s, macdMsg, `${fmt(d.macd, 3)}`)}
@@ -648,7 +648,7 @@ function renderAnalysis(data, container) {
         <hr class="divider">
 
         <!-- Strategy Panel -->
-        <h3 class="subheader">💡 매매 전략</h3>
+        <h3 class="subheader"><span class="ms">lightbulb</span> 매매 전략</h3>
         <div class="action-banner" style="background:${advColor}18;border-color:${advColor};">
             <div class="title" style="color:${advColor};">${advTitle}</div>
             <div class="detail">${advDesc}</div>
@@ -668,11 +668,11 @@ function renderAnalysis(data, container) {
         <hr class="divider">
 
         <!-- Trading Strategy Sub-tabs -->
-        <h3 class="subheader">📊 트레이딩 전략 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> 트레이딩 전략 분석</h3>
         <div class="sub-tabs" id="tradingSubTabs">
-            <button class="sub-tab active" data-subtab="st-short">⚡ 단기 (1일~2주)</button>
-            <button class="sub-tab" data-subtab="st-swing">🔄 스윙 (2주~3개월)</button>
-            <button class="sub-tab" data-subtab="st-long">📈 장기 (6개월~수년)</button>
+            <button class="sub-tab active" data-subtab="st-short"><span class="ms">bolt</span> 단기 (1일~2주)</button>
+            <button class="sub-tab" data-subtab="st-swing"><span class="ms">sync</span> 스윙 (2주~3개월)</button>
+            <button class="sub-tab" data-subtab="st-long"><span class="ms">trending_up</span> 장기 (6개월~수년)</button>
         </div>
         <div id="st-short" class="sub-tab-content active">${renderShortTermStrategy(d, sym, rate)}</div>
         <div id="st-swing" class="sub-tab-content">${renderSwingStrategy(d, sym, rate)}</div>
@@ -681,7 +681,7 @@ function renderAnalysis(data, container) {
 
         <!-- 내 매수가 분석 -->
         <hr class="divider">
-        <h3 class="subheader">💰 내 매수가 분석</h3>
+        <h3 class="subheader"><span class="ms">payments</span> 내 매수가 분석</h3>
         <div class="my-buy-form">
             <div class="my-buy-row">
                 <div class="my-buy-field">
@@ -700,7 +700,7 @@ function renderAnalysis(data, container) {
                     <input type="text" id="myQtyInput" placeholder="예: 10">
                 </div>
             </div>
-            <button class="btn-analyze" onclick="applyMyBuy('${sym}', ${close}, ${entry}, ${t1}, ${t2}, ${sl})" style="margin-top:0.5rem;">✅ 적용</button>
+            <button class="btn-analyze" onclick="applyMyBuy('${sym}', ${close}, ${entry}, ${t1}, ${t2}, ${sl})" style="margin-top:0.5rem;"><span class="ms green">check_circle</span> 적용</button>
         </div>
         <div id="myBuyResult">
             <p class="caption">매수 금액을 입력하면 손절·목표가 시나리오가 표시됩니다.</p>
@@ -709,7 +709,7 @@ function renderAnalysis(data, container) {
         <!-- Chart -->
         <hr class="divider">
         <div class="chart-header">
-            <h3 class="subheader" style="margin:0;">📉 차트</h3>
+            <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> 차트</h3>
             <div class="chart-currency-toggle">
                 <span class="caption" style="margin-right:0.5rem;">Y축 단위:</span>
                 <button class="chart-currency-btn active" onclick="toggleChartCurrency(this, 'native')">${krw ? 'KRW' : 'USD'}</button>
@@ -723,7 +723,7 @@ function renderAnalysis(data, container) {
         <!-- Financials Expandable -->
         <div class="expandable" id="financialsSection">
             <div class="expandable-header" onclick="toggleExpandable('financialsSection')">
-                <span>📋 재무제표 분석 (클릭하여 펼치기)</span>
+                <span><span class="ms">assignment</span> 재무제표 분석 (클릭하여 펼치기)</span>
                 <span class="arrow">▶</span>
             </div>
             <div class="expandable-body" id="financialsBody">
@@ -732,7 +732,7 @@ function renderAnalysis(data, container) {
         </div>
 
         <!-- PDF Download -->
-        <button class="pdf-btn" onclick="downloadPDF('${sym}')">📄 PDF 보고서 다운로드</button>
+        <button class="pdf-btn" onclick="downloadPDF('${sym}')"><span class="ms">description</span> PDF 보고서 다운로드</button>
         <p class="caption mt-8 text-center">본 분석은 참고용이며 투자 권유가 아닙니다.</p>
     `;
 
@@ -776,7 +776,7 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
     const pnlPct = (curPrice - myPrice) / myPrice * 100;
     const pnlAbs = (curPrice - myPrice) * Math.max(myQty, 1);
     const pnlColor = pnlPct >= 0 ? '#00C851' : '#FF4444';
-    const pnlIcon = pnlPct >= 0 ? '📈' : '📉';
+    const pnlIcon = pnlPct >= 0 ? '<span class="ms green">trending_up</span>' : '<span class="ms red">trending_down</span>';
 
     // 단기: +5% 목표, 손익비 1:1.5
     const tgShort = Math.max(myPrice * 1.05, t1);
@@ -834,15 +834,15 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
         const slRet = (slP - myPrice) / myPrice * 100;
         const tgRet = (tgP - myPrice) / myPrice * 100;
         let judge, judgeC;
-        if (curPrice >= tgP) { judge = '🎯 목표 도달'; judgeC = '#ffaa00'; }
-        else if (curPrice <= slP) { judge = '🔴 손절 구간'; judgeC = '#FF4444'; }
-        else { judge = '⏳ 보유 중'; judgeC = 'var(--muted)'; }
+        if (curPrice >= tgP) { judge = '<span class="ms orange">my_location</span> 목표 도달'; judgeC = '#ffaa00'; }
+        else if (curPrice <= slP) { judge = '<span class="ms red">stop_circle</span> 손절 구간'; judgeC = '#FF4444'; }
+        else { judge = '<span class="ms">hourglass_empty</span> 보유 중'; judgeC = 'var(--muted)'; }
         return `<div class="scenario-card" style="border:1px solid ${color}55;background:${color}08;">
             <div class="title" style="color:${color};">${title}</div>
             <div class="period">${periodNote}</div>
-            <div class="target-label">🎯 목표가 (수익 목표)</div>
+            <div class="target-label"><span class="ms orange">my_location</span> 목표가 (수익 목표)</div>
             <div class="target-val" style="color:#00C851;">${dualPrice(tgP, sym, rate)} <span style="color:var(--muted-dark);font-size:0.8em;">(+${tgRet.toFixed(1)}%)</span></div>
-            <div class="target-label" style="margin-top:8px;">🛑 손절선</div>
+            <div class="target-label" style="margin-top:8px;"><span class="ms red">stop_circle</span> 손절선</div>
             <div class="target-val" style="color:#FF4444;">${dualPrice(slP, sym, rate)} <span style="color:var(--muted-dark);font-size:0.8em;">(${slRet.toFixed(1)}%)</span></div>
             <div class="rr-badge" style="background:${color}18;color:${color};">손익비 1 : ${rr.toFixed(1)}</div>
             <div class="strategy-note">${strategyNote}</div>
@@ -850,15 +850,15 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
         </div>`;
     }
 
-    summaryHtml += '<h4 class="subheader">📋 전략별 손절 · 목표가 시나리오</h4>';
+    summaryHtml += '<h4 class="subheader"><span class="ms">assignment</span> 전략별 손절 · 목표가 시나리오</h4>';
     summaryHtml += '<div class="scenario-grid">';
-    summaryHtml += scenarioCard('🔴 단기 트레이딩', '#44aaff', slShort, tgShort, rrShort,
+    summaryHtml += scenarioCard('<span class="ms">bolt</span> 단기 트레이딩', '#44aaff', slShort, tgShort, rrShort,
         '1일 ~ 2주 | 분봉·시간봉 중심',
         'VWAP·BB 중심선 저항 돌파 시 목표 / RSI·MACD 단기 신호 활용');
-    summaryHtml += scenarioCard('🟡 스윙 트레이딩', '#aa88ff', slSwing, tgSwing, rrSwing,
+    summaryHtml += scenarioCard('<span class="ms">sync</span> 스윙 트레이딩', '#aa88ff', slSwing, tgSwing, rrSwing,
         '2주 ~ 3개월 | 일봉·주봉 중심',
         'BB 상단·20/60일 MA 저항선 목표 / 피보나치 61.8~100% 확장 기준');
-    summaryHtml += scenarioCard('🟢 장기 투자', '#44dd88', slLong, tgLong, rrLong,
+    summaryHtml += scenarioCard('<span class="ms green">trending_up</span> 장기 투자', '#44dd88', slLong, tgLong, rrLong,
         '6개월 ~ 수년 | 주봉·월봉 중심',
         'PER×EPS 적정주가 / 52주 신고가 돌파 추세 / 펀더멘털 성장 기반');
     summaryHtml += '</div>';
@@ -908,8 +908,8 @@ function renderShortTermStrategy(d, sym, rate) {
     const bb_t = bb_pctB < 20 ? '하단 근접 → 지지' : (bb_pctB > 80 ? '상단 과열' : '중간 구간');
 
     let mc, mt;
-    if (macd_cross) { mc = '#00C851'; mt = '골든크로스 🎯'; }
-    else if (macd_death) { mc = '#FF4444'; mt = '데드크로스 ⚠️'; }
+    if (macd_cross) { mc = '#00C851'; mt = '골든크로스 <span class="ms orange">my_location</span>'; }
+    else if (macd_death) { mc = '#FF4444'; mt = '데드크로스 <span class="ms orange">warning</span>'; }
     else if (macd > msig) { mc = '#44aaff'; mt = '상승 추세 유지'; }
     else { mc = '#FFA500'; mt = '하락 추세 유지'; }
 
@@ -929,20 +929,20 @@ function renderShortTermStrategy(d, sym, rate) {
     const sc = buy_cnt >= 3 ? '#00C851' : (buy_cnt >= 2 ? '#44aaff' : '#FFA500');
 
     let ac, at, ag;
-    if (buy_cnt >= 3) { ac = '#00C851'; at = '✅ 단기 매수 구간'; ag = '다수 지표 과매도 진입. MACD 크로스 확인 후 분할 진입 권장.'; }
-    else if (buy_cnt >= 2) { ac = '#44aaff'; at = '⏳ 단기 진입 검토'; ag = '일부 매수 조건 충족. MACD 골든크로스 또는 RSI 30 이하 추가 확인 권장.'; }
-    else { ac = '#FFA500'; at = '⚠️ 관망 권장'; ag = '단기 과매수 또는 혼조 신호. BB 하단 / RSI 30 이하 시 재진입 검토.'; }
+    if (buy_cnt >= 3) { ac = '#00C851'; at = '<span class="ms green">check_circle</span> 단기 매수 구간'; ag = '다수 지표 과매도 진입. MACD 크로스 확인 후 분할 진입 권장.'; }
+    else if (buy_cnt >= 2) { ac = '#44aaff'; at = '<span class="ms orange">hourglass_empty</span> 단기 진입 검토'; ag = '일부 매수 조건 충족. MACD 골든크로스 또는 RSI 30 이하 추가 확인 권장.'; }
+    else { ac = '#FFA500'; at = '<span class="ms orange">warning</span> 관망 권장'; ag = '단기 과매수 또는 혼조 신호. BB 하단 / RSI 30 이하 시 재진입 검토.'; }
 
     return `
         <p class="caption mb-8">RSI 과매도/과매수 · MACD 크로스 신호 · 볼린저밴드 %B · VWAP 편차 기반 목표가</p>
         <div class="strategy-grid-4">
-            ${renderSignalCard('📉', 'RSI (14)', `${rsi.toFixed(1)}`, rsi_t, rsi_c, '30↓ 강매수 / 70↑ 매도')}
-            ${renderSignalCard('📊', 'MACD', `${macd.toFixed(3)}`, mt, mc, `Sig ${msig.toFixed(3)} | Δ${(macd - msig) >= 0 ? '+' : ''}${(macd - msig).toFixed(3)}`)}
-            ${renderSignalCard('📡', 'BB %B', `${bb_pctB.toFixed(1)}%`, bb_t, bb_c, `폭 ${fmtPrice(bb_w)} (${(bb_w / bb_m * 100).toFixed(1)}%)`)}
-            ${renderSignalCard('⚖️', 'VWAP', fmtPrice(vwap), vt, vc, `현가 대비 ${vwap_dev >= 0 ? '+' : ''}${vwap_dev.toFixed(1)}%`)}
+            ${renderSignalCard('<span class="ms">trending_down</span>', 'RSI (14)', `${rsi.toFixed(1)}`, rsi_t, rsi_c, '30↓ 강매수 / 70↑ 매도')}
+            ${renderSignalCard('<span class="ms">bar_chart</span>', 'MACD', `${macd.toFixed(3)}`, mt, mc, `Sig ${msig.toFixed(3)} | Δ${(macd - msig) >= 0 ? '+' : ''}${(macd - msig).toFixed(3)}`)}
+            ${renderSignalCard('<span class="ms">radar</span>', 'BB %B', `${bb_pctB.toFixed(1)}%`, bb_t, bb_c, `폭 ${fmtPrice(bb_w)} (${(bb_w / bb_m * 100).toFixed(1)}%)`)}
+            ${renderSignalCard('<span class="ms">balance</span>', 'VWAP', fmtPrice(vwap), vt, vc, `현가 대비 ${vwap_dev >= 0 ? '+' : ''}${vwap_dev.toFixed(1)}%`)}
         </div>
 
-        <h4 class="subheader">🎯 단기 목표가 산출</h4>
+        <h4 class="subheader"><span class="ms">my_location</span> 단기 목표가 산출</h4>
         <div class="strategy-grid-4">
             ${renderTargetCard('현재가', close, '#ffffff', '기준가', sym)}
             ${renderTargetCard('1차 목표', st_t1, '#00C851', `BB중심/VWAP | ${((st_t1 - close) / close * 100).toFixed(1)}%`, sym)}
@@ -1014,7 +1014,7 @@ function renderSwingStrategy(d, sym, rate) {
     const maTc = ma20 > ma60 ? '#00C851' : '#FF4444';
     const ma20Dev = (close - ma20) / ma20 * 100;
     const ma60Dev = (close - ma60) / ma60 * 100;
-    const trend = ma20 > ma60 ? '정배열 📈' : '역배열 📉';
+    const trend = ma20 > ma60 ? '정배열 <span class="ms green">trending_up</span>' : '역배열 <span class="ms red">trending_down</span>';
 
     // Swing targets
     const sw_entry = close;
@@ -1031,11 +1031,11 @@ function renderSwingStrategy(d, sym, rate) {
     const atSupport = close <= nearSupport.level * 1.04;
     let ac, atTxt, ag;
     if (uptrend && atSupport) {
-        ac = '#00C851'; atTxt = '✅ 스윙 매수 구간 (눌림목)'; ag = '정배열 + 피보나치 지지권. 손익비 1:2 분할 진입 권장.';
+        ac = '#00C851'; atTxt = '<span class="ms green">check_circle</span> 스윙 매수 구간 (눌림목)'; ag = '정배열 + 피보나치 지지권. 손익비 1:2 분할 진입 권장.';
     } else if (!(ma20 > ma60)) {
-        ac = '#FF4444'; atTxt = '⚠️ 스윙 진입 비추천'; ag = 'MA 역배열. MA20 돌파 확인 후 재진입 검토.';
+        ac = '#FF4444'; atTxt = '<span class="ms orange">warning</span> 스윙 진입 비추천'; ag = 'MA 역배열. MA20 돌파 확인 후 재진입 검토.';
     } else {
-        ac = '#FFA500'; atTxt = '⏳ 눌림목 대기';
+        ac = '#FFA500'; atTxt = '<span class="ms orange">hourglass_empty</span> 눌림목 대기';
         const fib38 = fibs.find(f => f.pct === '38.2%');
         const fib50 = fibs.find(f => f.pct === '50%');
         ag = `상승추세 중 MA20 위. 피보 38.2%~50% 되돌림 구간(${fib38 ? fmtPrice(fib38.level) : '-'}~${fib50 ? fmtPrice(fib50.level) : '-'}) 진입 검토.`;
@@ -1044,10 +1044,10 @@ function renderSwingStrategy(d, sym, rate) {
     return `
         <p class="caption mb-8">피보나치 되돌림 지지/저항 · 20/60일 이동평균 · 손익비 1:2 기반 목표가</p>
 
-        <h4 class="subheader">📐 피보나치 되돌림 (최근 60거래일)</h4>
+        <h4 class="subheader"><span class="ms">straighten</span> 피보나치 되돌림 (최근 60거래일)</h4>
         <div class="fib-grid">${fibHtml || '<div class="caption">피보나치 데이터 없음</div>'}</div>
 
-        <h4 class="subheader">📈 20/60일 이동평균</h4>
+        <h4 class="subheader"><span class="ms">trending_up</span> 20/60일 이동평균</h4>
         <div class="ma-grid">
             <div class="signal-card" style="border:1px solid #44aaff55;border-radius:10px;padding:10px;">
                 <div style="font-size:0.75em;color: var(--muted);">20일 이평선</div>
@@ -1066,7 +1066,7 @@ function renderSwingStrategy(d, sym, rate) {
             </div>
         </div>
 
-        <h4 class="subheader">🎯 스윙 목표가 산출 (손익비 1:2)</h4>
+        <h4 class="subheader"><span class="ms">my_location</span> 스윙 목표가 산출 (손익비 1:2)</h4>
         <div class="strategy-grid-4">
             ${renderTargetCard('진입가', sw_entry, '#ffffff', '현재가 기준', sym)}
             ${renderTargetCard('1차 목표', sw_t1, '#00C851', `손익비 1:2 | ${((sw_t1 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
@@ -1180,10 +1180,10 @@ function renderLongTermStrategy(d, sym, rate) {
         const avgFv = validFv.reduce((a, b) => a + b, 0) / validFv.length;
         const avgPrem = (avgFv - close) / close * 100;
         const ac = avgPrem > 0 ? '#00C851' : '#FF4444';
-        const jl = avgPrem > 30 ? '💚 강한 저평가' : (avgPrem > 10 ? '✅ 저평가 구간' : (avgPrem > -10 ? '📊 적정 수준' : (avgPrem > -30 ? '⚠️ 고평가 주의' : '🔴 심한 고평가')));
+        const jl = avgPrem > 30 ? '<span class="ms green">favorite</span> 강한 저평가' : (avgPrem > 10 ? '<span class="ms green">check_circle</span> 저평가 구간' : (avgPrem > -10 ? '<span class="ms">bar_chart</span> 적정 수준' : (avgPrem > -30 ? '<span class="ms orange">warning</span> 고평가 주의' : '<span class="ms red">cancel</span> 심한 고평가')));
         summaryHtml = `
             <div class="summary-box" style="border-color:${ac}55;background:${ac}0d;">
-                <div class="title">📊 종합 적정주가</div>
+                <div class="title"><span class="ms">bar_chart</span> 종합 적정주가</div>
                 <div class="value" style="color:${ac};">${dualPrice(avgFv, sym, rate)}</div>
                 <div class="pct" style="color:${ac};">${avgPrem >= 0 ? '+' : ''}${avgPrem.toFixed(1)}%</div>
                 <div class="note">PER / PBR / DCF 평균</div>
@@ -1213,21 +1213,21 @@ function renderLongTermStrategy(d, sym, rate) {
     return `
         <p class="caption mb-8">PER/PBR 적정주가 · ROE 분석 · DCF 내재가치 (잉여현금흐름 5년 할인 + 영구가치)</p>
 
-        <h4 class="subheader">📊 수익성 지표 (ROE · 영업이익률 · 이익성장률)</h4>
+        <h4 class="subheader"><span class="ms">bar_chart</span> 수익성 지표 (ROE · 영업이익률 · 이익성장률)</h4>
         <div class="profitability-grid">
             ${profCard('ROE', roeVal, 15, 8, '%')}
             ${profCard('영업이익률', opVal, 15, 8, '%')}
             ${profCard('이익성장률(YoY)', egVal, 15, 5, '%')}
         </div>
 
-        <h4 class="subheader">📐 PER / PBR 기반 적정주가</h4>
+        <h4 class="subheader"><span class="ms">straighten</span> PER / PBR 기반 적정주가</h4>
         <div class="fair-value-grid">
             ${fairValueCard('PER 적정주가', perFair, perPrem, eps ? `EPS ${fmtPrice(eps)} × PER ${sectorPer.toFixed(0)}x` : '데이터 없음')}
             ${fairValueCard('PBR 적정주가', pbFair, pbPrem, 'BPS × 적정PBR (ROE×10, 최소 1.0)')}
             ${fairValueCard('현재 PER/PBR', null, null, perPbrStr)}
         </div>
 
-        <h4 class="subheader">💰 DCF 내재가치 분석</h4>
+        <h4 class="subheader"><span class="ms">payments</span> DCF 내재가치 분석</h4>
         <p class="caption mb-8">5년 성장 + 영구가치(Gordon Growth Model) · 잉여현금흐름(FCF/주) 기반 · 성장률 ${(growthR * 100).toFixed(1)}% / WACC 10% / 영구성장 3%</p>
         <div class="dcf-layout">
             <div>${dcfHtml}</div>
@@ -1414,7 +1414,7 @@ function renderFinancials(fin) {
         ['배당수익률', fmtPct(fin.div_yield)],
     ];
 
-    let valHtml = '<h4 class="subheader">📐 밸류에이션</h4><div class="fin-val-grid">';
+    let valHtml = '<h4 class="subheader"><span class="ms">straighten</span> 밸류에이션</h4><div class="fin-val-grid">';
     valItems.forEach(([label, val]) => {
         valHtml += `<div class="fin-val-card"><div class="label">${label}</div><div class="value">${val}</div></div>`;
     });
@@ -1449,13 +1449,13 @@ function renderFinancials(fin) {
     ];
 
     let colHtml = '<div class="fin-3col">';
-    colHtml += '<div><h4 class="subheader">📊 수익성</h4>';
+    colHtml += '<div><h4 class="subheader"><span class="ms">bar_chart</span> 수익성</h4>';
     profItems.forEach(([l, v]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`; });
     colHtml += '</div>';
-    colHtml += '<div><h4 class="subheader">📈 성장성 & 현금흐름</h4>';
+    colHtml += '<div><h4 class="subheader"><span class="ms">trending_up</span> 성장성 & 현금흐름</h4>';
     growthItems.forEach(([l, v]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`; });
     colHtml += '</div>';
-    colHtml += '<div><h4 class="subheader">🛡️ 안정성</h4>';
+    colHtml += '<div><h4 class="subheader"><span class="ms">shield</span> 안정성</h4>';
     stabItems.forEach(([l, v, c]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value" style="color:${c || 'inherit'};">${v}</span></div>`; });
     colHtml += '</div></div>';
 
@@ -1510,7 +1510,7 @@ function renderFinancials(fin) {
 async function downloadPDF(sym) {
     const btn = document.querySelector('.pdf-btn');
     btn.disabled = true;
-    btn.textContent = '📄 PDF 생성 중...';
+    btn.innerHTML = '<span class="ms">hourglass_empty</span> PDF 생성 중...';
     try {
         const name = _chartData?.name || sym;
         const res = await fetch(`${API}/api/pdf/report`, {
@@ -1538,7 +1538,7 @@ async function downloadPDF(sym) {
         alert(e.message);
     } finally {
         btn.disabled = false;
-        btn.textContent = '📄 PDF 보고서 다운로드';
+        btn.innerHTML = '<span class="ms">description</span> PDF 보고서 다운로드';
     }
 }
 
@@ -1649,7 +1649,7 @@ function renderThemeButtons(container) {
     container.innerHTML = sorted.map(name => {
         const isFav = favorites.has(name);
         const isSel = name === currentTheme;
-        return `<button class="theme-btn ${isSel ? 'active' : ''} ${isFav ? 'fav' : ''}" onclick="selectTheme('${name.replace(/'/g, "\\'")}')">${isFav ? '⭐ ' : ''}${name}</button>`;
+        return `<button class="theme-btn ${isSel ? 'active' : ''} ${isFav ? 'fav' : ''}" onclick="selectTheme('${name.replace(/'/g, "\\'")}')">${isFav ? '<span class="ms filled orange">star</span> ' : ''}${name}</button>`;
     }).join('');
 }
 
@@ -1678,7 +1678,7 @@ async function renderThemeContent(name) {
 
     let headerHtml = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-            <button onclick="toggleFavorite('${escapedName}')" class="btn-icon" title="즐겨찾기">${isFav ? '⭐' : '☆'}</button>
+            <button onclick="toggleFavorite('${escapedName}')" class="btn-icon" title="즐겨찾기">${isFav ? '<span class="ms filled orange">star</span>' : '<span class="ms">star</span>'}</button>
             <div>
                 <h4>${name}</h4>
                 <p class="caption">${theme.desc || ''}</p>
@@ -1854,7 +1854,7 @@ function _buildThemeDetailHtml(r, sid) {
         </div>
 
         <!-- 지표 카드 5개 -->
-        <h4 class="subheader" style="font-size:0.95em;margin-bottom:8px;">📊 지표별 분석</h4>
+        <h4 class="subheader" style="font-size:0.95em;margin-bottom:8px;"><span class="ms">bar_chart</span> 지표별 분석</h4>
         <div class="indicators-grid" style="margin-bottom:16px;">
             ${renderIndicatorCard('RSI (14)',   rsi_s,  rsiMsg,  fmt(r.rsi, 1))}
             ${renderIndicatorCard('MACD',       macd_s, macdMsg, fmt(r.macd, 3))}
@@ -1873,7 +1873,7 @@ function _buildThemeDetailHtml(r, sid) {
 
         <!-- AI 분석 -->
         <div class="ai-analysis-box" id="ai-box-${sid}">
-            <div class="ai-analysis-header">🤖 AI 분석 <span class="ai-badge">Claude AI</span></div>
+            <div class="ai-analysis-header"><span class="ms">smart_toy</span> AI 분석 <span class="ai-badge">Claude AI</span></div>
             <div class="ai-analysis-body" id="ai-body-${sid}">
                 <div class="loading" style="font-size:0.9em;">AI 분석 중...</div>
             </div>
@@ -1881,7 +1881,7 @@ function _buildThemeDetailHtml(r, sid) {
 
         <!-- 전체 분석 버튼 -->
         <div style="text-align:right;margin-top:12px;">
-            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')">📈 전체 상세 분석 보기</button>
+            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')"><span class="ms">trending_up</span> 전체 상세 분석 보기</button>
         </div>
     </div>`;
 }
@@ -2029,7 +2029,7 @@ function renderNaverNews(news, container) {
 
     let html = '<div class="news-tabs" id="naverNewsTabs">';
     cats.forEach((cat, i) => {
-        html += `<button class="news-tab ${i === 0 ? 'active' : ''}" data-newscat="${cat}" onclick="switchNewsTab(this, '${cat}')">📌 ${cat}</button>`;
+        html += `<button class="news-tab ${i === 0 ? 'active' : ''}" data-newscat="${cat}" onclick="switchNewsTab(this, '${cat}')"><span class="ms">push_pin</span> ${cat}</button>`;
     });
     html += '</div>';
 
@@ -2062,8 +2062,8 @@ function renderNaverSignals(signals, container) {
     let html = '';
     signals.forEach(trig => {
         html += `<div class="signal-trigger">
-            <div class="cat">${trig.icon || '📌'} ${trig.category}</div>
-            <div class="reason">📌 ${trig.reason}</div>
+            <div class="cat">${trig.icon || '<span class="ms">push_pin</span>'} ${trig.category}</div>
+            <div class="reason"><span class="ms">push_pin</span> ${trig.reason}</div>
         </div>`;
 
         // Stock cards
@@ -2078,7 +2078,7 @@ function renderNaverSignals(signals, container) {
                     <div class="price">${s.close ? fmtPrice(s.close) : '—'}</div>
                     <div style="color:${cc};font-size:0.78em;">${s.change_pct != null ? (s.change_pct >= 0 ? '+' : '') + Number(s.change_pct).toFixed(2) + '%' : ''}</div>
                     <div class="verdict" style="color:${vc};">${s.verdict || '—'}</div>
-                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}')">📊 분석</button>
+                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> 분석</button>
                 </div>`;
             });
             html += '</div>';
@@ -2118,7 +2118,7 @@ function setupSidebar() {
         newsToggle.addEventListener('click', () => {
             const hidden = newsPanel.style.display === 'none';
             newsPanel.style.display = hidden ? 'block' : 'none';
-            newsToggle.textContent = hidden ? '🔔 뉴스 알림 숨기기' : '🔔 뉴스 알림 보기';
+            newsToggle.innerHTML = hidden ? '<span class="ms">notifications</span> 뉴스 알림 숨기기' : '<span class="ms">notifications</span> 뉴스 알림 보기';
         });
     }
 
@@ -2130,7 +2130,7 @@ function setupSidebar() {
         if (refreshInterval && refreshUnit && refreshStatus) {
             const val = refreshInterval.value;
             const unitText = refreshUnit.options[refreshUnit.selectedIndex].text;
-            refreshStatus.textContent = `🔄 ${val}${unitText}마다 자동 업데이트`;
+            refreshStatus.innerHTML = `<span class="ms">refresh</span> ${val}${unitText}마다 자동 업데이트`;
         }
     }
     if (refreshInterval) refreshInterval.addEventListener('change', updateRefreshStatus);
@@ -2158,9 +2158,9 @@ async function loadSidebarNews() {
             let html = '';
             triggered.forEach((trig, ti) => {
                 html += `<div class="trigger-group">
-                    <div class="trigger-header">${trig.icon || '📌'} ${trig.category}</div>
+                    <div class="trigger-header">${trig.icon || '<span class="ms">push_pin</span>'} ${trig.category}</div>
                     <div class="trigger-body">
-                        <div class="trigger-reason">📌 ${trig.reason}</div>`;
+                        <div class="trigger-reason"><span class="ms">push_pin</span> ${trig.reason}</div>`;
                 // Matched news
                 (trig.matched_news || []).slice(0, 2).forEach(mn => {
                     const title = mn.title && mn.title.length > 45 ? mn.title.substring(0, 45) + '...' : mn.title;
@@ -2168,7 +2168,7 @@ async function loadSidebarNews() {
                 });
                 // Stock buttons
                 (trig.stocks || []).forEach((s, si) => {
-                    html += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}')">📊 ${s.name} (${s.ticker})</button>`;
+                    html += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> ${s.name} (${s.ticker})</button>`;
                 });
                 html += '</div></div>';
             });
@@ -2183,10 +2183,10 @@ async function loadSidebarNews() {
             news.forEach(item => {
                 const pub = item.publisher || '';
                 let src;
-                if (pub.includes('네이버')) src = '📰 네이버증권';
-                else if (pub.includes('인베스팅')) src = '🌐 인베스팅닷컴';
-                else if (pub.includes('Yahoo')) src = '🇺🇸 야후파이낸스';
-                else src = '📌 기타';
+                if (pub.includes('네이버')) src = '<span class="ms">newspaper</span> 네이버증권';
+                else if (pub.includes('인베스팅')) src = '<span class="ms">language</span> 인베스팅닷컴';
+                else if (pub.includes('Yahoo')) src = '<span class="ms">public</span> 야후파이낸스';
+                else src = '<span class="ms">push_pin</span> 기타';
                 if (!sourceMap[src]) sourceMap[src] = [];
                 sourceMap[src].push(item);
             });

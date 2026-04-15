@@ -85,6 +85,23 @@ body {
     font-size: 17px;
 }
 
+/* ── Material Symbols ── */
+.ms {
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 1.15em;
+    vertical-align: -0.2em;
+    display: inline-block;
+    line-height: 1;
+    user-select: none;
+}
+.ms.filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.ms.sm { font-size: 0.9em; }
+.ms.lg { font-size: 1.4em; }
+.ms.green { color: var(--green); }
+.ms.red { color: var(--red); }
+.ms.orange { color: var(--orange); }
+
 /* ═══════════════════════════════════════════════
    App Layout (좌측 사이드바 + 메인)
    ═══════════════════════════════════════════════ */
