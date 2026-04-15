@@ -1293,6 +1293,17 @@ main {
     margin: 16px 0;
 }
 .pagination .info { font-size: 0.85em; color: var(--muted); }
+.per-page-select {
+    font-size: 0.84em;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    margin-left: 8px;
+}
+.per-page-select:focus { outline: none; border-color: var(--accent); }
 
 /* ═══════════════════════════════════════════════
    Indices Grid (4 columns)

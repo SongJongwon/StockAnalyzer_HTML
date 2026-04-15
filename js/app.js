@@ -193,7 +193,7 @@ let exchangeRate = 1380.0;
 let favorites = new Set(JSON.parse(localStorage.getItem('sa_favorites') || '[]'));
 let currentTheme = null;
 let themePage = 0;
-const STOCKS_PER_PAGE = 5;
+let STOCKS_PER_PAGE = parseInt(localStorage.getItem('sa_per_page') || '10', 10);
 
 // ── DOM refs ──
 const searchInput = document.getElementById('searchInput');
@@ -1778,6 +1778,11 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
         <button class="btn-secondary" onclick="themePagePrev()" ${page === 0 ? 'disabled' : ''}>◀ 이전</button>
         <span class="info">페이지 ${page + 1} / ${totalPages} · 전체 ${total}개 종목</span>
         <button class="btn-secondary" onclick="themePageNext()" ${page >= totalPages - 1 ? 'disabled' : ''}>다음 ▶</button>
+        <select class="per-page-select" onchange="setPerPage(this.value)" title="페이지당 종목 수">
+            <option value="10"  ${STOCKS_PER_PAGE === 10  ? 'selected' : ''}>10개</option>
+            <option value="20"  ${STOCKS_PER_PAGE === 20  ? 'selected' : ''}>20개</option>
+            <option value="50"  ${STOCKS_PER_PAGE === 50  ? 'selected' : ''}>50개</option>
+        </select>
     </div>`;
     html += '<hr class="divider"><p class="caption">본 분석은 참고용이며 투자 권유가 아닙니다.</p>';
 
@@ -1931,6 +1936,13 @@ function themePagePrev() {
 
 function themePageNext() {
     themePage++;
+    renderThemeContent(currentTheme);
+}
+
+function setPerPage(val) {
+    STOCKS_PER_PAGE = parseInt(val, 10);
+    localStorage.setItem('sa_per_page', val);
+    themePage = 0;
     renderThemeContent(currentTheme);
 }
 
