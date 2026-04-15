@@ -957,7 +957,7 @@ function renderShortTermStrategy(d, sym, rate) {
         </div>
         <div class="action-banner mt-16" style="background:${ac}18;border-color:${ac};">
             <div class="title" style="color:${ac};">${at}</div>
-            <div class="detail" style="color:#666;font-size:0.82em;margin-top:5px;">${ag}</div>
+            <div class="detail" style="color: var(--muted-dark);font-size:0.82em;margin-top:5px;">${ag}</div>
         </div>
     `;
 }
@@ -974,9 +974,9 @@ function renderSignalCard(icon, name, value, sig, color, detail) {
 
 function renderTargetCard(label, price, color, desc, sym) {
     return `<div class="signal-card" style="border:1px solid ${color}55;background:${color}0d;">
-        <div class="label" style="font-size:0.75em;color:#808495;">${label}</div>
+        <div class="label" style="font-size:0.75em;color: var(--muted);">${label}</div>
         <div class="value" style="font-size:0.9em;font-weight:bold;color:${color};margin:5px 0;">${dualPrice(price, sym)}</div>
-        <div class="detail" style="font-size:0.67em;color:#999;">${desc}</div>
+        <div class="detail" style="font-size:0.67em;color: var(--muted-darker);">${desc}</div>
     </div>`;
 }
 
@@ -1050,19 +1050,19 @@ function renderSwingStrategy(d, sym, rate) {
         <h4 class="subheader">📈 20/60일 이동평균</h4>
         <div class="ma-grid">
             <div class="signal-card" style="border:1px solid #44aaff55;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color:#808495;">20일 이평선</div>
+                <div style="font-size:0.75em;color: var(--muted);">20일 이평선</div>
                 <div style="font-size:0.9em;font-weight:bold;color:#44aaff;margin:4px 0;">${dualPrice(ma20, sym, rate)}</div>
                 <div style="font-size:0.7em;color:${ma20Dev >= 0 ? '#00C851' : '#FF4444'};">현재가 대비 ${ma20Dev >= 0 ? '+' : ''}${ma20Dev.toFixed(1)}%</div>
             </div>
             <div class="signal-card" style="border:1px solid #ff880055;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color:#808495;">60일 이평선</div>
+                <div style="font-size:0.75em;color: var(--muted);">60일 이평선</div>
                 <div style="font-size:0.9em;font-weight:bold;color:#ff8800;margin:4px 0;">${dualPrice(ma60, sym, rate)}</div>
                 <div style="font-size:0.7em;color:${ma60Dev >= 0 ? '#00C851' : '#FF4444'};">현재가 대비 ${ma60Dev >= 0 ? '+' : ''}${ma60Dev.toFixed(1)}%</div>
             </div>
             <div class="signal-card" style="border:1px solid ${maTc}55;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color:#808495;">배열 상태</div>
+                <div style="font-size:0.75em;color: var(--muted);">배열 상태</div>
                 <div style="font-size:1.0em;font-weight:bold;color:${maTc};margin:4px 0;">${trend}</div>
-                <div style="font-size:0.7em;color:#999;">MA20 ${ma20 > ma60 ? '>' : '<'} MA60</div>
+                <div style="font-size:0.7em;color: var(--muted-darker);">MA20 ${ma20 > ma60 ? '>' : '<'} MA60</div>
             </div>
         </div>
 
@@ -1081,7 +1081,7 @@ function renderSwingStrategy(d, sym, rate) {
         </div>
         <div class="action-banner mt-16" style="background:${ac}18;border-color:${ac};">
             <div class="title" style="color:${ac};">${atTxt}</div>
-            <div class="detail" style="color:#666;font-size:0.82em;margin-top:5px;">${ag}</div>
+            <div class="detail" style="color: var(--muted-dark);font-size:0.82em;margin-top:5px;">${ag}</div>
         </div>
     `;
 }
@@ -1110,9 +1110,9 @@ function renderLongTermStrategy(d, sym, rate) {
         const jd = rawVal != null && rawVal > threshHi ? '우수' : (rawVal != null && rawVal > threshLo ? '양호' : '부진');
         const valStr = rawVal != null ? `${rawVal.toFixed(1)}${unit}` : '—';
         return `<div class="signal-card" style="border:1px solid ${c}55;border-radius:10px;padding:12px;">
-            <div style="font-size:0.75em;color:#808495;">${label}</div>
+            <div style="font-size:0.75em;color: var(--muted);">${label}</div>
             <div style="font-size:1.1em;font-weight:bold;color:${c};margin:5px 0;">${valStr}</div>
-            <div style="font-size:0.7em;color:#999;">${rawVal != null ? jd : '데이터 없음'}</div>
+            <div style="font-size:0.7em;color: var(--muted-darker);">${rawVal != null ? jd : '데이터 없음'}</div>
         </div>`;
     }
 
@@ -1164,7 +1164,7 @@ function renderLongTermStrategy(d, sym, rate) {
                     <div><div class="lbl">PV (영구가치)</div><div class="val">${dualPrice(pvTerm, sym, rate)}</div></div>
                 </div>
                 <div class="dcf-result">
-                    <span style="color:#808495;font-size:0.78em;">DCF 내재가치: </span>
+                    <span style="color: var(--muted);font-size:0.78em;">DCF 내재가치: </span>
                     <span style="font-size:1.1em;font-weight:bold;color:${dc};">${dualPrice(dcfValue, sym, rate)}</span>
                     <span style="color:${dc};font-size:0.84em;margin-left:8px;">(${dcfPrem >= 0 ? '+' : ''}${dcfPrem.toFixed(1)}%)</span>
                 </div>
@@ -1196,15 +1196,15 @@ function renderLongTermStrategy(d, sym, rate) {
         if (fv != null) {
             const c = prem > 0 ? '#00C851' : '#FF4444';
             return `<div class="signal-card" style="border:1px solid ${c}55;border-radius:10px;padding:12px;background:${c}0d;">
-                <div style="font-size:0.75em;color:#808495;">${lbl}</div>
+                <div style="font-size:0.75em;color: var(--muted);">${lbl}</div>
                 <div style="font-size:0.9em;font-weight:bold;color:${c};margin:5px 0;">${dualPrice(fv, sym, rate)}</div>
                 <div style="font-size:0.7em;color:${c};">현재가 대비 ${prem >= 0 ? '+' : ''}${prem.toFixed(1)}%</div>
-                <div style="font-size:0.65em;color:#999;margin-top:2px;">${desc}</div>
+                <div style="font-size:0.65em;color: var(--muted-darker);margin-top:2px;">${desc}</div>
             </div>`;
         }
         return `<div class="signal-card" style="border:1px solid #33333355;border-radius:10px;padding:12px;">
-            <div style="font-size:0.75em;color:#808495;">${lbl}</div>
-            <div style="font-size:0.8em;color:#999;margin:8px 0;">${desc}</div>
+            <div style="font-size:0.75em;color: var(--muted);">${lbl}</div>
+            <div style="font-size:0.8em;color: var(--muted-darker);margin:8px 0;">${desc}</div>
         </div>`;
     }
 
@@ -1595,7 +1595,7 @@ function renderWatchlist(data, container) {
                 <td style="color:${crs};">${Number(r.ret_short).toFixed(1)}%</td>
                 <td style="color:${crm};">${Number(r.ret_mid).toFixed(1)}%</td>
                 <td style="color:${crl};">${Number(r.ret_long).toFixed(1)}%</td>
-                <td style="font-size:0.82em;color:#666;">${r.reason || '지표 혼조'}</td>
+                <td style="font-size:0.82em;color: var(--muted-dark);">${r.reason || '지표 혼조'}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';
@@ -1682,7 +1682,7 @@ async function renderThemeContent(name) {
         if (theme.stocks) {
             let html = headerHtml + '<table class="theme-table"><thead><tr><th>종목</th><th>티커</th><th>설명</th></tr></thead><tbody>';
             theme.stocks.forEach(s => {
-                html += `<tr><td><b>${s.name}</b></td><td>${s.ticker}</td><td style="font-size:0.82em;color:#666;">${s.desc || ''}</td></tr>`;
+                html += `<tr><td><b>${s.name}</b></td><td>${s.ticker}</td><td style="font-size:0.82em;color: var(--muted-dark);">${s.desc || ''}</td></tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -1727,7 +1727,7 @@ function renderThemeStocks(headerHtml, stocks, container) {
             <td style="color:#ffaa00;">${fmtPrice(r.target2)}</td>
             <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};">${Number(r.ret_short || 0).toFixed(1)}%</td>
             <td style="color:${vColor};font-weight:bold;">${r.verdict || '—'}</td>
-            <td style="font-size:0.82em;color:#666;">${r.reason || '지표 혼조'}</td>
+            <td style="font-size:0.82em;color: var(--muted-dark);">${r.reason || '지표 혼조'}</td>
         </tr>`;
     });
 
@@ -1971,7 +1971,7 @@ async function loadSidebarNews() {
                 // Matched news
                 (trig.matched_news || []).slice(0, 2).forEach(mn => {
                     const title = mn.title && mn.title.length > 45 ? mn.title.substring(0, 45) + '...' : mn.title;
-                    html += `<div class="trigger-news"><a href="${mn.link}" target="_blank">${title}</a> <span style="color:#555;">[${mn.publisher || ''}]</span></div>`;
+                    html += `<div class="trigger-news"><a href="${mn.link}" target="_blank">${title}</a> <span style="color: var(--text-secondary);">[${mn.publisher || ''}]</span></div>`;
                 });
                 // Stock buttons
                 (trig.stocks || []).forEach((s, si) => {
