@@ -2771,49 +2771,71 @@ async function loadSidebarNews() {
             triggeredDiv.innerHTML = '<div class="caption" style="padding:8px 0;">현재 특별한 급등 트리거 없음</div>';
         }
 
-        // News by source
+        // News by source — key 기반으로 분류
         if (news.length > 0) {
+            const SRC_CFG = {
+                naver:     { label: '네이버증권',   icon: 'newspaper', prefix: ''   },
+                investing: { label: '인베스팅닷컴',  icon: 'language',  prefix: ''   },
+                yahoo:     { label: '야후파이낸스',  icon: 'public',    prefix: 'us' },
+                other:     { label: '기타',          icon: 'push_pin',  prefix: ''   },
+            };
             const sourceMap = {};
             news.forEach(item => {
                 const pub = item.publisher || '';
-                let src;
-                if (pub.includes('네이버')) src = '<span class="ms">newspaper</span> 네이버증권';
-                else if (pub.includes('인베스팅')) src = '<span class="ms">language</span> 인베스팅닷컴';
-                else if (pub.includes('Yahoo')) src = '<span class="ms">public</span> 야후파이낸스';
-                else src = '<span class="ms">push_pin</span> 기타';
-                if (!sourceMap[src]) sourceMap[src] = [];
-                sourceMap[src].push(item);
+                let key;
+                if (pub.includes('네이버'))  key = 'naver';
+                else if (pub.includes('인베스팅')) key = 'investing';
+                else if (pub.includes('Yahoo'))    key = 'yahoo';
+                else key = 'other';
+                if (!sourceMap[key]) sourceMap[key] = [];
+                sourceMap[key].push(item);
             });
 
-            const sources = Object.keys(sourceMap);
-            let selectedSrc = sources[0];
+            const presentKeys = ['naver', 'investing', 'yahoo', 'other'].filter(k => sourceMap[k]);
+            const selectedKey = presentKeys[0];
 
-            // Source filter buttons
-            filterDiv.innerHTML = sources.map(src =>
-                `<button class="news-source-btn ${src === selectedSrc ? 'active' : ''}" onclick="filterSidebarNews(this, '${src}')">${src} (${sourceMap[src].length}건)</button>`
-            ).join('');
+            // 라디오 버튼 렌더링
+            filterDiv.innerHTML = presentKeys.map(key => {
+                const cfg = SRC_CFG[key];
+                const isActive = key === selectedKey;
+                return `<div class="news-radio-item ${isActive ? 'active' : ''}" onclick="filterSidebarNews(this, '${key}')">
+                    <div class="news-radio-circle"></div>
+                    <span class="news-radio-label">
+                        ${cfg.prefix ? `<span class="news-src-prefix">${cfg.prefix}</span>` : ''}
+                        <span class="ms sm">${cfg.icon}</span>${cfg.label}
+                    </span>
+                </div>`;
+            }).join('');
 
-            // Store data for filtering
             window._sidebarNewsMap = sourceMap;
-            renderSidebarNewsList(selectedSrc);
+            window._sidebarSrcCfg = SRC_CFG;
+            renderSidebarNewsList(selectedKey);
         }
     } catch (_) {
         triggeredDiv.innerHTML = '<div class="caption">뉴스를 불러올 수 없습니다.</div>';
     }
 }
 
-function filterSidebarNews(btn, src) {
-    document.querySelectorAll('.news-source-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderSidebarNewsList(src);
+function filterSidebarNews(el, key) {
+    document.querySelectorAll('.news-radio-item').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderSidebarNewsList(key);
 }
 
-function renderSidebarNewsList(src) {
+function renderSidebarNewsList(key) {
     const container = document.getElementById('newsList');
-    const items = (window._sidebarNewsMap || {})[src] || [];
-    container.innerHTML = items.map(item =>
+    const items = (window._sidebarNewsMap || {})[key] || [];
+    const cfg = (window._sidebarSrcCfg || {})[key] || { label: key, prefix: '' };
+
+    // 선택된 소스 타이틀 + 건수
+    const titleHtml = `<div class="news-source-title">
+        ${cfg.prefix ? `<span class="news-src-prefix">${cfg.prefix}</span>` : ''}
+        ${cfg.label} · <span class="news-source-count">${items.length}건</span>
+    </div>`;
+
+    container.innerHTML = titleHtml + items.map(item =>
         `<div class="sidebar-news-item">
-            <a href="${item.link}" target="_blank">${item.title}</a><br>
+            <a href="${item.link}" target="_blank">${item.title}</a>
             <span class="pub">${item.publisher || ''}</span>
         </div>`
     ).join('');
