@@ -412,7 +412,7 @@ body {
 
 /* 사이드바 뉴스 아이템 */
 .trigger-group {
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
@@ -420,22 +420,66 @@ body {
 }
 
 .trigger-header {
-    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
     background: var(--bg);
     cursor: pointer;
     font-size: 0.85em;
     font-weight: bold;
-    border-bottom: 1px solid var(--border);
+    user-select: none;
+    transition: background 0.15s;
+}
+.trigger-header:hover { background: var(--bg-alt); }
+
+.trigger-header-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.trigger-chevron {
+    font-size: 1.1em;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+/* 아코디언 바디: 기본 접힘 */
 .trigger-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, padding 0.2s;
+    padding: 0 12px;
+    border-top: 0px solid var(--border);
+}
+
+/* 열린 상태 */
+.trigger-group.open .trigger-body {
+    max-height: 600px;
     padding: 8px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.trigger-group.open .trigger-chevron {
+    transform: rotate(0deg);
 }
 
 .trigger-reason {
     font-size: 0.78em;
     color: var(--muted);
     margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+}
+.trigger-reason::before {
+    content: 'push_pin';
+    font-family: 'Material Symbols Outlined';
+    font-size: 0.9em;
+    flex-shrink: 0;
+    margin-top: 1px;
 }
 
 .trigger-news {
@@ -444,6 +488,9 @@ body {
     padding: 2px 0 4px 6px;
     border-left: 2px solid var(--blue-deep);
     margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .trigger-news a {
@@ -451,6 +498,11 @@ body {
     text-decoration: none;
 }
 .trigger-news a:hover { text-decoration: underline; }
+
+.trigger-news-pub {
+    color: var(--muted-darker);
+    font-size: 0.85em;
+}
 
 .trigger-stock-btn {
     width: 100%;
@@ -463,6 +515,9 @@ body {
     font-size: 0.8em;
     cursor: pointer;
     margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 .trigger-stock-btn:hover { border-color: var(--accent); background: var(--bg-alt); }
 
@@ -1731,7 +1786,8 @@ main {
 [data-theme="dark"] .fib-card .near-label { color: #ffffaa; }
 
 [data-theme="dark"] .trigger-group { background: var(--bg-alt); border-color: var(--border); }
-[data-theme="dark"] .trigger-header { background: var(--card-hover); border-color: var(--border); }
+[data-theme="dark"] .trigger-header { background: var(--bg-alt); }
+[data-theme="dark"] .trigger-header:hover { background: var(--card-hover); }
 [data-theme="dark"] .trigger-stock-btn { background: transparent; border-color: var(--border); color: var(--text); }
 [data-theme="dark"] .trigger-stock-btn:hover { background: var(--card-hover); }
 

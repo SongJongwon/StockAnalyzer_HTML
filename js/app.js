@@ -2747,24 +2747,27 @@ async function loadSidebarNews() {
         const news = data.news || [];
         const triggered = data.triggered || [];
 
-        // Triggered stocks
+        // Triggered stocks — 아코디언 형식
         if (triggered.length > 0) {
             let html = '';
             triggered.forEach((trig, ti) => {
-                html += `<div class="trigger-group">
-                    <div class="trigger-header">${trig.icon || '<span class="ms">push_pin</span>'} ${trig.category}</div>
-                    <div class="trigger-body">
-                        <div class="trigger-reason"><span class="ms">push_pin</span> ${trig.reason}</div>`;
-                // Matched news
+                const isOpen = ti === 0;
+                const bodyId = `trig-body-${ti}`;
+                let bodyHtml = `<div class="trigger-reason">${trig.reason}</div>`;
                 (trig.matched_news || []).slice(0, 2).forEach(mn => {
                     const title = mn.title && mn.title.length > 45 ? mn.title.substring(0, 45) + '...' : mn.title;
-                    html += `<div class="trigger-news"><a href="${mn.link}" target="_blank">${title}</a> <span style="color: var(--text-secondary);">[${mn.publisher || ''}]</span></div>`;
+                    bodyHtml += `<div class="trigger-news"><a href="${mn.link}" target="_blank">${title}</a><span class="trigger-news-pub">[${mn.publisher || ''}]</span></div>`;
                 });
-                // Stock buttons
-                (trig.stocks || []).forEach((s, si) => {
-                    html += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> ${s.name} (${s.ticker})</button>`;
+                (trig.stocks || []).forEach(s => {
+                    bodyHtml += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> ${s.name} (${s.ticker})</button>`;
                 });
-                html += '</div></div>';
+                html += `<div class="trigger-group ${isOpen ? 'open' : ''}">
+                    <div class="trigger-header" onclick="toggleTriggerGroup(this)">
+                        <span class="trigger-header-text">${trig.icon || '<span class="ms">push_pin</span>'} ${trig.category}</span>
+                        <span class="trigger-chevron ms">${isOpen ? 'expand_less' : 'expand_more'}</span>
+                    </div>
+                    <div class="trigger-body" id="${bodyId}">${bodyHtml}</div>
+                </div>`;
             });
             triggeredDiv.innerHTML = html;
         } else {
@@ -2814,6 +2817,13 @@ async function loadSidebarNews() {
     } catch (_) {
         triggeredDiv.innerHTML = '<div class="caption">뉴스를 불러올 수 없습니다.</div>';
     }
+}
+
+function toggleTriggerGroup(header) {
+    const group = header.closest('.trigger-group');
+    const chevron = header.querySelector('.trigger-chevron');
+    const isOpen = group.classList.toggle('open');
+    if (chevron) chevron.textContent = isOpen ? 'expand_less' : 'expand_more';
 }
 
 function filterSidebarNews(el, key) {
