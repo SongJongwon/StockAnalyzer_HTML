@@ -210,6 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearch();
     setupSidebar();
     setupTopMenu();
+    updateApiStatusMini();
     loadExchangeRate();
     loadSidebarNews();
 });
@@ -332,6 +333,12 @@ function setupTopMenu() {
         location.reload();
     });
 
+    // API Key 설정
+    document.getElementById('menuApiKeys')?.addEventListener('click', () => {
+        dropdown.classList.remove('open');
+        openApiKeyModal();
+    });
+
     // Print
     document.getElementById('menuPrint')?.addEventListener('click', () => {
         dropdown.classList.remove('open');
@@ -344,6 +351,210 @@ function setupTopMenu() {
             location.reload();
         }
     });
+}
+
+// ═══════════════════════════════════════════════
+// AI API Key Management
+// ═══════════════════════════════════════════════
+
+const AI_PROVIDERS = [
+    {
+        id: 'anthropic',
+        name: 'Anthropic Claude',
+        sub: 'claude-haiku-4-5 모델 사용',
+        icon: 'psychology',
+        iconBg: '#7c3aed22',
+        iconColor: '#7c3aed',
+        placeholder: 'sk-ant-api03-...',
+        storageKey: 'sa_key_anthropic',
+    },
+    {
+        id: 'openai',
+        name: 'OpenAI GPT',
+        sub: 'gpt-4o-mini 모델 사용',
+        icon: 'auto_awesome',
+        iconBg: '#10a37f22',
+        iconColor: '#10a37f',
+        placeholder: 'sk-proj-...',
+        storageKey: 'sa_key_openai',
+    },
+];
+
+function getApiKey(providerId) {
+    const p = AI_PROVIDERS.find(p => p.id === providerId);
+    return p ? (localStorage.getItem(p.storageKey) || '') : '';
+}
+
+function setApiKey(providerId, key) {
+    const p = AI_PROVIDERS.find(p => p.id === providerId);
+    if (p) localStorage.setItem(p.storageKey, key.trim());
+}
+
+function removeApiKey(providerId) {
+    const p = AI_PROVIDERS.find(p => p.id === providerId);
+    if (p) localStorage.removeItem(p.storageKey);
+}
+
+function getAiPriority() {
+    return localStorage.getItem('sa_ai_priority') || 'auto';
+}
+
+function setAiPriority(val) {
+    localStorage.setItem('sa_ai_priority', val);
+}
+
+/** 현재 활성 API 키 정보 반환 */
+function getActiveApiKeyInfo() {
+    const priority = getAiPriority();
+    if (priority !== 'auto') {
+        const key = getApiKey(priority);
+        if (key) return { provider: priority, key };
+        // 지정 provider 키 없으면 fallback
+    }
+    // auto: 등록된 것 중 첫 번째
+    for (const p of AI_PROVIDERS) {
+        const key = getApiKey(p.id);
+        if (key) return { provider: p.id, key };
+    }
+    return null;
+}
+
+/** 메뉴 내 미니 상태 업데이트 */
+function updateApiStatusMini() {
+    const el = document.getElementById('apiStatusMini');
+    if (!el) return;
+    const active = getActiveApiKeyInfo();
+    if (active) {
+        el.textContent = 'ON';
+        el.className = 'api-status-mini on';
+    } else {
+        el.textContent = '';
+        el.className = 'api-status-mini off';
+    }
+}
+
+function openApiKeyModal() {
+    const modal = document.getElementById('apiKeyModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    renderApiKeyModal();
+}
+
+function closeApiKeyModal() {
+    const modal = document.getElementById('apiKeyModal');
+    if (modal) modal.style.display = 'none';
+    updateApiStatusMini();
+}
+
+function handleModalOverlayClick(e) {
+    if (e.target === document.getElementById('apiKeyModal')) closeApiKeyModal();
+}
+
+function renderApiKeyModal() {
+    const body = document.getElementById('apiKeyModalBody');
+    if (!body) return;
+
+    const priority = getAiPriority();
+
+    let html = '';
+
+    AI_PROVIDERS.forEach(p => {
+        const key = getApiKey(p.id);
+        const hasKey = !!key;
+        const masked = hasKey ? (key.substring(0, 12) + '••••••••••••' + key.slice(-4)) : '';
+
+        html += `
+        <div class="api-provider-row" id="apr-${p.id}">
+            <div class="api-provider-icon" style="background:${p.iconBg};color:${p.iconColor};">
+                <span class="ms">${p.icon}</span>
+            </div>
+            <div class="api-provider-info">
+                <div class="api-provider-name">${p.name}</div>
+                <div class="api-provider-sub">${p.sub}</div>
+                ${hasKey ? `<div class="api-key-preview" id="kprev-${p.id}">${masked}</div>` : ''}
+                <div id="kinput-${p.id}" style="display:none;">
+                    <div class="api-key-input-wrap">
+                        <input type="password" id="kinput-field-${p.id}" placeholder="${p.placeholder}" autocomplete="off">
+                        <button class="api-key-btn" onclick="toggleKeyVisibility('${p.id}')" title="보기/숨기기">
+                            <span class="ms" id="keye-${p.id}">visibility</span>
+                        </button>
+                        <button class="api-key-btn primary" onclick="saveApiKey('${p.id}')">
+                            <span class="ms">save</span> 저장
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+                <span class="api-status-badge ${hasKey ? 'on' : 'off'}" id="kbadge-${p.id}">${hasKey ? 'ON' : 'OFF'}</span>
+                <div style="display:flex;gap:6px;">
+                    ${hasKey
+                        ? `<button class="api-key-btn danger" onclick="deleteApiKey('${p.id}')"><span class="ms">delete</span> 삭제</button>`
+                        : `<button class="api-key-btn" onclick="showKeyInput('${p.id}')"><span class="ms">add</span> 등록</button>`
+                    }
+                </div>
+            </div>
+        </div>`;
+    });
+
+    // Priority selector
+    const priorityOptions = [
+        { val: 'auto', label: '자동' },
+        { val: 'anthropic', label: 'Claude 우선' },
+        { val: 'openai', label: 'GPT 우선' },
+    ];
+
+    html += `
+    <div class="api-priority-section">
+        <label><span class="ms sm">tune</span> AI 우선순위</label>
+        <div class="api-priority-btns">
+            ${priorityOptions.map(o => `
+                <button class="api-priority-btn ${priority === o.val ? 'active' : ''}"
+                        onclick="selectAiPriority('${o.val}')" id="apri-${o.val}">
+                    ${o.label}
+                </button>`).join('')}
+        </div>
+    </div>`;
+
+    body.innerHTML = html;
+}
+
+function showKeyInput(providerId) {
+    document.getElementById(`kinput-${providerId}`).style.display = 'block';
+    document.getElementById(`kinput-field-${providerId}`)?.focus();
+}
+
+function toggleKeyVisibility(providerId) {
+    const input = document.getElementById(`kinput-field-${providerId}`);
+    const eye   = document.getElementById(`keye-${providerId}`);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (eye) eye.textContent = 'visibility_off';
+    } else {
+        input.type = 'password';
+        if (eye) eye.textContent = 'visibility';
+    }
+}
+
+function saveApiKey(providerId) {
+    const input = document.getElementById(`kinput-field-${providerId}`);
+    if (!input) return;
+    const key = input.value.trim();
+    if (!key) { input.style.borderColor = 'var(--red)'; return; }
+    setApiKey(providerId, key);
+    renderApiKeyModal(); // 재렌더
+}
+
+function deleteApiKey(providerId) {
+    if (!confirm('등록된 API 키를 삭제하시겠습니까?')) return;
+    removeApiKey(providerId);
+    renderApiKeyModal();
+}
+
+function selectAiPriority(val) {
+    setAiPriority(val);
+    document.querySelectorAll('.api-priority-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`apri-${val}`)?.classList.add('active');
 }
 
 // ═══════════════════════════════════════════════
@@ -1950,37 +2161,46 @@ async function _loadThemeAI(sid, r) {
         return;
     }
 
+    // 활성 키 확인 (로컬 저장 키 우선, 없으면 서버 환경변수)
+    const activeKey = getActiveApiKeyInfo();
+    const userAnthropicKey = getApiKey('anthropic');
+    const userOpenaiKey    = getApiKey('openai');
+    const aiProvider = activeKey ? activeKey.provider : 'auto';
+
     try {
         const res = await fetch(`${API}/api/market/ai-analysis`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ticker:     r.ticker,
-                name:       r.name,
-                desc:       r.desc || '',
-                close:      r.close,
-                change_pct: r.change_pct,
-                rsi:        r.rsi,
-                macd:       r.macd,
-                macd_sig:   r.macd_sig,
-                bb_u:       r.bb_u,
-                bb_m:       r.bb_m,
-                bb_l:       r.bb_l,
-                ma20:       r.ma20,
-                ma60:       r.ma60,
-                stoch_k:    r.stoch_k,
-                stoch_d:    r.stoch_d,
-                buy_cnt:    r.buy_cnt,
-                sell_cnt:   r.sell_cnt,
-                verdict:    r.verdict,
-                reason:     r.reason || '',
+                ticker:            r.ticker,
+                name:              r.name,
+                desc:              r.desc || '',
+                close:             r.close,
+                change_pct:        r.change_pct,
+                rsi:               r.rsi,
+                macd:              r.macd,
+                macd_sig:          r.macd_sig,
+                bb_u:              r.bb_u,
+                bb_m:              r.bb_m,
+                bb_l:              r.bb_l,
+                ma20:              r.ma20,
+                ma60:              r.ma60,
+                stoch_k:           r.stoch_k,
+                stoch_d:           r.stoch_d,
+                buy_cnt:           r.buy_cnt,
+                sell_cnt:          r.sell_cnt,
+                verdict:           r.verdict,
+                reason:            r.reason || '',
+                user_anthropic_key: userAnthropicKey,
+                user_openai_key:    userOpenaiKey,
+                ai_provider:        aiProvider,
             }),
         });
         const data = await res.json();
         const text = data.analysis || 'AI 분석 결과를 받지 못했습니다.';
 
         // API 키 미설정 → AI 박스 전체 숨김 (이미 전략 분석이 표시되므로)
-        if (text.includes('ANTHROPIC_API_KEY')) {
+        if (text.includes('ANTHROPIC_API_KEY') || text.includes('API 키가 없습니다')) {
             const boxEl = document.getElementById(`ai-box-${sid}`);
             if (boxEl) boxEl.style.display = 'none';
             return;
