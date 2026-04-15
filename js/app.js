@@ -1574,28 +1574,35 @@ function renderWatchlist(data, container) {
             <th>1차 목표</th><th>2차 목표</th><th>단기</th><th>중기</th><th>장기</th><th>추천 이유</th>
         </tr></thead><tbody>`;
         for (const r of rows) {
-            const cc = r.change_pct >= 0 ? '#00C851' : '#FF4444';
-            const rsiC = r.rsi < 40 ? '#00C851' : (r.rsi > 65 ? '#FF4444' : '#FFA500');
+            const chg = r.change_pct ?? 0;
+            const rsi = r.rsi ?? 50;
+            const cc = chg >= 0 ? '#00C851' : '#FF4444';
+            const rsiC = rsi < 40 ? '#00C851' : (rsi > 65 ? '#FF4444' : '#FFA500');
             const vColor = r.color || '#FFA500';
-            const crs = r.ret_short > 0 ? '#00C851' : '#FF4444';
-            const crm = r.ret_mid > 0 ? '#00C851' : '#FF4444';
-            const crl = r.ret_long > 0 ? '#00C851' : '#FF4444';
+            const retS = r.ret_short ?? 0;
+            const retM = r.ret_mid ?? 0;
+            const retL = r.ret_long ?? 0;
+            const crs = retS > 0 ? '#00C851' : '#FF4444';
+            const crm = retM > 0 ? '#00C851' : '#FF4444';
+            const crl = retL > 0 ? '#00C851' : '#FF4444';
+            const noData = r.close === null || r.close === undefined;
             html += `<tr>
-                <td class="name-cell">
+                <td class="name-cell" style="min-width:120px;">
                     <div class="name">${r.name}</div>
                     <div class="ticker">${r.ticker}</div>
-                    <div class="verdict" style="color:${vColor};">${r.verdict}</div>
+                    <div class="verdict" style="color:${vColor};">${r.verdict || '—'}</div>
+                    ${r.desc ? `<div class="wl-desc">${r.desc}</div>` : ''}
                 </td>
-                <td>${fmtPrice(r.close)}</td>
-                <td style="color:${cc};">${r.change_pct >= 0 ? '+' : ''}${Number(r.change_pct).toFixed(1)}%</td>
-                <td style="color:${rsiC};">${Number(r.rsi).toFixed(1)}</td>
-                <td style="color:#44aaff;">${fmtPrice(r.entry)}</td>
-                <td>${fmtPrice(r.target1)}</td>
-                <td style="color:#ffaa00;">${fmtPrice(r.target2)}</td>
-                <td style="color:${crs};">${Number(r.ret_short).toFixed(1)}%</td>
-                <td style="color:${crm};">${Number(r.ret_mid).toFixed(1)}%</td>
-                <td style="color:${crl};">${Number(r.ret_long).toFixed(1)}%</td>
-                <td style="font-size:0.82em;color: var(--muted-dark);">${r.reason || '지표 혼조'}</td>
+                <td style="font-weight:600;">${noData ? '<span style="color:var(--muted);">—</span>' : fmtPrice(r.close)}</td>
+                <td style="color:${cc};font-weight:600;">${noData ? '—' : (chg >= 0 ? '+' : '') + Number(chg).toFixed(1) + '%'}</td>
+                <td style="color:${rsiC};font-weight:600;">${noData ? '—' : Number(rsi).toFixed(1)}</td>
+                <td style="color:#44aaff;">${noData ? '—' : fmtPrice(r.entry)}</td>
+                <td>${noData ? '—' : fmtPrice(r.target1)}</td>
+                <td style="color:#ffaa00;">${noData ? '—' : fmtPrice(r.target2)}</td>
+                <td style="color:${crs};font-weight:600;">${noData ? '—' : Number(retS).toFixed(1) + '%'}</td>
+                <td style="color:${crm};font-weight:600;">${noData ? '—' : Number(retM).toFixed(1) + '%'}</td>
+                <td style="color:${crl};font-weight:600;">${noData ? '—' : Number(retL).toFixed(1) + '%'}</td>
+                <td style="color:var(--text-secondary);max-width:200px;">${r.reason || '지표 혼조'}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';

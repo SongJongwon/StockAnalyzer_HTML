@@ -1110,33 +1110,39 @@ main {
    Watchlist Table
    ═══════════════════════════════════════════════ */
 
-.watchlist-category { margin-bottom: 24px; }
-.watchlist-category h4 { font-size: 1em; margin-bottom: 8px; }
+.watchlist-category { margin-bottom: 32px; }
+.watchlist-category h4 { font-size: 1.2em; margin-bottom: 12px; font-weight: bold; }
 
 .wl-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.82em;
+    font-size: 0.95em;
 }
 
 .wl-table th {
     font-weight: bold;
-    font-size: 0.77em;
-    color: var(--muted);
+    font-size: 0.84em;
+    color: var(--text-secondary);
     text-align: left;
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
 }
 
 .wl-table td {
-    padding: 8px;
+    padding: 13px 12px;
     border-bottom: 1px solid var(--border);
-    vertical-align: top;
+    vertical-align: middle;
+    font-size: 0.97em;
+    line-height: 1.5;
 }
 
-.wl-table .name-cell .name { font-weight: bold; }
-.wl-table .name-cell .ticker { color: var(--muted); font-size: 0.85em; }
-.wl-table .name-cell .verdict { font-size: 0.82em; font-weight: bold; }
+.wl-table tbody tr:hover { background: var(--card-hover); }
+
+.wl-table .name-cell .name { font-weight: bold; font-size: 1.05em; }
+.wl-table .name-cell .ticker { color: var(--muted); font-size: 0.88em; margin-top: 2px; }
+.wl-table .name-cell .verdict { font-size: 0.88em; font-weight: bold; margin-top: 3px; }
+.wl-table .name-cell .wl-desc { font-size: 0.78em; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; max-width: 180px; }
 
 /* ═══════════════════════════════════════════════
    Theme Grid
@@ -1172,20 +1178,24 @@ main {
 .theme-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.82em;
+    font-size: 0.95em;
 }
 .theme-table th {
     font-weight: bold;
-    font-size: 0.77em;
-    color: var(--muted);
+    font-size: 0.84em;
+    color: var(--text-secondary);
     text-align: left;
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
 }
 .theme-table td {
-    padding: 8px;
+    padding: 12px 12px;
     border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    line-height: 1.5;
 }
+.theme-table tbody tr:hover { background: var(--card-hover); }
 
 /* ═══════════════════════════════════════════════
    Pagination
