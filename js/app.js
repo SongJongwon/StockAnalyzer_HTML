@@ -828,6 +828,11 @@ function renderAnalysis(data, container) {
     container.innerHTML = `
         <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
 
+        <!-- Company Info Card -->
+        <div class="company-info-card" id="companyInfoCard">
+            <div class="loading" style="font-size:0.85em;">회사 정보 로딩 중...</div>
+        </div>
+
         <!-- Price Metrics Row -->
         <div class="metrics-row">
             <div class="metric-card">
@@ -971,6 +976,9 @@ function renderAnalysis(data, container) {
 
     // Render chart
     renderPlotlyChart(d);
+
+    // Load company info
+    loadCompanyInfo(sym);
 
     // Load financials lazily
     loadFinancials(sym);
@@ -1621,6 +1629,50 @@ function _buildChart(d, currencyMode) {
 }
 
 // ═══════════════════════════════════════════════
+// Company Info
+// ═══════════════════════════════════════════════
+
+async function loadCompanyInfo(sym) {
+    const card = document.getElementById('companyInfoCard');
+    if (!card) return;
+    try {
+        const res = await fetch(`${API}/api/stock/info/${encodeURIComponent(sym)}`);
+        if (!res.ok) throw new Error('Failed');
+        const info = await res.json();
+        renderCompanyInfo(info, card);
+    } catch (_) {
+        card.style.display = 'none';
+    }
+}
+
+function renderCompanyInfo(info, card) {
+    const parts = [];
+    if (info.sector) parts.push(`<span class="co-tag"><span class="ms sm">category</span> ${info.sector}</span>`);
+    if (info.industry) parts.push(`<span class="co-tag"><span class="ms sm">factory</span> ${info.industry}</span>`);
+    if (info.country) parts.push(`<span class="co-tag"><span class="ms sm">public</span> ${info.country}</span>`);
+    if (info.employees) parts.push(`<span class="co-tag"><span class="ms sm">group</span> ${Number(info.employees).toLocaleString()}명</span>`);
+    if (info.currency) parts.push(`<span class="co-tag"><span class="ms sm">payments</span> ${info.currency}</span>`);
+
+    let html = '';
+    if (parts.length > 0) {
+        html += `<div class="co-tags">${parts.join('')}</div>`;
+    }
+    if (info.summary) {
+        const shortSummary = info.summary.length > 300 ? info.summary.slice(0, 300) + '...' : info.summary;
+        html += `<p class="co-summary">${shortSummary}</p>`;
+    }
+    if (info.website) {
+        html += `<a class="co-link caption" href="${info.website}" target="_blank" rel="noopener"><span class="ms sm">link</span> ${info.website}</a>`;
+    }
+
+    if (!html) {
+        card.style.display = 'none';
+        return;
+    }
+    card.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
 // Financials (lazy load)
 // ═══════════════════════════════════════════════
 
@@ -1635,104 +1687,176 @@ async function loadFinancials(sym) {
     }
 }
 
-function renderFinancials(fin) {
-    const body = document.getElementById('financialsBody');
+// 재무제표 현재 통화 상태 (USD or KRW)
+let _finCurrency = 'USD';
+let _finData = null;
 
+function renderFinancials(fin) {
+    _finData = fin;
+    _finCurrency = 'USD';
+    _drawFinancials();
+}
+
+function toggleFinCurrency(btn) {
+    _finCurrency = _finCurrency === 'USD' ? 'KRW' : 'USD';
+    document.querySelectorAll('.fin-currency-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _drawFinancials();
+}
+
+function _drawFinancials() {
+    const fin = _finData;
+    const body = document.getElementById('financialsBody');
+    if (!fin || !body) return;
+
+    const isKrw = _finCurrency === 'KRW';
+    const rate = exchangeRate || 1350;
+
+    function moneyVal(v) {
+        if (v == null) return '—';
+        const converted = isKrw ? v * rate : v;
+        return fmtLargeCurrency(converted, isKrw);
+    }
+
+    // ── 통화 토글 헤더 ──────────────────────────────────────
+    const toggleHtml = `
+        <div class="fin-currency-toggle">
+            <span class="caption">단위:</span>
+            <button class="fin-currency-btn ${!isKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
+            <button class="fin-currency-btn ${isKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
+        </div>`;
+
+    // ── 밸류에이션 ──────────────────────────────────────────
     const valItems = [
-        ['시가총액', fmtLarge(fin.market_cap)],
-        ['PER(TTM)', fmtX(fin.pe_trailing)],
-        ['PER(Forward)', fmtX(fin.pe_forward)],
-        ['PBR', fmtX(fin.pb)],
-        ['EV/EBITDA', fmtX(fin.ev_ebitda)],
-        ['배당수익률', fmtPct(fin.div_yield)],
+        { label: '시가총액',     value: moneyVal(fin.market_cap) },
+        { label: 'PER (TTM)',   value: fmtX(fin.pe_trailing) },
+        { label: 'PER (Fwd)',   value: fmtX(fin.pe_forward) },
+        { label: 'PBR',         value: fmtX(fin.pb) },
+        { label: 'PSR',         value: fmtX(fin.ps) },
+        { label: 'EV/EBITDA',   value: fmtX(fin.ev_ebitda) },
+        { label: '배당수익률',  value: fmtPct(fin.div_yield) },
+        { label: 'EPS (TTM)',   value: fin.eps_ttm != null ? (isKrw ? `₩${Math.round(fin.eps_ttm * rate).toLocaleString()}` : `$${Number(fin.eps_ttm).toFixed(2)}`) : '—' },
     ];
 
     let valHtml = '<h4 class="subheader"><span class="ms">straighten</span> 밸류에이션</h4><div class="fin-val-grid">';
-    valItems.forEach(([label, val]) => {
-        valHtml += `<div class="fin-val-card"><div class="label">${label}</div><div class="value">${val}</div></div>`;
+    valItems.forEach(({ label, value }) => {
+        valHtml += `<div class="fin-val-card"><div class="label">${label}</div><div class="value">${value}</div></div>`;
     });
     valHtml += '</div>';
 
-    // Profitability / Growth / Stability
+    // ── 수익성 ──────────────────────────────────────────────
     const profItems = [
-        ['매출(TTM)', fmtLarge(fin.rev_ttm)],
-        ['매출총이익률', fmtPct(fin.gross_margin)],
-        ['영업이익률', fmtPct(fin.op_margin)],
-        ['순이익률', fmtPct(fin.net_margin)],
-        ['ROE', fmtPct(fin.roe)],
-        ['ROA', fmtPct(fin.roa)],
+        ['매출 (TTM)',      moneyVal(fin.rev_ttm)],
+        ['영업이익률',      fmtPct(fin.op_margin)],
+        ['순이익률',        fmtPct(fin.net_margin)],
+        ['ROE',             fmtPct(fin.roe)],
+        ['ROA',             fmtPct(fin.roa)],
     ];
 
+    // ── 성장성 & 현금흐름 ────────────────────────────────────
     const growthItems = [
-        ['매출 성장률(YoY)', fmtPct(fin.rev_growth)],
-        ['이익 성장률(YoY)', fmtPct(fin.earn_growth)],
-        ['EPS(TTM)', fin.eps_ttm != null ? Number(fin.eps_ttm).toFixed(2) : '—'],
-        ['영업현금흐름', fmtLarge(fin.op_cf)],
-        ['잉여현금흐름(FCF)', fmtLarge(fin.fcf)],
+        ['매출 성장률 (YoY)',     fmtPct(fin.rev_growth)],
+        ['영업이익 성장률 (YoY)', fmtPct(fin.earn_growth)],
+        ['영업현금흐름',          moneyVal(fin.op_cf)],
+        ['잉여현금흐름 (FCF)',    moneyVal(fin.fcf)],
     ];
 
+    // ── 안정성 ──────────────────────────────────────────────
     const de = fin.debt_equity;
     const cr = fin.current_ratio;
-    const deColor = de && de > 200 ? '#FF4444' : (de && de > 100 ? '#FFA500' : '#00C851');
-    const crColor = cr && cr < 1 ? '#FF4444' : (cr && cr < 1.5 ? '#FFA500' : '#00C851');
+    const ic = fin.interest_coverage;
+    const deColor = de != null ? (de > 200 ? '#FF4444' : de > 100 ? '#FFA500' : '#00C851') : null;
+    const crColor = cr != null ? (cr < 1 ? '#FF4444' : cr < 1.5 ? '#FFA500' : '#00C851') : null;
+    const icColor = ic != null ? (ic < 1.5 ? '#FF4444' : ic < 3 ? '#FFA500' : '#00C851') : null;
     const stabItems = [
-        ['부채비율(D/E)', de != null ? `${de.toFixed(1)}%` : '—', deColor],
-        ['유동비율', cr != null ? cr.toFixed(2) : '—', crColor],
-        ['PSR', fmtX(fin.ps), '#ffffff'],
+        ['부채비율 (D/E)',   de != null ? `${de.toFixed(1)}%` : '—',   deColor],
+        ['유동비율',         cr != null ? cr.toFixed(2) : '—',          crColor],
+        ['이자보상배율',     ic != null ? `${ic.toFixed(1)}x` : '—',   icColor],
     ];
 
     let colHtml = '<div class="fin-3col">';
+
     colHtml += '<div><h4 class="subheader"><span class="ms">bar_chart</span> 수익성</h4>';
-    profItems.forEach(([l, v]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`; });
+    profItems.forEach(([l, v]) => {
+        colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
+    });
     colHtml += '</div>';
+
     colHtml += '<div><h4 class="subheader"><span class="ms">trending_up</span> 성장성 & 현금흐름</h4>';
-    growthItems.forEach(([l, v]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`; });
+    growthItems.forEach(([l, v]) => {
+        colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
+    });
     colHtml += '</div>';
+
     colHtml += '<div><h4 class="subheader"><span class="ms">shield</span> 안정성</h4>';
-    stabItems.forEach(([l, v, c]) => { colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value" style="color:${c || 'inherit'};">${v}</span></div>`; });
+    stabItems.forEach(([l, v, c]) => {
+        const style = c ? ` style="color:${c};"` : '';
+        colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value"${style}>${v}</span></div>`;
+    });
     colHtml += '</div></div>';
 
-    // Income chart
-    let chartHtml = '';
-    if (fin.income && Object.keys(fin.income).length > 0) {
-        chartHtml = '<div id="finChartContainer" style="height:320px;margin-top:16px;"></div>';
-    }
+    // ── 연간 차트 영역 ──────────────────────────────────────
+    const hasChart = fin.income && Object.keys(fin.income).length > 0;
+    const chartHtml = hasChart
+        ? `<h4 class="subheader" style="margin-top:20px;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4><div id="finChartContainer" style="height:320px;"></div>`
+        : '';
 
-    body.innerHTML = valHtml + colHtml + chartHtml;
+    body.innerHTML = toggleHtml + valHtml + colHtml + chartHtml;
 
-    // Render income chart with Plotly
-    if (fin.income && Object.keys(fin.income).length > 0) {
+    // ── Plotly 차트 ─────────────────────────────────────────
+    if (hasChart) {
         const years = Object.keys(fin.income).sort();
-        const revs = years.map(y => fin.income[y].revenue ? fin.income[y].revenue / 1e9 : 0);
-        const ops = years.map(y => fin.income[y].op_income ? fin.income[y].op_income / 1e9 : 0);
-        const nets = years.map(y => fin.income[y].net_income ? fin.income[y].net_income / 1e9 : 0);
-        const fcfs = years.map(y => fin.cashflow && fin.cashflow[y] && fin.cashflow[y].fcf ? fin.cashflow[y].fcf / 1e9 : 0);
+        const divisor = isKrw ? (rate / 1e12) : 1e9;
+        const unitLabel = isKrw ? '조원' : '십억$';
+
+        const revs  = years.map(y => fin.income[y]?.revenue   != null ? fin.income[y].revenue   * (isKrw ? rate : 1) / 1e9 : null);
+        const ops   = years.map(y => fin.income[y]?.op_income  != null ? fin.income[y].op_income  * (isKrw ? rate : 1) / 1e9 : null);
+        const nets  = years.map(y => fin.income[y]?.net_income != null ? fin.income[y].net_income * (isKrw ? rate : 1) / 1e9 : null);
+        const cfs   = years.map(y => fin.cashflow?.[y]?.op_cf  != null ? fin.cashflow[y].op_cf    * (isKrw ? rate : 1) / 1e9 : null);
 
         const traces = [
-            { x: years, y: revs, type: 'bar', name: '매출', marker: { color: '#4488ff' } },
-            { x: years, y: ops, type: 'bar', name: '영업이익', marker: { color: '#00C851' } },
-            { x: years, y: nets, type: 'bar', name: '순이익', marker: { color: '#ffaa00' } },
-            { x: years, y: fcfs, type: 'scatter', mode: 'lines+markers', name: 'FCF', line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
+            { x: years, y: revs, type: 'bar',              name: '매출',        marker: { color: '#4488ff' } },
+            { x: years, y: ops,  type: 'bar',              name: '영업이익',    marker: { color: '#00C851' } },
+            { x: years, y: nets, type: 'bar',              name: '순이익',      marker: { color: '#ffaa00' } },
+            { x: years, y: cfs,  type: 'scatter', mode: 'lines+markers', name: '영업CF', line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
         ];
 
         const fc = chartColors();
         const layout = {
-            title: '연간 손익 & 현금흐름 (단위: 십억$)',
+            title: `연간 손익 & 현금흐름 (단위: ${unitLabel})`,
             barmode: 'group',
             template: fc.template,
             paper_bgcolor: fc.bg,
             plot_bgcolor: fc.plot,
-            font: { color: fc.text },
+            font: { color: fc.text, size: 11 },
             height: 320,
-            margin: { l: 40, r: 10, t: 40, b: 30 },
+            margin: { l: 50, r: 10, t: 40, b: 30 },
             showlegend: true,
-            legend: { orientation: 'h', y: 1.12 },
+            legend: { orientation: 'h', y: 1.15 },
+            yaxis: { tickformat: '.1f' },
         };
 
         setTimeout(() => {
             const el = document.getElementById('finChartContainer');
             if (el) Plotly.newPlot(el, traces, layout, { responsive: true });
-        }, 100);
+        }, 50);
+    }
+}
+
+function fmtLargeCurrency(v, isKrw) {
+    if (v == null) return '—';
+    const abs = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    if (isKrw) {
+        if (abs >= 1e16) return `${sign}${(v / 1e16).toFixed(2)}경원`;
+        if (abs >= 1e12) return `${sign}${(v / 1e12).toFixed(2)}조원`;
+        if (abs >= 1e8)  return `${sign}${(v / 1e8).toFixed(1)}억원`;
+        return `${sign}${Math.round(v).toLocaleString()}원`;
+    } else {
+        if (abs >= 1e12) return `${sign}$${(v / 1e12).toFixed(2)}T`;
+        if (abs >= 1e9)  return `${sign}$${(v / 1e9).toFixed(2)}B`;
+        if (abs >= 1e6)  return `${sign}$${(v / 1e6).toFixed(2)}M`;
+        return `${sign}$${Math.round(v).toLocaleString()}`;
     }
 }
 

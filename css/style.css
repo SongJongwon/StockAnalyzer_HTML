@@ -1870,3 +1870,70 @@ main {
 [data-theme="dark"] .ai-analysis-box { border-color: #2a3050; }
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #444; }
+
+/* ── Company Info Card ── */
+.company-info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+}
+.co-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.co-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78em;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    color: var(--text-secondary);
+}
+.co-tag .ms { font-size: 0.95em; }
+.co-summary {
+    font-size: 0.82em;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 6px 0 8px;
+}
+.co-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.78em;
+}
+.co-link:hover { text-decoration: underline; }
+.ms.sm { font-size: 0.85em; vertical-align: -0.1em; }
+
+/* ── Financials Currency Toggle ── */
+.fin-currency-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.fin-currency-btn {
+    font-size: 0.8em;
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted-dark);
+    transition: all 0.15s;
+}
+.fin-currency-btn.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+}
+.fin-currency-btn:hover:not(.active) { background: var(--card-hover); }
