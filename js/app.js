@@ -378,6 +378,16 @@ const AI_PROVIDERS = [
         placeholder: 'sk-proj-...',
         storageKey: 'sa_key_openai',
     },
+    {
+        id: 'gemini',
+        name: 'Google Gemini',
+        sub: 'gemini-1.5-flash 모델 사용',
+        icon: 'stars',
+        iconBg: '#4285f422',
+        iconColor: '#4285f4',
+        placeholder: 'AIza...',
+        storageKey: 'sa_key_gemini',
+    },
 ];
 
 function getApiKey(providerId) {
@@ -498,9 +508,10 @@ function renderApiKeyModal() {
 
     // Priority selector
     const priorityOptions = [
-        { val: 'auto', label: '자동' },
+        { val: 'auto',      label: '자동' },
         { val: 'anthropic', label: 'Claude 우선' },
-        { val: 'openai', label: 'GPT 우선' },
+        { val: 'openai',    label: 'GPT 우선' },
+        { val: 'gemini',    label: 'Gemini 우선' },
     ];
 
     html += `
@@ -847,6 +858,14 @@ function renderAnalysis(data, container) {
             <div class="sub">매수 신호 ${buy_cnt}개 · 매도 신호 ${sell_cnt}개 · 중립 ${5 - buy_cnt - sell_cnt}개</div>
         </div>
 
+        <!-- AI 분석 (키 등록 시 자동 표시) -->
+        <div class="ai-analysis-box" id="mainAiBox" style="margin-bottom:16px;">
+            <div class="ai-analysis-header"><span class="ms">smart_toy</span> AI 분석 <span class="ai-badge" id="mainAiBadge">분석 중...</span></div>
+            <div class="ai-analysis-body" id="mainAiBody">
+                <div class="loading" style="font-size:0.9em;">AI 코멘트 불러오는 중...</div>
+            </div>
+        </div>
+
         <!-- Indicator Cards -->
         <h3 class="subheader"><span class="ms">bar_chart</span> 지표별 분석</h3>
         <div class="indicators-grid">
@@ -955,6 +974,9 @@ function renderAnalysis(data, container) {
 
     // Load financials lazily
     loadFinancials(sym);
+
+    // AI 분석 (키 등록된 경우에만)
+    _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict);
 }
 
 // ═══════════════════════════════════════════════
@@ -1711,6 +1733,74 @@ function renderFinancials(fin) {
             const el = document.getElementById('finChartContainer');
             if (el) Plotly.newPlot(el, traces, layout, { responsive: true });
         }, 100);
+    }
+}
+
+// ═══════════════════════════════════════════════
+// Main Analysis Tab — AI Comment
+// ═══════════════════════════════════════════════
+
+async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
+    const boxEl  = document.getElementById('mainAiBox');
+    const bodyEl = document.getElementById('mainAiBody');
+    const badgeEl = document.getElementById('mainAiBadge');
+    if (!boxEl || !bodyEl) return;
+
+    const userAnthropicKey = getApiKey('anthropic');
+    const userOpenaiKey    = getApiKey('openai');
+    const userGeminiKey    = getApiKey('gemini');
+    const activeKey = getActiveApiKeyInfo();
+
+    // 등록된 키가 없으면 박스 숨김
+    if (!activeKey) {
+        boxEl.style.display = 'none';
+        return;
+    }
+
+    const providerInfo = AI_PROVIDERS.find(p => p.id === activeKey.provider);
+    if (badgeEl) badgeEl.textContent = providerInfo ? providerInfo.name : 'AI';
+
+    try {
+        const res = await fetch(`${API}/api/market/ai-analysis`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ticker:            sym,
+                name:              name,
+                desc:              '',
+                close:             d.close,
+                change_pct:        d.change_pct || 0,
+                rsi:               d.rsi,
+                macd:              d.macd,
+                macd_sig:          d.macd_sig,
+                bb_u:              d.bb_u,
+                bb_m:              d.bb_m,
+                bb_l:              d.bb_l,
+                ma20:              d.ma20,
+                ma60:              d.ma60,
+                stoch_k:           d.stoch_k,
+                stoch_d:           d.stoch_d,
+                buy_cnt:           buy_cnt,
+                sell_cnt:          sell_cnt,
+                verdict:           verdict,
+                reason:            '',
+                user_anthropic_key: userAnthropicKey,
+                user_openai_key:    userOpenaiKey,
+                user_gemini_key:    userGeminiKey,
+                ai_provider:       getAiPriority(),
+            }),
+        });
+        const data = await res.json();
+        const text = data.analysis || '';
+
+        if (!text || text.includes('API 키가 없습니다')) {
+            boxEl.style.display = 'none';
+            return;
+        }
+
+        bodyEl.innerHTML = `<p class="ai-text">${text.replace(/\n/g, '<br>')}</p>`;
+    } catch (e) {
+        bodyEl.innerHTML = `<p style="color:var(--muted);font-size:0.85em;">AI 분석 요청 실패: ${e.message}</p>`;
     }
 }
 
