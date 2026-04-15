@@ -1915,6 +1915,23 @@ main {
 }
 .co-link:hover { text-decoration: underline; }
 .ms.sm { font-size: 0.85em; vertical-align: -0.1em; }
+.co-translating { color: var(--muted); font-style: italic; }
+.co-trans-badge {
+    display: inline-block;
+    font-size: 0.68em;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: #4488ff22;
+    color: #4488ff;
+    border: 1px solid #4488ff44;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+.co-trans-badge.ai {
+    background: #7c3aed22;
+    color: #9b5de5;
+    border-color: #7c3aed44;
+}
 
 /* ── Financials Currency Toggle ── */
 .fin-currency-toggle {

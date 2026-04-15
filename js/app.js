@@ -1640,8 +1640,48 @@ async function loadCompanyInfo(sym) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const info = await res.json();
         renderCompanyInfo(info, card);
+        // 영문 설명이 있으면 비동기 번역
+        if (info.summary) {
+            _translateSummary(info.summary);
+        }
     } catch (e) {
         card.innerHTML = `<span class="caption muted">회사 정보를 불러올 수 없습니다.</span>`;
+    }
+}
+
+async function _translateSummary(text) {
+    const el = document.getElementById('coSummaryText');
+    if (!el) return;
+
+    el.innerHTML += ` <span class="co-translating caption">(번역 중...)</span>`;
+
+    try {
+        const body = {
+            text,
+            user_anthropic_key: getApiKey('anthropic') || '',
+            user_openai_key:    getApiKey('openai')    || '',
+            user_gemini_key:    getApiKey('gemini')    || '',
+            ai_provider: getAiPriority() || 'auto',
+        };
+        const res = await fetch(`${API}/api/stock/translate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error('translate failed');
+        const data = await res.json();
+
+        if (data.translated && data.method !== 'original') {
+            const badge = data.method.startsWith('AI')
+                ? `<span class="co-trans-badge ai">AI번역</span>`
+                : `<span class="co-trans-badge">번역</span>`;
+            el.innerHTML = data.translated + ' ' + badge;
+        } else {
+            // 번역 실패 → 원문 유지, 표시 안내 제거
+            el.textContent = text;
+        }
+    } catch (_) {
+        el.textContent = text;
     }
 }
 
@@ -1659,10 +1699,9 @@ function renderCompanyInfo(info, card) {
         html += `<div class="co-tags">${parts.join('')}</div>`;
     }
     if (info.summary) {
-        // 영어 설명이 길면 500자로 제한
         const maxLen = 500;
         const shortSummary = info.summary.length > maxLen ? info.summary.slice(0, maxLen) + '...' : info.summary;
-        html += `<p class="co-summary">${shortSummary}</p>`;
+        html += `<p class="co-summary" id="coSummaryText">${shortSummary}</p>`;
     }
     if (info.website) {
         html += `<a class="co-link caption" href="${info.website}" target="_blank" rel="noopener"><span class="ms sm">link</span> ${info.website}</a>`;
