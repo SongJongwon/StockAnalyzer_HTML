@@ -609,8 +609,13 @@ function setupSearch() {
     document.getElementById('refreshNews')?.addEventListener('click', () => loadSidebarNews());
 }
 
-function analyzeFromAnywhere(ticker) {
-    searchInput.value = ticker;
+function analyzeFromAnywhere(ticker, name) {
+    // 이름이 있으면 "종목명 (티커)" 형식으로 입력창에 표시
+    if (name && name !== ticker) {
+        searchInput.value = `${name} (${ticker})`;
+    } else {
+        searchInput.value = ticker;
+    }
     // Switch to tab 1
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -654,7 +659,18 @@ async function runAnalysis() {
         const searchData = await searchRes.json();
         const symbol = searchData.symbol;
         // 한글명 우선, 그 다음 백엔드 이름, 마지막으로 티커
-        const name = krName || searchData.name || symbol;
+        let name = krName || searchData.name || symbol;
+
+        // 이름을 모를 때(티커만 직접 입력) → 회사 정보 API에서 long_name 보완
+        if (name === symbol) {
+            try {
+                const infoRes = await fetch(`${API}/api/stock/info/${encodeURIComponent(symbol)}`);
+                if (infoRes.ok) {
+                    const infoData = await infoRes.json();
+                    if (infoData.long_name) name = infoData.long_name;
+                }
+            } catch (_) {}
+        }
 
         // 검색 결과 안내
         resultDiv.innerHTML = `<div class="loading">${name} (${symbol}) 분석 중...</div>`;
@@ -2458,7 +2474,7 @@ function _buildThemeDetailHtml(r, sid) {
 
         <!-- 전체 분석 버튼 (차트 포함) -->
         <div style="text-align:right;margin-top:12px;">
-            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}')"><span class="ms">show_chart</span> 차트 · 재무 전체 분석 보기</button>
+            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}', '${(r.name || '').replace(/'/g, '')}')"><span class="ms">show_chart</span> 차트 · 재무 전체 분석 보기</button>
         </div>
     </div>`;
 }
@@ -2672,7 +2688,7 @@ function renderNaverSignals(signals, container) {
                     <div class="price">${s.close ? fmtPrice(s.close) : '—'}</div>
                     <div style="color:${cc};font-size:0.78em;">${s.change_pct != null ? (s.change_pct >= 0 ? '+' : '') + Number(s.change_pct).toFixed(2) + '%' : ''}</div>
                     <div class="verdict" style="color:${vc};">${s.verdict || '—'}</div>
-                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> 분석</button>
+                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}', '${(s.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> 분석</button>
                 </div>`;
             });
             html += '</div>';
@@ -2759,7 +2775,7 @@ async function loadSidebarNews() {
                     bodyHtml += `<div class="trigger-news"><a href="${mn.link}" target="_blank">${title}</a><span class="trigger-news-pub">[${mn.publisher || ''}]</span></div>`;
                 });
                 (trig.stocks || []).forEach(s => {
-                    bodyHtml += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}')"><span class="ms">bar_chart</span> ${s.name} (${s.ticker})</button>`;
+                    bodyHtml += `<button class="trigger-stock-btn" onclick="analyzeFromAnywhere('${s.ticker}', '${(s.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> ${s.name} (${s.ticker})</button>`;
                 });
                 html += `<div class="trigger-group ${isOpen ? 'open' : ''}">
                     <div class="trigger-header" onclick="toggleTriggerGroup(this)">
