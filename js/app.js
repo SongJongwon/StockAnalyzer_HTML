@@ -132,6 +132,7 @@ const LANG = {
         no_rise_trigger: '현재 뉴스에서 특별한 상승 트리거가 감지되지 않았습니다.',
         // Company info
         employees_unit: '명', no_company_info: '회사 정보 없음',
+        no_summary: '회사 설명 정보가 없습니다.',
         // My buy form
         input_currency: '입력 통화', buy_amount: '매수 금액',
         hold_qty: '보유 수량', apply_btn: '적용',
@@ -353,6 +354,7 @@ const LANG = {
         no_rise_trigger: 'No significant surge triggers detected in current news.',
         // Company info
         employees_unit: '', no_company_info: 'No company info available',
+        no_summary: 'No company description available.',
         // My buy form
         input_currency: 'Currency', buy_amount: 'Buy Price',
         hold_qty: 'Qty', apply_btn: 'Apply',
@@ -2248,6 +2250,7 @@ async function _translateSummary(text) {
 }
 
 function renderCompanyInfo(info, card) {
+    // 규칙 1: 태그는 데이터 있는 것만 표시 (없으면 해당 태그 숨김)
     const parts = [];
     if (info.sector)    parts.push(`<span class="co-tag"><span class="ms sm">category</span> ${info.sector}</span>`);
     if (info.industry)  parts.push(`<span class="co-tag"><span class="ms sm">factory</span> ${info.industry}</span>`);
@@ -2260,24 +2263,20 @@ function renderCompanyInfo(info, card) {
     if (parts.length > 0) {
         html += `<div class="co-tags">${parts.join('')}</div>`;
     }
+
+    // 규칙 2: summary 없으면 "회사 설명 정보가 없습니다." 표시
     if (info.summary) {
         const maxLen = 500;
         const shortSummary = info.summary.length > maxLen ? info.summary.slice(0, maxLen) + '...' : info.summary;
         html += `<p class="co-summary" id="coSummaryText">${shortSummary}</p>`;
+    } else {
+        html += `<p class="caption muted" id="coSummaryText">${L('no_summary')}</p>`;
     }
+
     if (info.website) {
         html += `<a class="co-link caption" href="${info.website}" target="_blank" rel="noopener"><span class="ms sm">link</span> ${info.website}</a>`;
     }
 
-    // 태그도 설명도 없지만 회사명은 있는 경우 — 최소 안내 표시
-    if (!html) {
-        if (info.long_name) {
-            html = `<span class="caption muted">${info.long_name}</span>`;
-        } else {
-            card.innerHTML = `<span class="caption muted">${L('no_company_info')}</span>`;
-            return;
-        }
-    }
     card.innerHTML = html;
 }
 
