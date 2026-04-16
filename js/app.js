@@ -75,6 +75,78 @@ const LANG = {
         loading: '로딩 중...', no_data: '데이터 없음',
         full_analysis_btn: '차트 · 재무 전체 분석 보기',
         data_refresh: '데이터 새로고침',
+        // Short-term strategy
+        rsi_oversold_bounce: '과매도 → 반등', rsi_overbought_correct: '과매수 → 조정',
+        rsi_neutral_zone: '중립 구간',
+        bb_lower_support: '하단 근접 → 지지', bb_upper_hot: '상단 과열', bb_mid_range: '중간 구간',
+        macd_golden: '골든크로스', macd_dead: '데드크로스',
+        macd_up_trend: '상승 추세 유지', macd_down_trend: '하락 추세 유지',
+        vwap_low: 'VWAP 하회 → 저평가', vwap_high: 'VWAP 상회 → 고평가', vwap_near: 'VWAP 근접',
+        st_buy_zone: '단기 매수 구간', st_enter_check: '단기 진입 검토', watch_rec: '관망 권장',
+        st_target_title: '단기 목표가 산출',
+        entry_price: '진입가', current_price_label: '현재가', target1_short: '1차 목표',
+        target2_short: '2차 목표', stoploss_line: '손절선',
+        profit_ratio: '손익비', buy_signal_cnt: '매수신호',
+        // Swing strategy
+        fib_title: '피보나치 되돌림 (최근 60거래일)',
+        ma_title: '20/60일 이동평균',
+        swing_target_title: '스윙 목표가 산출 (손익비 1:2)',
+        ma20_label: '20일 이평선', ma60_label: '60일 이평선', ma_status: '배열 상태',
+        ma_golden: '정배열', ma_dead_arr: '역배열',
+        vs_current_pct: '현재가 대비',
+        fib_near: '◀ 현재근접', fib_support: '피보 지지', fib_resist: '피보 저항',
+        swing_buy_zone: '스윙 매수 구간 (눌림목)', swing_avoid: '스윙 진입 비추천',
+        swing_wait: '눌림목 대기',
+        // Long-term strategy
+        prof_title: '수익성 지표 (ROE · 영업이익률 · 이익성장률)',
+        per_pbr_title: 'PER / PBR 기반 적정주가', dcf_title: 'DCF 내재가치 분석',
+        excellent: '우수', good: '양호', poor: '부진', no_data_label: '데이터 없음',
+        fcf_ps: 'FCF/주', pv_5y: 'PV (5년 FCF)', pv_term: 'PV (영구가치)',
+        dcf_intrinsic: 'DCF 내재가치',
+        dcf_no_fcf: 'FCF 데이터 없음. DCF 계산 불가.',
+        fair_value_total: '종합 적정주가', per_pbr_avg: 'PER / PBR / DCF 평균',
+        no_fin_data: '재무 데이터 부족으로 종합 평가 불가',
+        strong_undervalue: '강한 저평가', undervalue_zone: '저평가 구간',
+        fair_value: '적정 수준', overvalue_warn: '고평가 주의', strong_overvalue: '심한 고평가',
+        per_fair: 'PER 적정주가', pbr_fair: 'PBR 적정주가', current_per_pbr: '현재 PER/PBR',
+        dcf_strong_buy: '강한 매수 (30%+ 저평가)', dcf_buy: '매수 고려 (10%+ 저평가)',
+        dcf_overvalue: '고평가 주의',
+        // Watchlist
+        wl_loading: '전체 종목 분석 중... (최초 로딩 30초 내외)',
+        wl_error: '추천 종목을 불러올 수 없습니다.',
+        wl_name: '종목', wl_price: '현재가', wl_change: '등락', wl_rsi: 'RSI',
+        wl_entry: '매수 목표가', wl_target1: '1차 목표', wl_target2: '2차 목표',
+        wl_short: '단기', wl_mid: '중기', wl_long: '장기',
+        wl_reason: '추천 이유', wl_mixed: '지표 혼조',
+        // Theme
+        theme_loading: '테마 종목 실시간 분석 중... (최초 30초 내외)',
+        theme_error: '테마 데이터를 불러올 수 없습니다.',
+        theme_static_fail: '실시간 분석을 불러올 수 없습니다. 정적 목록을 표시합니다.',
+        theme_name_col: '종목', theme_ticker_col: '티커', theme_desc_col: '설명',
+        rank_col: '순위', change_col: '등락', entry_col: '매수가', target_col: '목표가',
+        short_return: '단기수익', verdict_col: '판단', buy_basis: '매수 근거',
+        // Global
+        global_loading: '글로벌 지수 로딩 중...', global_error: '지수 데이터를 불러올 수 없습니다.',
+        naver_news_loading: '뉴스 로딩 중...', signal_loading: '신호 분석 중...',
+        naver_error: '네이버 뉴스를 불러올 수 없습니다.', signal_error: '신호 분석 불가.',
+        no_rise_trigger: '현재 뉴스에서 특별한 상승 트리거가 감지되지 않았습니다.',
+        // Company info
+        employees_unit: '명', no_company_info: '회사 정보 없음',
+        // My buy form
+        input_currency: '입력 통화', buy_amount: '매수 금액',
+        hold_qty: '보유 수량', apply_btn: '적용',
+        my_buy_placeholder: '매수 금액을 입력하면 손절·목표가 시나리오가 표시됩니다.',
+        my_buy_price_label: '내 매수가',
+        // Theme detail indicators
+        bb_indicator: '볼린저밴드', ma_indicator: '이동평균', stoch_indicator: '스토캐스틱',
+        verdict_title: '종합 판단',
+        buy_signals_cnt: '매수 신호', sell_signals_cnt: '매도 신호', neutral_cnt: '중립',
+        theme_full_analysis: '차트 · 재무 전체 분석 보기',
+        stoch_oversold: '과매도', stoch_overbought: '과매수',
+        bb_entry: 'BB 하단 / MA20 지지',
+        sidebar_news_error: '뉴스를 불러올 수 없습니다.',
+        fin_error: '재무 데이터를 불러올 수 없습니다.',
+        chart_no_data: '차트 데이터 없음',
     },
     en: {
         // App
@@ -140,6 +212,78 @@ const LANG = {
         loading: 'Loading...', no_data: 'N/A',
         full_analysis_btn: 'Full Chart & Financial Analysis',
         data_refresh: 'Refresh Data',
+        // Short-term strategy
+        rsi_oversold_bounce: 'Oversold → Bounce', rsi_overbought_correct: 'Overbought → Correction',
+        rsi_neutral_zone: 'Neutral Zone',
+        bb_lower_support: 'Near Lower Band → Support', bb_upper_hot: 'Upper Band — Overheated', bb_mid_range: 'Mid Range',
+        macd_golden: 'Golden Cross', macd_dead: 'Death Cross',
+        macd_up_trend: 'Uptrend Continuing', macd_down_trend: 'Downtrend Continuing',
+        vwap_low: 'Below VWAP → Undervalued', vwap_high: 'Above VWAP → Overvalued', vwap_near: 'Near VWAP',
+        st_buy_zone: 'Short-term Buy Zone', st_enter_check: 'Consider Entry', watch_rec: 'Watch & Wait',
+        st_target_title: 'Short-term Target Prices',
+        entry_price: 'Entry', current_price_label: 'Current', target1_short: 'Target 1',
+        target2_short: 'Target 2', stoploss_line: 'Stop Loss',
+        profit_ratio: 'R:R', buy_signal_cnt: 'Buy Signals',
+        // Swing strategy
+        fib_title: 'Fibonacci Retracement (Last 60 Sessions)',
+        ma_title: 'MA20 / MA60',
+        swing_target_title: 'Swing Targets (R:R 1:2)',
+        ma20_label: 'MA20', ma60_label: 'MA60', ma_status: 'Alignment',
+        ma_golden: 'Aligned (Bullish)', ma_dead_arr: 'Inverted (Bearish)',
+        vs_current_pct: 'vs. Current',
+        fib_near: '◀ Near Current', fib_support: 'Fib Support', fib_resist: 'Fib Resistance',
+        swing_buy_zone: 'Swing Buy Zone (Pullback)', swing_avoid: 'Avoid Swing Entry',
+        swing_wait: 'Wait for Pullback',
+        // Long-term strategy
+        prof_title: 'Profitability (ROE · Op. Margin · Earnings Growth)',
+        per_pbr_title: 'PER / PBR Fair Value', dcf_title: 'DCF Intrinsic Value',
+        excellent: 'Excellent', good: 'Good', poor: 'Weak', no_data_label: 'N/A',
+        fcf_ps: 'FCF/Share', pv_5y: 'PV (5yr FCF)', pv_term: 'PV (Terminal)',
+        dcf_intrinsic: 'DCF Intrinsic Value',
+        dcf_no_fcf: 'No FCF data. DCF not available.',
+        fair_value_total: 'Avg. Fair Value', per_pbr_avg: 'PER / PBR / DCF Average',
+        no_fin_data: 'Insufficient financial data for valuation',
+        strong_undervalue: 'Strong Buy (Deeply Undervalued)', undervalue_zone: 'Undervalued',
+        fair_value: 'Fair Value', overvalue_warn: 'Overvalued — Caution', strong_overvalue: 'Significantly Overvalued',
+        per_fair: 'PER Fair Value', pbr_fair: 'PBR Fair Value', current_per_pbr: 'Current PER/PBR',
+        dcf_strong_buy: 'Strong Buy (30%+ Undervalued)', dcf_buy: 'Consider Buy (10%+ Undervalued)',
+        dcf_overvalue: 'Overvalued — Caution',
+        // Watchlist
+        wl_loading: 'Analyzing all stocks... (first load ~30s)',
+        wl_error: 'Failed to load watchlist.',
+        wl_name: 'Stock', wl_price: 'Price', wl_change: 'Chg%', wl_rsi: 'RSI',
+        wl_entry: 'Buy Target', wl_target1: 'Target 1', wl_target2: 'Target 2',
+        wl_short: 'Short', wl_mid: 'Mid', wl_long: 'Long',
+        wl_reason: 'Reason', wl_mixed: 'Mixed Signals',
+        // Theme
+        theme_loading: 'Analyzing theme stocks... (~30s first load)',
+        theme_error: 'Failed to load theme data.',
+        theme_static_fail: 'Real-time analysis failed. Showing static list.',
+        theme_name_col: 'Stock', theme_ticker_col: 'Ticker', theme_desc_col: 'Description',
+        rank_col: 'Rank', change_col: 'Chg%', entry_col: 'Entry', target_col: 'Target',
+        short_return: 'Short Ret.', verdict_col: 'Signal', buy_basis: 'Basis',
+        // Global
+        global_loading: 'Loading global indices...', global_error: 'Failed to load indices.',
+        naver_news_loading: 'Loading news...', signal_loading: 'Analyzing signals...',
+        naver_error: 'Failed to load Naver news.', signal_error: 'Signal analysis unavailable.',
+        no_rise_trigger: 'No significant surge triggers detected in current news.',
+        // Company info
+        employees_unit: '', no_company_info: 'No company info available',
+        // My buy form
+        input_currency: 'Currency', buy_amount: 'Buy Price',
+        hold_qty: 'Qty', apply_btn: 'Apply',
+        my_buy_placeholder: 'Enter your buy price to see P&L scenario.',
+        my_buy_price_label: 'My Entry',
+        // Theme detail indicators
+        bb_indicator: 'Bollinger Band', ma_indicator: 'Moving Avg', stoch_indicator: 'Stochastic',
+        verdict_title: 'Signal',
+        buy_signals_cnt: 'Buy Signals', sell_signals_cnt: 'Sell Signals', neutral_cnt: 'Neutral',
+        theme_full_analysis: 'Full Chart & Financial Analysis',
+        stoch_oversold: 'Oversold', stoch_overbought: 'Overbought',
+        bb_entry: 'BB Lower / MA20 Support',
+        sidebar_news_error: 'Failed to load news.',
+        fin_error: 'Failed to load financial data.',
+        chart_no_data: 'No chart data',
     },
 };
 
@@ -189,6 +333,18 @@ function toggleLang() {
     }
     if (window._finData) {
         _drawFinancials();
+    }
+    // Watchlist re-render if loaded
+    if (watchlistLoaded && window._lastWatchlistData) {
+        renderWatchlist(window._lastWatchlistData, document.getElementById('watchlistContent'));
+    }
+    // Theme re-render if loaded
+    if (themesLoaded && currentTheme) {
+        renderThemeStocksTable(
+            document.getElementById('themeContent')?._lastHeaderHtml || '',
+            themesData[currentTheme]?.analyzed_stocks || [],
+            document.getElementById('themeContent')
+        );
     }
 }
 
@@ -1128,29 +1284,29 @@ function renderAnalysis(data, container) {
 
         <!-- 내 매수가 분석 -->
         <hr class="divider">
-        <h3 class="subheader"><span class="ms">payments</span> 내 매수가 분석</h3>
+        <h3 class="subheader"><span class="ms">payments</span> ${L('my_buy')}</h3>
         <div class="my-buy-form">
             <div class="my-buy-row">
                 <div class="my-buy-field">
-                    <label class="input-label">입력 통화</label>
+                    <label class="input-label">${L('input_currency')}</label>
                     <div class="radio-row">
                         <label><input type="radio" name="myCurrency" value="USD" ${!isKRW(sym) ? 'checked' : ''}> USD ($)</label>
                         <label><input type="radio" name="myCurrency" value="KRW" ${isKRW(sym) ? 'checked' : ''}> KRW (₩)</label>
                     </div>
                 </div>
                 <div class="my-buy-field">
-                    <label class="input-label">매수 금액</label>
+                    <label class="input-label">${L('buy_amount')}</label>
                     <input type="text" id="myPriceInput" placeholder="${isKRW(sym) ? '예: 75000' : '예: 150.50'}">
                 </div>
                 <div class="my-buy-field">
-                    <label class="input-label">보유 수량</label>
+                    <label class="input-label">${L('hold_qty')}</label>
                     <input type="text" id="myQtyInput" placeholder="예: 10">
                 </div>
             </div>
-            <button class="btn-analyze" onclick="applyMyBuy('${sym}', ${close}, ${entry}, ${t1}, ${t2}, ${sl})" style="margin-top:0.5rem;"><span class="ms green">check_circle</span> 적용</button>
+            <button class="btn-analyze" onclick="applyMyBuy('${sym}', ${close}, ${entry}, ${t1}, ${t2}, ${sl})" style="margin-top:0.5rem;"><span class="ms green">check_circle</span> ${L('apply_btn')}</button>
         </div>
         <div id="myBuyResult">
-            <p class="caption">매수 금액을 입력하면 손절·목표가 시나리오가 표시됩니다.</p>
+            <p class="caption">${L('my_buy_placeholder')}</p>
         </div>
 
         <!-- Chart -->
@@ -1215,7 +1371,7 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
 
     let rawP = parseFloat(priceStr);
     if (!rawP || rawP <= 0) {
-        resultDiv.innerHTML = '<p class="caption">매수 금액을 입력하면 손절·목표가 시나리오가 표시됩니다.</p>';
+        resultDiv.innerHTML = `<p class="caption">${L('my_buy_placeholder')}</p>`;
         return;
     }
 
@@ -1250,7 +1406,7 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
     let summaryHtml = `
         <div class="metrics-row mt-8">
             <div class="metric-card">
-                <div class="label">내 매수가</div>
+                <div class="label">${L('my_buy_price_label')}</div>
                 <div class="value" style="font-size:1.1rem;">${dualPrice(myPrice, sym, rate)}</div>
             </div>
             <div class="metric-card">
@@ -1356,18 +1512,18 @@ function renderShortTermStrategy(d, sym, rate) {
     const macd_death = d.macd_death || false;
 
     const rsi_c = rsi < 35 ? '#00C851' : (rsi > 65 ? '#FF4444' : '#FFA500');
-    const rsi_t = rsi < 35 ? '과매도 → 반등' : (rsi > 65 ? '과매수 → 조정' : '중립 구간');
+    const rsi_t = rsi < 35 ? L('rsi_oversold_bounce') : (rsi > 65 ? L('rsi_overbought_correct') : L('rsi_neutral_zone'));
     const bb_c = bb_pctB < 20 ? '#00C851' : (bb_pctB > 80 ? '#FF4444' : '#FFA500');
-    const bb_t = bb_pctB < 20 ? '하단 근접 → 지지' : (bb_pctB > 80 ? '상단 과열' : '중간 구간');
+    const bb_t = bb_pctB < 20 ? L('bb_lower_support') : (bb_pctB > 80 ? L('bb_upper_hot') : L('bb_mid_range'));
 
     let mc, mt;
-    if (macd_cross) { mc = '#00C851'; mt = '골든크로스 <span class="ms orange">my_location</span>'; }
-    else if (macd_death) { mc = '#FF4444'; mt = '데드크로스 <span class="ms orange">warning</span>'; }
-    else if (macd > msig) { mc = '#44aaff'; mt = '상승 추세 유지'; }
-    else { mc = '#FFA500'; mt = '하락 추세 유지'; }
+    if (macd_cross) { mc = '#00C851'; mt = L('macd_golden') + ' <span class="ms orange">my_location</span>'; }
+    else if (macd_death) { mc = '#FF4444'; mt = L('macd_dead') + ' <span class="ms orange">warning</span>'; }
+    else if (macd > msig) { mc = '#44aaff'; mt = L('macd_up_trend'); }
+    else { mc = '#FFA500'; mt = L('macd_down_trend'); }
 
     const vc = vwap_dev < -1 ? '#00C851' : (vwap_dev > 1 ? '#FF4444' : '#FFA500');
-    const vt = vwap_dev < -1 ? 'VWAP 하회 → 저평가' : (vwap_dev > 1 ? 'VWAP 상회 → 고평가' : 'VWAP 근접');
+    const vt = vwap_dev < -1 ? L('vwap_low') : (vwap_dev > 1 ? L('vwap_high') : L('vwap_near'));
 
     // Targets
     const buy_cnt = (rsi < 40 ? 1 : 0) + (close < bb_l ? 1 : 0) + (close < vwap * 0.99 ? 1 : 0) + (macd_cross ? 1 : 0);
@@ -1382,30 +1538,30 @@ function renderShortTermStrategy(d, sym, rate) {
     const sc = buy_cnt >= 3 ? '#00C851' : (buy_cnt >= 2 ? '#44aaff' : '#FFA500');
 
     let ac, at, ag;
-    if (buy_cnt >= 3) { ac = '#00C851'; at = '<span class="ms green">check_circle</span> 단기 매수 구간'; ag = '다수 지표 과매도 진입. MACD 크로스 확인 후 분할 진입 권장.'; }
-    else if (buy_cnt >= 2) { ac = '#44aaff'; at = '<span class="ms orange">hourglass_empty</span> 단기 진입 검토'; ag = '일부 매수 조건 충족. MACD 골든크로스 또는 RSI 30 이하 추가 확인 권장.'; }
-    else { ac = '#FFA500'; at = '<span class="ms orange">warning</span> 관망 권장'; ag = '단기 과매수 또는 혼조 신호. BB 하단 / RSI 30 이하 시 재진입 검토.'; }
+    if (buy_cnt >= 3) { ac = '#00C851'; at = '<span class="ms green">check_circle</span> ' + L('st_buy_zone'); ag = currentLang === 'ko' ? '다수 지표 과매도 진입. MACD 크로스 확인 후 분할 진입 권장.' : 'Multiple oversold signals. Consider staged entry after MACD cross confirmation.'; }
+    else if (buy_cnt >= 2) { ac = '#44aaff'; at = '<span class="ms orange">hourglass_empty</span> ' + L('st_enter_check'); ag = currentLang === 'ko' ? '일부 매수 조건 충족. MACD 골든크로스 또는 RSI 30 이하 추가 확인 권장.' : 'Some buy conditions met. Wait for MACD golden cross or RSI below 30.'; }
+    else { ac = '#FFA500'; at = '<span class="ms orange">warning</span> ' + L('watch_rec'); ag = currentLang === 'ko' ? '단기 과매수 또는 혼조 신호. BB 하단 / RSI 30 이하 시 재진입 검토.' : 'Overbought or mixed signals. Re-enter when near BB lower / RSI below 30.'; }
 
     return `
-        <p class="caption mb-8">RSI 과매도/과매수 · MACD 크로스 신호 · 볼린저밴드 %B · VWAP 편차 기반 목표가</p>
+        <p class="caption mb-8">${currentLang === 'ko' ? 'RSI 과매도/과매수 · MACD 크로스 신호 · 볼린저밴드 %B · VWAP 편차 기반 목표가' : 'RSI Oversold/Overbought · MACD Cross Signal · BB %B · VWAP Deviation Targets'}</p>
         <div class="strategy-grid-4">
             ${renderSignalCard('<span class="ms">trending_down</span>', 'RSI (14)', `${rsi.toFixed(1)}`, rsi_t, rsi_c, '30↓ 강매수 / 70↑ 매도')}
             ${renderSignalCard('<span class="ms">bar_chart</span>', 'MACD', `${macd.toFixed(3)}`, mt, mc, `Sig ${msig.toFixed(3)} | Δ${(macd - msig) >= 0 ? '+' : ''}${(macd - msig).toFixed(3)}`)}
-            ${renderSignalCard('<span class="ms">radar</span>', 'BB %B', `${bb_pctB.toFixed(1)}%`, bb_t, bb_c, `폭 ${fmtPrice(bb_w)} (${(bb_w / bb_m * 100).toFixed(1)}%)`)}
-            ${renderSignalCard('<span class="ms">balance</span>', 'VWAP', fmtPrice(vwap), vt, vc, `현가 대비 ${vwap_dev >= 0 ? '+' : ''}${vwap_dev.toFixed(1)}%`)}
+            ${renderSignalCard('<span class="ms">radar</span>', 'BB %B', `${bb_pctB.toFixed(1)}%`, bb_t, bb_c, `${currentLang === 'ko' ? '폭' : 'Width'} ${fmtPrice(bb_w)} (${(bb_w / bb_m * 100).toFixed(1)}%)`)}
+            ${renderSignalCard('<span class="ms">balance</span>', 'VWAP', fmtPrice(vwap), vt, vc, `${L('vs_current_pct')} ${vwap_dev >= 0 ? '+' : ''}${vwap_dev.toFixed(1)}%`)}
         </div>
 
-        <h4 class="subheader"><span class="ms">my_location</span> 단기 목표가 산출</h4>
+        <h4 class="subheader"><span class="ms">my_location</span> ${L('st_target_title')}</h4>
         <div class="strategy-grid-4">
-            ${renderTargetCard('현재가', close, '#ffffff', '기준가', sym)}
-            ${renderTargetCard('1차 목표', st_t1, '#00C851', `BB중심/VWAP | ${((st_t1 - close) / close * 100).toFixed(1)}%`, sym)}
-            ${renderTargetCard('2차 목표', st_t2, '#ffaa00', `BB상단 | ${((st_t2 - close) / close * 100).toFixed(1)}%`, sym)}
-            ${renderTargetCard('손절선', st_sl, '#FF4444', `BB하단·최근저점 | ${((st_sl - close) / close * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('current_price_label'), close, '#ffffff', currentLang === 'ko' ? '기준가' : 'Base', sym)}
+            ${renderTargetCard(L('target1_short'), st_t1, '#00C851', `${currentLang === 'ko' ? 'BB중심/VWAP' : 'BB Mid/VWAP'} | ${((st_t1 - close) / close * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('target2_short'), st_t2, '#ffaa00', `${currentLang === 'ko' ? 'BB상단' : 'BB Upper'} | ${((st_t2 - close) / close * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('stoploss_line'), st_sl, '#FF4444', `${currentLang === 'ko' ? 'BB하단·최근저점' : 'BB Lower·Recent Low'} | ${((st_sl - close) / close * 100).toFixed(1)}%`, sym)}
         </div>
         <div class="rr-bar">
-            <span>손익비(1차): <b style="color:${rr1c};">1:${st_rr1.toFixed(1)}</b></span>
-            <span>손익비(2차): <b style="color:${rr2c};">1:${st_rr2.toFixed(1)}</b></span>
-            <span>매수신호: <b style="color:${sc};">${buy_cnt}/4</b></span>
+            <span>${L('profit_ratio')}(1): <b style="color:${rr1c};">1:${st_rr1.toFixed(1)}</b></span>
+            <span>${L('profit_ratio')}(2): <b style="color:${rr2c};">1:${st_rr2.toFixed(1)}</b></span>
+            <span>${L('buy_signal_cnt')}: <b style="color:${sc};">${buy_cnt}/4</b></span>
             <span>VWAP: <b>${fmtPrice(vwap)}</b></span>
         </div>
         <div class="action-banner mt-16" style="background:${ac}18;border-color:${ac};">
@@ -1459,7 +1615,7 @@ function renderSwingStrategy(d, sym, rate) {
         const near = Math.abs(f.level - close) / Math.max(close, 1e-9) < 0.025;
         const c = fibColors[f.pct] || '#888';
         const cls = near ? 'fib-card near' : 'fib-card';
-        const nearLabel = near ? '<div class="near-label">◀ 현재근접</div>' : '';
+        const nearLabel = near ? `<div class="near-label">${L('fib_near')}</div>` : '';
         fibHtml += `<div class="${cls}"><div class="pct" style="color:${c};">${f.pct}</div><div class="level">${fmtPrice(f.level)}</div>${nearLabel}</div>`;
     });
 
@@ -1467,7 +1623,7 @@ function renderSwingStrategy(d, sym, rate) {
     const maTc = ma20 > ma60 ? '#00C851' : '#FF4444';
     const ma20Dev = (close - ma20) / ma20 * 100;
     const ma60Dev = (close - ma60) / ma60 * 100;
-    const trend = ma20 > ma60 ? '정배열 <span class="ms green">trending_up</span>' : '역배열 <span class="ms red">trending_down</span>';
+    const trend = ma20 > ma60 ? L('ma_golden') + ' <span class="ms green">trending_up</span>' : L('ma_dead_arr') + ' <span class="ms red">trending_down</span>';
 
     // Swing targets
     const sw_entry = close;
@@ -1484,53 +1640,53 @@ function renderSwingStrategy(d, sym, rate) {
     const atSupport = close <= nearSupport.level * 1.04;
     let ac, atTxt, ag;
     if (uptrend && atSupport) {
-        ac = '#00C851'; atTxt = '<span class="ms green">check_circle</span> 스윙 매수 구간 (눌림목)'; ag = '정배열 + 피보나치 지지권. 손익비 1:2 분할 진입 권장.';
+        ac = '#00C851'; atTxt = '<span class="ms green">check_circle</span> ' + L('swing_buy_zone'); ag = currentLang === 'ko' ? '정배열 + 피보나치 지지권. 손익비 1:2 분할 진입 권장.' : 'Bullish alignment + Fibonacci support. Consider staged entry at R:R 1:2.';
     } else if (!(ma20 > ma60)) {
-        ac = '#FF4444'; atTxt = '<span class="ms orange">warning</span> 스윙 진입 비추천'; ag = 'MA 역배열. MA20 돌파 확인 후 재진입 검토.';
+        ac = '#FF4444'; atTxt = '<span class="ms orange">warning</span> ' + L('swing_avoid'); ag = currentLang === 'ko' ? 'MA 역배열. MA20 돌파 확인 후 재진입 검토.' : 'Bearish MA alignment. Wait for MA20 breakout before re-entry.';
     } else {
-        ac = '#FFA500'; atTxt = '<span class="ms orange">hourglass_empty</span> 눌림목 대기';
+        ac = '#FFA500'; atTxt = '<span class="ms orange">hourglass_empty</span> ' + L('swing_wait');
         const fib38 = fibs.find(f => f.pct === '38.2%');
         const fib50 = fibs.find(f => f.pct === '50%');
-        ag = `상승추세 중 MA20 위. 피보 38.2%~50% 되돌림 구간(${fib38 ? fmtPrice(fib38.level) : '-'}~${fib50 ? fmtPrice(fib50.level) : '-'}) 진입 검토.`;
+        ag = currentLang === 'ko' ? `상승추세 중 MA20 위. 피보 38.2%~50% 되돌림 구간(${fib38 ? fmtPrice(fib38.level) : '-'}~${fib50 ? fmtPrice(fib50.level) : '-'}) 진입 검토.` : `Uptrend above MA20. Consider entry at Fib 38.2%–50% zone (${fib38 ? fmtPrice(fib38.level) : '-'}–${fib50 ? fmtPrice(fib50.level) : '-'}).`;
     }
 
     return `
-        <p class="caption mb-8">피보나치 되돌림 지지/저항 · 20/60일 이동평균 · 손익비 1:2 기반 목표가</p>
+        <p class="caption mb-8">${currentLang === 'ko' ? '피보나치 되돌림 지지/저항 · 20/60일 이동평균 · 손익비 1:2 기반 목표가' : 'Fibonacci support/resistance · MA20/MA60 · R:R 1:2 targets'}</p>
 
-        <h4 class="subheader"><span class="ms">straighten</span> 피보나치 되돌림 (최근 60거래일)</h4>
-        <div class="fib-grid">${fibHtml || '<div class="caption">피보나치 데이터 없음</div>'}</div>
+        <h4 class="subheader"><span class="ms">straighten</span> ${L('fib_title')}</h4>
+        <div class="fib-grid">${fibHtml || `<div class="caption">${currentLang === 'ko' ? '피보나치 데이터 없음' : 'No Fibonacci data'}</div>`}</div>
 
-        <h4 class="subheader"><span class="ms">trending_up</span> 20/60일 이동평균</h4>
+        <h4 class="subheader"><span class="ms">trending_up</span> ${L('ma_title')}</h4>
         <div class="ma-grid">
             <div class="signal-card" style="border:1px solid #44aaff55;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color: var(--muted);">20일 이평선</div>
+                <div style="font-size:0.75em;color: var(--muted);">${L('ma20_label')}</div>
                 <div style="font-size:0.9em;font-weight:bold;color:#44aaff;margin:4px 0;">${dualPrice(ma20, sym, rate)}</div>
-                <div style="font-size:0.7em;color:${ma20Dev >= 0 ? '#00C851' : '#FF4444'};">현재가 대비 ${ma20Dev >= 0 ? '+' : ''}${ma20Dev.toFixed(1)}%</div>
+                <div style="font-size:0.7em;color:${ma20Dev >= 0 ? '#00C851' : '#FF4444'};">${L('vs_current_pct')} ${ma20Dev >= 0 ? '+' : ''}${ma20Dev.toFixed(1)}%</div>
             </div>
             <div class="signal-card" style="border:1px solid #ff880055;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color: var(--muted);">60일 이평선</div>
+                <div style="font-size:0.75em;color: var(--muted);">${L('ma60_label')}</div>
                 <div style="font-size:0.9em;font-weight:bold;color:#ff8800;margin:4px 0;">${dualPrice(ma60, sym, rate)}</div>
-                <div style="font-size:0.7em;color:${ma60Dev >= 0 ? '#00C851' : '#FF4444'};">현재가 대비 ${ma60Dev >= 0 ? '+' : ''}${ma60Dev.toFixed(1)}%</div>
+                <div style="font-size:0.7em;color:${ma60Dev >= 0 ? '#00C851' : '#FF4444'};">${L('vs_current_pct')} ${ma60Dev >= 0 ? '+' : ''}${ma60Dev.toFixed(1)}%</div>
             </div>
             <div class="signal-card" style="border:1px solid ${maTc}55;border-radius:10px;padding:10px;">
-                <div style="font-size:0.75em;color: var(--muted);">배열 상태</div>
+                <div style="font-size:0.75em;color: var(--muted);">${L('ma_status')}</div>
                 <div style="font-size:1.0em;font-weight:bold;color:${maTc};margin:4px 0;">${trend}</div>
                 <div style="font-size:0.7em;color: var(--muted-darker);">MA20 ${ma20 > ma60 ? '>' : '<'} MA60</div>
             </div>
         </div>
 
-        <h4 class="subheader"><span class="ms">my_location</span> 스윙 목표가 산출 (손익비 1:2)</h4>
+        <h4 class="subheader"><span class="ms">my_location</span> ${L('swing_target_title')}</h4>
         <div class="strategy-grid-4">
-            ${renderTargetCard('진입가', sw_entry, '#ffffff', '현재가 기준', sym)}
-            ${renderTargetCard('1차 목표', sw_t1, '#00C851', `손익비 1:2 | ${((sw_t1 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
-            ${renderTargetCard('2차 목표', sw_t2, '#ffaa00', `손익비 1:3 | ${((sw_t2 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
-            ${renderTargetCard('손절선', sw_sl, '#FF4444', `피보 지지 하단 | ${((sw_sl - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('entry_price'), sw_entry, '#ffffff', currentLang === 'ko' ? '현재가 기준' : 'Based on current', sym)}
+            ${renderTargetCard(L('target1_short'), sw_t1, '#00C851', `R:R 1:2 | ${((sw_t1 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('target2_short'), sw_t2, '#ffaa00', `R:R 1:3 | ${((sw_t2 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
+            ${renderTargetCard(L('stoploss_line'), sw_sl, '#FF4444', `${L('fib_support')} | ${((sw_sl - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
         </div>
         <div class="rr-bar">
-            <span>손익비(1차): <b style="color:${rr1c};">1:${sw_rr1.toFixed(1)}</b></span>
-            <span>손익비(2차): <b style="color:${rr2c};">1:${sw_rr2.toFixed(1)}</b></span>
-            <span>피보 지지: <b>${nearSupport.pct} (${fmtPrice(nearSupport.level)})</b></span>
-            <span>피보 저항: <b>${nearResist.pct} (${fmtPrice(nearResist.level)})</b></span>
+            <span>${L('profit_ratio')}(1): <b style="color:${rr1c};">1:${sw_rr1.toFixed(1)}</b></span>
+            <span>${L('profit_ratio')}(2): <b style="color:${rr2c};">1:${sw_rr2.toFixed(1)}</b></span>
+            <span>${L('fib_support')}: <b>${nearSupport.pct} (${fmtPrice(nearSupport.level)})</b></span>
+            <span>${L('fib_resist')}: <b>${nearResist.pct} (${fmtPrice(nearResist.level)})</b></span>
         </div>
         <div class="action-banner mt-16" style="background:${ac}18;border-color:${ac};">
             <div class="title" style="color:${ac};">${atTxt}</div>
@@ -1560,12 +1716,12 @@ function renderLongTermStrategy(d, sym, rate) {
     // ROE cards
     function profCard(label, rawVal, threshHi, threshLo, unit) {
         const c = rawVal != null && rawVal > threshHi ? '#00C851' : (rawVal != null && rawVal > threshLo ? '#FFA500' : '#FF4444');
-        const jd = rawVal != null && rawVal > threshHi ? '우수' : (rawVal != null && rawVal > threshLo ? '양호' : '부진');
+        const jd = rawVal != null && rawVal > threshHi ? L('excellent') : (rawVal != null && rawVal > threshLo ? L('good') : L('poor'));
         const valStr = rawVal != null ? `${rawVal.toFixed(1)}${unit}` : '—';
         return `<div class="signal-card" style="border:1px solid ${c}55;border-radius:10px;padding:12px;">
             <div style="font-size:0.75em;color: var(--muted);">${label}</div>
             <div style="font-size:1.1em;font-weight:bold;color:${c};margin:5px 0;">${valStr}</div>
-            <div style="font-size:0.7em;color: var(--muted-darker);">${rawVal != null ? jd : '데이터 없음'}</div>
+            <div style="font-size:0.7em;color: var(--muted-darker);">${rawVal != null ? jd : L('no_data_label')}</div>
         </div>`;
     }
 
@@ -1586,7 +1742,7 @@ function renderLongTermStrategy(d, sym, rate) {
     const pbPrem = pbFair ? (pbFair - close) / close * 100 : null;
 
     // DCF
-    let dcfHtml = '<div class="caption">FCF 데이터 없음. DCF 계산 불가. (FCF > 0인 흑자 기업에만 적용)</div>';
+    let dcfHtml = `<div class="caption">${L('dcf_no_fcf')}</div>`;
     let dcfValue = null;
     const defaultG = Math.max(0.0, Math.min(0.30, eg || revGrowth || 0.10));
     const growthR = defaultG;
@@ -1607,17 +1763,17 @@ function renderLongTermStrategy(d, sym, rate) {
 
         const dcfPrem = (dcfValue - close) / close * 100;
         const dc = dcfPrem > 0 ? '#00C851' : '#FF4444';
-        const dj = dcfPrem > 30 ? '강한 매수 (30%+ 저평가)' : (dcfPrem > 10 ? '매수 고려 (10%+ 저평가)' : (dcfPrem > -10 ? '적정 수준' : '고평가 주의'));
+        const dj = dcfPrem > 30 ? L('dcf_strong_buy') : (dcfPrem > 10 ? L('dcf_buy') : (dcfPrem > -10 ? L('fair_value') : L('dcf_overvalue')));
 
         dcfHtml = `
             <div class="dcf-detail">
                 <div class="row">
-                    <div><div class="lbl">FCF/주</div><div class="val">${dualPrice(fcfPs, sym, rate)}</div></div>
-                    <div><div class="lbl">PV (5년 FCF)</div><div class="val">${dualPrice(pv5y, sym, rate)}</div></div>
-                    <div><div class="lbl">PV (영구가치)</div><div class="val">${dualPrice(pvTerm, sym, rate)}</div></div>
+                    <div><div class="lbl">${L('fcf_ps')}</div><div class="val">${dualPrice(fcfPs, sym, rate)}</div></div>
+                    <div><div class="lbl">${L('pv_5y')}</div><div class="val">${dualPrice(pv5y, sym, rate)}</div></div>
+                    <div><div class="lbl">${L('pv_term')}</div><div class="val">${dualPrice(pvTerm, sym, rate)}</div></div>
                 </div>
                 <div class="dcf-result">
-                    <span style="color: var(--muted);font-size:0.78em;">DCF 내재가치: </span>
+                    <span style="color: var(--muted);font-size:0.78em;">${L('dcf_intrinsic')}: </span>
                     <span style="font-size:1.1em;font-weight:bold;color:${dc};">${dualPrice(dcfValue, sym, rate)}</span>
                     <span style="color:${dc};font-size:0.84em;margin-left:8px;">(${dcfPrem >= 0 ? '+' : ''}${dcfPrem.toFixed(1)}%)</span>
                 </div>
@@ -1628,18 +1784,18 @@ function renderLongTermStrategy(d, sym, rate) {
 
     // Summary fair value
     const validFv = [perFair, pbFair, dcfValue].filter(v => v != null && v > 0);
-    let summaryHtml = '<div class="caption">재무 데이터 부족으로 종합 평가 불가</div>';
+    let summaryHtml = `<div class="caption">${L('no_fin_data')}</div>`;
     if (validFv.length > 0) {
         const avgFv = validFv.reduce((a, b) => a + b, 0) / validFv.length;
         const avgPrem = (avgFv - close) / close * 100;
         const ac = avgPrem > 0 ? '#00C851' : '#FF4444';
-        const jl = avgPrem > 30 ? '<span class="ms green">favorite</span> 강한 저평가' : (avgPrem > 10 ? '<span class="ms green">check_circle</span> 저평가 구간' : (avgPrem > -10 ? '<span class="ms">bar_chart</span> 적정 수준' : (avgPrem > -30 ? '<span class="ms orange">warning</span> 고평가 주의' : '<span class="ms red">cancel</span> 심한 고평가')));
+        const jl = avgPrem > 30 ? '<span class="ms green">favorite</span> ' + L('strong_undervalue') : (avgPrem > 10 ? '<span class="ms green">check_circle</span> ' + L('undervalue_zone') : (avgPrem > -10 ? '<span class="ms">bar_chart</span> ' + L('fair_value') : (avgPrem > -30 ? '<span class="ms orange">warning</span> ' + L('overvalue_warn') : '<span class="ms red">cancel</span> ' + L('strong_overvalue'))));
         summaryHtml = `
             <div class="summary-box" style="border-color:${ac}55;background:${ac}0d;">
-                <div class="title"><span class="ms">bar_chart</span> 종합 적정주가</div>
+                <div class="title"><span class="ms">bar_chart</span> ${L('fair_value_total')}</div>
                 <div class="value" style="color:${ac};">${dualPrice(avgFv, sym, rate)}</div>
                 <div class="pct" style="color:${ac};">${avgPrem >= 0 ? '+' : ''}${avgPrem.toFixed(1)}%</div>
-                <div class="note">PER / PBR / DCF 평균</div>
+                <div class="note">${L('per_pbr_avg')}</div>
                 <div class="judge" style="color:${ac};">${jl}</div>
             </div>
         `;
@@ -1651,7 +1807,7 @@ function renderLongTermStrategy(d, sym, rate) {
             return `<div class="signal-card" style="border:1px solid ${c}55;border-radius:10px;padding:12px;background:${c}0d;">
                 <div style="font-size:0.75em;color: var(--muted);">${lbl}</div>
                 <div style="font-size:0.9em;font-weight:bold;color:${c};margin:5px 0;">${dualPrice(fv, sym, rate)}</div>
-                <div style="font-size:0.7em;color:${c};">현재가 대비 ${prem >= 0 ? '+' : ''}${prem.toFixed(1)}%</div>
+                <div style="font-size:0.7em;color:${c};">${L('vs_current_pct')} ${prem >= 0 ? '+' : ''}${prem.toFixed(1)}%</div>
                 <div style="font-size:0.65em;color: var(--muted-darker);margin-top:2px;">${desc}</div>
             </div>`;
         }
@@ -1661,27 +1817,27 @@ function renderLongTermStrategy(d, sym, rate) {
         </div>`;
     }
 
-    const perPbrStr = pe && pb ? `PER ${pe.toFixed(1)}x | PBR ${pb.toFixed(2)}x` : '데이터 없음';
+    const perPbrStr = pe && pb ? `PER ${pe.toFixed(1)}x | PBR ${pb.toFixed(2)}x` : L('no_data_label');
 
     return `
-        <p class="caption mb-8">PER/PBR 적정주가 · ROE 분석 · DCF 내재가치 (잉여현금흐름 5년 할인 + 영구가치)</p>
+        <p class="caption mb-8">${currentLang === 'ko' ? 'PER/PBR 적정주가 · ROE 분석 · DCF 내재가치 (잉여현금흐름 5년 할인 + 영구가치)' : 'PER/PBR Fair Value · ROE Analysis · DCF Intrinsic Value (5yr FCF + Terminal)'}</p>
 
-        <h4 class="subheader"><span class="ms">bar_chart</span> 수익성 지표 (ROE · 영업이익률 · 이익성장률)</h4>
+        <h4 class="subheader"><span class="ms">bar_chart</span> ${L('prof_title')}</h4>
         <div class="profitability-grid">
             ${profCard('ROE', roeVal, 15, 8, '%')}
-            ${profCard('영업이익률', opVal, 15, 8, '%')}
-            ${profCard('이익성장률(YoY)', egVal, 15, 5, '%')}
+            ${profCard(L('op_margin'), opVal, 15, 8, '%')}
+            ${profCard(currentLang === 'ko' ? '이익성장률(YoY)' : 'Earnings Growth (YoY)', egVal, 15, 5, '%')}
         </div>
 
-        <h4 class="subheader"><span class="ms">straighten</span> PER / PBR 기반 적정주가</h4>
+        <h4 class="subheader"><span class="ms">straighten</span> ${L('per_pbr_title')}</h4>
         <div class="fair-value-grid">
-            ${fairValueCard('PER 적정주가', perFair, perPrem, eps ? `EPS ${fmtPrice(eps)} × PER ${sectorPer.toFixed(0)}x` : '데이터 없음')}
-            ${fairValueCard('PBR 적정주가', pbFair, pbPrem, 'BPS × 적정PBR (ROE×10, 최소 1.0)')}
-            ${fairValueCard('현재 PER/PBR', null, null, perPbrStr)}
+            ${fairValueCard(L('per_fair'), perFair, perPrem, eps ? `EPS ${fmtPrice(eps)} × PER ${sectorPer.toFixed(0)}x` : L('no_data_label'))}
+            ${fairValueCard(L('pbr_fair'), pbFair, pbPrem, currentLang === 'ko' ? 'BPS × 적정PBR (ROE×10, 최소 1.0)' : 'BPS × Fair PBR (ROE×10, min 1.0)')}
+            ${fairValueCard(L('current_per_pbr'), null, null, perPbrStr)}
         </div>
 
-        <h4 class="subheader"><span class="ms">payments</span> DCF 내재가치 분석</h4>
-        <p class="caption mb-8">5년 성장 + 영구가치(Gordon Growth Model) · 잉여현금흐름(FCF/주) 기반 · 성장률 ${(growthR * 100).toFixed(1)}% / WACC 10% / 영구성장 3%</p>
+        <h4 class="subheader"><span class="ms">payments</span> ${L('dcf_title')}</h4>
+        <p class="caption mb-8">${currentLang === 'ko' ? `5년 성장 + 영구가치(Gordon Growth Model) · 잉여현금흐름(FCF/주) 기반 · 성장률 ${(growthR * 100).toFixed(1)}% / WACC 10% / 영구성장 3%` : `5yr Growth + Terminal (Gordon Growth Model) · FCF/Share based · Growth ${(growthR * 100).toFixed(1)}% / WACC 10% / Terminal 3%`}</p>
         <div class="dcf-layout">
             <div>${dcfHtml}</div>
             <div>${summaryHtml}</div>
@@ -1713,7 +1869,7 @@ function toggleChartCurrency(btn, mode) {
 function _buildChart(d, currencyMode) {
     const chart = d.chart;
     if (!chart || chart.length === 0) {
-        document.getElementById('chartContainer').innerHTML = '<div class="loading">차트 데이터 없음</div>';
+        document.getElementById('chartContainer').innerHTML = `<div class="loading">${L('chart_no_data')}</div>`;
         return;
     }
 
@@ -1902,7 +2058,7 @@ function renderCompanyInfo(info, card) {
     if (info.sector)    parts.push(`<span class="co-tag"><span class="ms sm">category</span> ${info.sector}</span>`);
     if (info.industry)  parts.push(`<span class="co-tag"><span class="ms sm">factory</span> ${info.industry}</span>`);
     if (info.country)   parts.push(`<span class="co-tag"><span class="ms sm">public</span> ${info.country}</span>`);
-    if (info.employees) parts.push(`<span class="co-tag"><span class="ms sm">group</span> ${Number(info.employees).toLocaleString()}명</span>`);
+    if (info.employees) parts.push(`<span class="co-tag"><span class="ms sm">group</span> ${Number(info.employees).toLocaleString()}${L('employees_unit')}</span>`);
     if (info.exchange)  parts.push(`<span class="co-tag"><span class="ms sm">store</span> ${info.exchange}</span>`);
     if (info.currency)  parts.push(`<span class="co-tag"><span class="ms sm">payments</span> ${info.currency}</span>`);
 
@@ -1920,7 +2076,7 @@ function renderCompanyInfo(info, card) {
     }
 
     if (!html) {
-        card.innerHTML = `<span class="caption muted">회사 정보 없음</span>`;
+        card.innerHTML = `<span class="caption muted">${L('no_company_info')}</span>`;
         return;
     }
     card.innerHTML = html;
@@ -1941,7 +2097,7 @@ async function loadFinancials(sym) {
         renderFinancials(fin);
     } catch (e) {
         const body = document.getElementById('financialsBody');
-        if (body) body.innerHTML = `<div class="caption">재무 데이터를 불러올 수 없습니다. (${e.message})</div>`;
+        if (body) body.innerHTML = `<div class="caption">${L('fin_error')} (${e.message})</div>`;
     }
 }
 
@@ -2285,7 +2441,7 @@ let watchlistLoaded = false;
 async function loadWatchlist(force = false) {
     if (watchlistLoaded && !force) return;
     const container = document.getElementById('watchlistContent');
-    container.innerHTML = '<div class="loading">전체 종목 분석 중... (최초 로딩 30초 내외)</div>';
+    container.innerHTML = `<div class="loading">${L('wl_loading')}</div>`;
 
     try {
         const res = await fetch(`${API}/api/market/watchlist`);
@@ -2294,18 +2450,19 @@ async function loadWatchlist(force = false) {
         renderWatchlist(data, container);
         watchlistLoaded = true;
     } catch (e) {
-        container.innerHTML = `<div class="error-msg">추천 종목을 불러올 수 없습니다.</div>`;
+        container.innerHTML = `<div class="error-msg">${L('wl_error')}</div>`;
     }
 }
 
 function renderWatchlist(data, container) {
+    window._lastWatchlistData = data;
     let html = '';
     for (const [category, rows] of Object.entries(data)) {
         if (!rows || rows.length === 0) continue;
         html += `<div class="watchlist-category"><h4>${category}</h4>`;
         html += `<table class="wl-table"><thead><tr>
-            <th>종목</th><th>현재가</th><th>등락</th><th>RSI</th><th>매수 목표가</th>
-            <th>1차 목표</th><th>2차 목표</th><th>단기</th><th>중기</th><th>장기</th><th>추천 이유</th>
+            <th>${L('wl_name')}</th><th>${L('wl_price')}</th><th>${L('wl_change')}</th><th>${L('wl_rsi')}</th><th>${L('wl_entry')}</th>
+            <th>${L('wl_target1')}</th><th>${L('wl_target2')}</th><th>${L('wl_short')}</th><th>${L('wl_mid')}</th><th>${L('wl_long')}</th><th>${L('wl_reason')}</th>
         </tr></thead><tbody>`;
         for (const r of rows) {
             const chg = r.change_pct ?? 0;
@@ -2336,7 +2493,7 @@ function renderWatchlist(data, container) {
                 <td style="color:${crs};font-weight:600;">${noData ? '—' : Number(retS).toFixed(1) + '%'}</td>
                 <td style="color:${crm};font-weight:600;">${noData ? '—' : Number(retM).toFixed(1) + '%'}</td>
                 <td style="color:${crl};font-weight:600;">${noData ? '—' : Number(retL).toFixed(1) + '%'}</td>
-                <td style="color:var(--text-secondary);max-width:200px;">${r.reason || '지표 혼조'}</td>
+                <td style="color:var(--text-secondary);max-width:200px;">${r.reason || L('wl_mixed')}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';
@@ -2367,7 +2524,7 @@ async function loadThemes(force = false) {
         if (firstTheme) selectTheme(firstTheme);
         themesLoaded = true;
     } catch (e) {
-        contentContainer.innerHTML = `<div class="error-msg">테마 데이터를 불러올 수 없습니다.</div>`;
+        contentContainer.innerHTML = `<div class="error-msg">${L('theme_error')}</div>`;
     }
 }
 
@@ -2420,7 +2577,7 @@ async function renderThemeContent(name) {
         </div>
     `;
 
-    container.innerHTML = headerHtml + '<div class="loading">테마 종목 실시간 분석 중... (최초 30초 내외)</div>';
+    container.innerHTML = headerHtml + `<div class="loading">${L('theme_loading')}</div>`;
 
     try {
         const res = await fetch(`${API}/api/market/themes/${encodeURIComponent(name)}/analyze`);
@@ -2431,9 +2588,9 @@ async function renderThemeContent(name) {
         renderThemeStocksTable(headerHtml, stocks, container);
     } catch (e) {
         // 분석 실패 시 정적 목록만 표시
-        let html = headerHtml + '<p class="caption mb-8">실시간 분석을 불러올 수 없습니다. 정적 목록을 표시합니다.</p>';
+        let html = headerHtml + `<p class="caption mb-8">${L('theme_static_fail')}</p>`;
         if (theme.stocks) {
-            html += '<table class="theme-table"><thead><tr><th>종목</th><th>티커</th><th>설명</th></tr></thead><tbody>';
+            html += `<table class="theme-table"><thead><tr><th>${L('theme_name_col')}</th><th>${L('theme_ticker_col')}</th><th>${L('theme_desc_col')}</th></tr></thead><tbody>`;
             theme.stocks.forEach(s => {
                 html += `<tr>
                     <td><b>${s.name}</b></td>
@@ -2458,19 +2615,19 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
     stocks.forEach(r => { _themeStockMap[_safeId(r.ticker)] = r; });
 
     let html = headerHtml;
-    html += `<p class="text-sm mb-8"><b>총 ${total}개 종목</b> · 매수 신호 강도 순 · 페이지 ${page + 1} / ${totalPages}</p>`;
+    html += `<p class="text-sm mb-8"><b>${currentLang === 'ko' ? `총 ${total}개 종목` : `${total} stocks`}</b> · ${currentLang === 'ko' ? '매수 신호 강도 순' : 'Sorted by signal strength'} · ${currentLang === 'ko' ? `페이지 ${page + 1} / ${totalPages}` : `Page ${page + 1} / ${totalPages}`}</p>`;
     html += `<table class="theme-table">
         <thead><tr>
-            <th style="width:44px">순위</th>
-            <th>종목</th>
-            <th>현재가</th>
-            <th>등락</th>
-            <th>RSI</th>
-            <th>매수가</th>
-            <th>목표가</th>
-            <th>단기수익</th>
-            <th>판단</th>
-            <th>매수 근거</th>
+            <th style="width:44px">${L('rank_col')}</th>
+            <th>${L('theme_name_col')}</th>
+            <th>${L('wl_price')}</th>
+            <th>${L('change_col')}</th>
+            <th>${L('wl_rsi')}</th>
+            <th>${L('entry_col')}</th>
+            <th>${L('target_col')}</th>
+            <th>${L('short_return')}</th>
+            <th>${L('verdict_col')}</th>
+            <th>${L('buy_basis')}</th>
             <th style="width:32px"></th>
         </tr></thead><tbody>`;
 
@@ -2560,7 +2717,7 @@ function _buildThemeDetailHtml(r, sid) {
     const rate  = exchangeRate;
 
     if (r.close === null || r.close === undefined) {
-        return `<div style="padding:16px;color:var(--muted);">데이터를 불러올 수 없는 종목입니다.</div>`;
+        return `<div style="padding:16px;color:var(--muted);">${L('no_data_label')}</div>`;
     }
 
     // 지표 계산
@@ -2574,11 +2731,11 @@ function _buildThemeDetailHtml(r, sid) {
     const sell_cnt = [rsi_s, macd_s, bb_s, ma_s, stk_s].filter(s => s === '매도').length;
     const vColor   = r.color || '#FFA500';
 
-    const rsiMsg  = `RSI ${fmt(r.rsi, 1)} — ${rsi_s === '매수' ? '과매도' : rsi_s === '매도' ? '과매수' : '중립'}`;
-    const macdMsg = macd_s === '매수' ? 'MACD > Signal — 상승' : 'MACD < Signal — 하락';
-    const bbMsg   = bb_s === '매수' ? '하단 이탈 — 반등 기대' : (bb_s === '매도' ? '상단 이탈 — 과열' : '중간 범위');
-    const maMsg   = ma_s === '매수' ? '정배열 (MA20 > MA60)' : (ma_s === '매도' ? '역배열' : 'MA 혼조');
-    const stkMsg  = `스토캐스틱 ${stk_s === '매수' ? '과매도' : stk_s === '매도' ? '과매수' : '중립'} (K:${fmt(r.stoch_k, 1)})`;
+    const rsiMsg  = `RSI ${fmt(r.rsi, 1)} — ${rsi_s === '매수' ? L('rsi_oversold') : rsi_s === '매도' ? L('rsi_overbought') : L('neutral')}`;
+    const macdMsg = macd_s === '매수' ? `MACD > Signal — ${L('macd_up')}` : `MACD < Signal — ${L('macd_down')}`;
+    const bbMsg   = bb_s === '매수' ? L('bb_lower') : (bb_s === '매도' ? L('bb_upper') : L('bb_mid'));
+    const maMsg   = ma_s === '매수' ? L('ma_up') : (ma_s === '매도' ? L('ma_down') : L('ma_mixed'));
+    const stkMsg  = `${L('stoch_indicator')} ${stk_s === '매수' ? L('stoch_oversold') : stk_s === '매도' ? L('stoch_overbought') : L('neutral')} (K:${fmt(r.stoch_k, 1)})`;
 
     // 전략 계산용 데이터 객체 (renderShortTermStrategy / renderSwingStrategy 호환)
     const d = {
@@ -2596,20 +2753,20 @@ function _buildThemeDetailHtml(r, sid) {
     // 매매 전략 advice (renderAnalysis와 동일 로직)
     let advTitle, advColor, advDesc;
     if (buy_cnt >= 3) {
-        advTitle = '<span class="ms green">check_circle</span> 매수 고려 가능'; advColor = '#00C851';
-        advDesc = `${buy_cnt}개 지표 매수 신호. `;
-        if (bb_s === '매수') advDesc += 'BB 하단 지지. ';
-        if (rsi_s === '매수') advDesc += 'RSI 과매도. ';
-        if (ma_s === '매수') advDesc += 'MA 정배열.';
+        advTitle = '<span class="ms green">check_circle</span> ' + L('advice_buy'); advColor = '#00C851';
+        advDesc = `${buy_cnt} ${currentLang === 'ko' ? '개 지표 매수 신호' : 'buy signals'}. `;
+        if (bb_s === '매수') advDesc += currentLang === 'ko' ? 'BB 하단 지지. ' : 'BB lower support. ';
+        if (rsi_s === '매수') advDesc += currentLang === 'ko' ? 'RSI 과매도. ' : 'RSI oversold. ';
+        if (ma_s === '매수') advDesc += currentLang === 'ko' ? 'MA 정배열.' : 'MA bullish.';
     } else if (sell_cnt >= 3) {
-        advTitle = '<span class="ms red">block</span> 매수 비추천 (관망)'; advColor = '#FF4444';
-        advDesc = `${sell_cnt}개 지표 매도 신호. `;
-        if (bb_s === '매도') advDesc += 'BB 상단 과열. ';
-        if (rsi_s === '매도') advDesc += 'RSI 과매수. ';
-        if (ma_s === '매도') advDesc += 'MA 역배열.';
+        advTitle = '<span class="ms red">block</span> ' + L('advice_sell'); advColor = '#FF4444';
+        advDesc = `${sell_cnt} ${currentLang === 'ko' ? '개 지표 매도 신호' : 'sell signals'}. `;
+        if (bb_s === '매도') advDesc += currentLang === 'ko' ? 'BB 상단 과열. ' : 'BB upper overheated. ';
+        if (rsi_s === '매도') advDesc += currentLang === 'ko' ? 'RSI 과매수. ' : 'RSI overbought. ';
+        if (ma_s === '매도') advDesc += currentLang === 'ko' ? 'MA 역배열.' : 'MA bearish.';
     } else {
-        advTitle = '<span class="ms orange">hourglass_empty</span> 관망 (추세 확인 후 진입)'; advColor = '#FFA500';
-        advDesc = '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 시 매수 신호.';
+        advTitle = '<span class="ms orange">hourglass_empty</span> ' + L('advice_neutral'); advColor = '#FFA500';
+        advDesc = currentLang === 'ko' ? '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 시 매수 신호.' : 'Mixed signals. Watch for MACD reversal or RSI below 30.';
     }
 
     return `
@@ -2618,8 +2775,8 @@ function _buildThemeDetailHtml(r, sid) {
 
         <!-- 종합 판단 배너 -->
         <div class="verdict-banner" style="background:${vColor}22;border-color:${vColor};color:${vColor};margin-bottom:14px;">
-            <h2>종합 판단: ${r.verdict}</h2>
-            <div class="sub">매수 신호 ${buy_cnt}개 · 매도 신호 ${sell_cnt}개 · 중립 ${5 - buy_cnt - sell_cnt}개</div>
+            <h2>${L('verdict_title')}: ${dSignal(r.verdict)}</h2>
+            <div class="sub">${L('buy_signals_cnt')} ${buy_cnt} · ${L('sell_signals_cnt')} ${sell_cnt} · ${L('neutral_cnt')} ${5 - buy_cnt - sell_cnt}</div>
         </div>
 
         <!-- 매매 전략 배너 -->
@@ -2629,31 +2786,31 @@ function _buildThemeDetailHtml(r, sid) {
         </div>
 
         <!-- 지표 카드 5개 -->
-        <h3 class="subheader"><span class="ms">bar_chart</span> 지표별 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> ${L('indicator_analysis')}</h3>
         <div class="indicators-grid" style="margin-bottom:16px;">
-            ${renderIndicatorCard('RSI (14)',   rsi_s,  rsiMsg,  fmt(r.rsi, 1))}
-            ${renderIndicatorCard('MACD',       macd_s, macdMsg, fmt(r.macd, 3))}
-            ${renderIndicatorCard('볼린저밴드', bb_s,   bbMsg,   `상단 ${fmtPrice(r.bb_u)} / 하단 ${fmtPrice(r.bb_l)}`)}
-            ${renderIndicatorCard('이동평균',   ma_s,   maMsg,   `MA20: ${fmtPrice(r.ma20)} / MA60: ${fmtPrice(r.ma60)}`)}
-            ${renderIndicatorCard('스토캐스틱', stk_s,  stkMsg,  `K: ${fmt(r.stoch_k,1)} / D: ${fmt(r.stoch_d,1)}`)}
+            ${renderIndicatorCard('RSI (14)',           rsi_s,  rsiMsg,  fmt(r.rsi, 1))}
+            ${renderIndicatorCard('MACD',               macd_s, macdMsg, fmt(r.macd, 3))}
+            ${renderIndicatorCard(L('bb_indicator'),    bb_s,   bbMsg,   `${currentLang === 'ko' ? '상단' : 'Upper'} ${fmtPrice(r.bb_u)} / ${currentLang === 'ko' ? '하단' : 'Lower'} ${fmtPrice(r.bb_l)}`)}
+            ${renderIndicatorCard(L('ma_indicator'),    ma_s,   maMsg,   `MA20: ${fmtPrice(r.ma20)} / MA60: ${fmtPrice(r.ma60)}`)}
+            ${renderIndicatorCard(L('stoch_indicator'), stk_s,  stkMsg,  `K: ${fmt(r.stoch_k,1)} / D: ${fmt(r.stoch_d,1)}`)}
         </div>
 
         <!-- 매매 가격 정보 -->
-        <h3 class="subheader"><span class="ms">payments</span> 매매 전략</h3>
+        <h3 class="subheader"><span class="ms">payments</span> ${L('trading_strategy')}</h3>
         <div class="strategy-grid" style="margin-bottom:16px;">
-            ${renderStrategyCard('매수 목표가', r.entry,        '#44aaff', 'BB 하단 / MA20 지지', sym)}
-            ${renderStrategyCard('1차 목표가',  r.target1,      '#00C851', `기대수익 +${fmt(r.ret_short, 1)}% | BB 중심`, sym)}
-            ${renderStrategyCard('2차 목표가',  r.target2,      '#ffaa00', `기대수익 +${fmt(r.ret_mid,   1)}% | BB 상단`, sym)}
-            ${renderStrategyCard('손절 기준가', r.entry * 0.96, '#FF4444', '손실 -4% | 매수가 -4%', sym)}
+            ${renderStrategyCard(L('buy_target'), r.entry,        '#44aaff', L('bb_entry'), sym)}
+            ${renderStrategyCard(L('target1'),    r.target1,      '#00C851', `${currentLang === 'ko' ? '기대수익' : 'Expected'} +${fmt(r.ret_short, 1)}% | ${currentLang === 'ko' ? 'BB 중심' : 'BB Mid'}`, sym)}
+            ${renderStrategyCard(L('target2'),    r.target2,      '#ffaa00', `${currentLang === 'ko' ? '기대수익' : 'Expected'} +${fmt(r.ret_mid,   1)}% | ${currentLang === 'ko' ? 'BB 상단' : 'BB Upper'}`, sym)}
+            ${renderStrategyCard(L('stoploss'),   r.entry * 0.96, '#FF4444', currentLang === 'ko' ? '손실 -4% | 매수가 -4%' : 'Loss -4% | Entry -4%', sym)}
         </div>
         <hr class="divider">
 
         <!-- 트레이딩 전략 서브탭 -->
         <h3 class="subheader"><span class="ms">bar_chart</span> 트레이딩 전략 분석</h3>
         <div class="sub-tabs" id="tst-${sid}">
-            <button class="sub-tab active" data-subtab="ts-short-${sid}"><span class="ms">bolt</span> 단기 (1일~2주)</button>
-            <button class="sub-tab" data-subtab="ts-swing-${sid}"><span class="ms">sync</span> 스윙 (2주~3개월)</button>
-            <button class="sub-tab" data-subtab="ts-long-${sid}"><span class="ms">trending_up</span> 장기 (6개월~수년)</button>
+            <button class="sub-tab active" data-subtab="ts-short-${sid}"><span class="ms">bolt</span> ${L('short_term')}</button>
+            <button class="sub-tab" data-subtab="ts-swing-${sid}"><span class="ms">sync</span> ${L('swing')}</button>
+            <button class="sub-tab" data-subtab="ts-long-${sid}"><span class="ms">trending_up</span> ${L('long_term')}</button>
         </div>
         <div id="ts-short-${sid}" class="sub-tab-content active">${renderShortTermStrategy(d, sym, rate)}</div>
         <div id="ts-swing-${sid}" class="sub-tab-content">${renderSwingStrategy(d, sym, rate)}</div>
@@ -2664,13 +2821,13 @@ function _buildThemeDetailHtml(r, sid) {
         <div class="ai-analysis-box" id="ai-box-${sid}">
             <div class="ai-analysis-header"><span class="ms">smart_toy</span> AI 분석 <span class="ai-badge">Claude AI</span></div>
             <div class="ai-analysis-body" id="ai-body-${sid}">
-                <div class="loading" style="font-size:0.9em;">AI 분석 중...</div>
+                <div class="loading" style="font-size:0.9em;">${L('analyzing')}</div>
             </div>
         </div>
 
         <!-- 전체 분석 버튼 (차트 포함) -->
         <div style="text-align:right;margin-top:12px;">
-            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}', '${(r.name || '').replace(/'/g, '')}')"><span class="ms">show_chart</span> 차트 · 재무 전체 분석 보기</button>
+            <button class="btn-secondary" onclick="analyzeFromAnywhere('${sym}', '${(r.name || '').replace(/'/g, '')}')"><span class="ms">show_chart</span> ${L('theme_full_analysis')}</button>
         </div>
     </div>`;
 }
@@ -2778,7 +2935,7 @@ async function loadGlobal(force = false) {
 
 async function loadIndices() {
     const container = document.getElementById('indicesGrid');
-    container.innerHTML = '<div class="loading">글로벌 지수 로딩 중...</div>';
+    container.innerHTML = `<div class="loading">${L('global_loading')}</div>`;
     try {
         const res = await fetch(`${API}/api/market/indices`);
         if (!res.ok) throw new Error('Failed');
@@ -2794,17 +2951,17 @@ async function loadIndices() {
                 <div class="change" style="color:${c};">${sign} ${Math.abs(idx.pct).toFixed(2)}%</div>
             </div>`;
         });
-        container.innerHTML = html || '<div class="caption">지수 데이터를 불러올 수 없습니다.</div>';
+        container.innerHTML = html || `<div class="caption">${L('global_error')}</div>`;
     } catch (_) {
-        container.innerHTML = '<div class="error-msg">지수 데이터를 불러올 수 없습니다.</div>';
+        container.innerHTML = `<div class="error-msg">${L('global_error')}</div>`;
     }
 }
 
 async function loadNaverNews() {
     const newsContainer = document.getElementById('naverNewsContent');
     const signalsContainer = document.getElementById('naverSignals');
-    newsContainer.innerHTML = '<div class="loading">뉴스 로딩 중...</div>';
-    signalsContainer.innerHTML = '<div class="loading">신호 분석 중...</div>';
+    newsContainer.innerHTML = `<div class="loading">${L('naver_news_loading')}</div>`;
+    signalsContainer.innerHTML = `<div class="loading">${L('signal_loading')}</div>`;
 
     try {
         const res = await fetch(`${API}/api/market/naver-news`);
@@ -2813,14 +2970,14 @@ async function loadNaverNews() {
         renderNaverNews(data.news || [], newsContainer);
         renderNaverSignals(data.signals || [], signalsContainer);
     } catch (_) {
-        newsContainer.innerHTML = '<div class="caption">네이버 뉴스를 불러올 수 없습니다.</div>';
-        signalsContainer.innerHTML = '<div class="caption">신호 분석 불가.</div>';
+        newsContainer.innerHTML = `<div class="caption">${L('naver_error')}</div>`;
+        signalsContainer.innerHTML = `<div class="caption">${L('signal_error')}</div>`;
     }
 }
 
 function renderNaverNews(news, container) {
     if (news.length === 0) {
-        container.innerHTML = '<div class="caption">뉴스를 불러올 수 없습니다.</div>';
+        container.innerHTML = `<div class="caption">${L('naver_error')}</div>`;
         return;
     }
 
@@ -2861,7 +3018,7 @@ function switchNewsTab(btn, cat) {
 
 function renderNaverSignals(signals, container) {
     if (signals.length === 0) {
-        container.innerHTML = '<div class="caption">현재 뉴스에서 특별한 상승 트리거가 감지되지 않았습니다.</div>';
+        container.innerHTML = `<div class="caption">${L('no_rise_trigger')}</div>`;
         return;
     }
 
@@ -2884,7 +3041,7 @@ function renderNaverSignals(signals, container) {
                     <div class="price">${s.close ? fmtPrice(s.close) : '—'}</div>
                     <div style="color:${cc};font-size:0.78em;">${s.change_pct != null ? (s.change_pct >= 0 ? '+' : '') + Number(s.change_pct).toFixed(2) + '%' : ''}</div>
                     <div class="verdict" style="color:${vc};">${s.verdict || '—'}</div>
-                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}', '${(s.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> 분석</button>
+                    <button class="analyze-btn" onclick="analyzeFromAnywhere('${s.ticker}', '${(s.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> ${L('analyze_btn')}</button>
                 </div>`;
             });
             html += '</div>';
@@ -2924,7 +3081,7 @@ function setupSidebar() {
         newsToggle.addEventListener('click', () => {
             const hidden = newsPanel.style.display === 'none';
             newsPanel.style.display = hidden ? 'block' : 'none';
-            newsToggle.innerHTML = hidden ? '<span class="ms">notifications</span> 뉴스 알림 숨기기' : '<span class="ms">notifications</span> 뉴스 알림 보기';
+            newsToggle.innerHTML = hidden ? `<span class="ms">notifications</span> ${L('news_hide')}` : `<span class="ms">notifications</span> ${L('news_show')}`;
         });
     }
 
@@ -2983,7 +3140,7 @@ async function loadSidebarNews() {
             });
             triggeredDiv.innerHTML = html;
         } else {
-            triggeredDiv.innerHTML = '<div class="caption" style="padding:8px 0;">현재 특별한 급등 트리거 없음</div>';
+            triggeredDiv.innerHTML = `<div class="caption" style="padding:8px 0;">${L('no_trigger')}</div>`;
         }
 
         // News by source — key 기반으로 분류
@@ -3027,7 +3184,7 @@ async function loadSidebarNews() {
             renderSidebarNewsList(selectedKey);
         }
     } catch (_) {
-        triggeredDiv.innerHTML = '<div class="caption">뉴스를 불러올 수 없습니다.</div>';
+        triggeredDiv.innerHTML = `<div class="caption">${L('sidebar_news_error')}</div>`;
     }
 }
 
