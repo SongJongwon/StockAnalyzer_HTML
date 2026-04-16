@@ -13,7 +13,7 @@
     <div class="app-layout">
         <!-- Left Sidebar -->
         <aside id="sidebar" class="sidebar">
-            <button id="sidebarCollapse" class="sidebar-collapse-btn" title="사이드바 접기">«</button>
+            <button id="sidebarCollapse" class="sidebar-collapse-btn" data-i18n-title="sidebar_collapse_title" title="사이드바 접기">«</button>
             <button id="langToggleBtn" class="lang-toggle-btn" onclick="toggleLang()">🇺🇸 EN</button>
             <div class="sidebar-inner">
                 <!-- 자동 업데이트 설정 -->
@@ -22,12 +22,12 @@
                     <div class="refresh-control">
                         <input type="number" id="refreshInterval" value="30" min="1" max="9999" class="refresh-input">
                         <select id="refreshUnit" class="refresh-select">
-                            <option value="1">초</option>
-                            <option value="60" selected>분</option>
-                            <option value="3600">시간</option>
+                            <option value="1" data-i18n="sec_unit">초</option>
+                            <option value="60" selected data-i18n="min_unit">분</option>
+                            <option value="3600" data-i18n="hour_unit">시간</option>
                         </select>
                     </div>
-                    <div id="refreshStatus" class="caption mt-8"><span class="ms">refresh</span> 30분마다 자동 업데이트</div>
+                    <div id="refreshStatus" class="caption mt-8"><span class="ms">refresh</span> <span id="refreshStatusText" data-i18n-refresh>30분마다 자동 업데이트</span></div>
                 </div>
 
                 <hr class="divider">
@@ -45,7 +45,7 @@
                     <div class="sidebar-section">
                         <h4><span class="ms orange">bolt</span> <span data-i18n="surge_stocks">급등 예상 종목</span></h4>
                         <div id="triggeredStocks">
-                            <div class="loading">로딩 중...</div>
+                            <div class="loading" data-i18n="loading">로딩 중...</div>
                         </div>
                     </div>
 
@@ -64,7 +64,7 @@
         </aside>
 
         <!-- 사이드바 펼치기 버튼 -->
-        <button id="sidebarExpand" class="sidebar-expand-btn" title="사이드바 펼치기">»</button>
+        <button id="sidebarExpand" class="sidebar-expand-btn" data-i18n-title="sidebar_expand_title" title="사이드바 펼치기">»</button>
 
         <!-- Main Content -->
         <main id="mainContent">
@@ -92,7 +92,7 @@
                     </button>
                     <hr class="menu-divider">
                     <button class="menu-item" id="menuApiKeys">
-                        <span class="menu-icon ms">key</span> AI API 설정
+                        <span class="menu-icon ms">key</span> <span data-i18n="api_menu_label">AI API 설정</span>
                         <span class="api-status-mini" id="apiStatusMini"></span>
                     </button>
                     <hr class="menu-divider">
@@ -103,7 +103,7 @@
             </div>
 
             <!-- 전체 타이틀 -->
-            <h1 class="app-title"><span class="ms">trending_up</span> 주식 기술적 분석기</h1>
+            <h1 class="app-title"><span class="ms">trending_up</span> <span data-i18n="app_title">주식 기술적 분석기</span></h1>
 
             <!-- Tabs -->
             <div class="tabs">
@@ -142,22 +142,22 @@
             <!-- Tab 2: 추천 종목 -->
             <div id="tab-watchlist" class="tab-content">
                 <div class="section-header">
-                    <h3><span class="ms filled">star</span> 카테고리별 추천 종목</h3>
-                    <p class="caption">기술적 지표 기반 실시간 분석 · 매수·매도가는 볼린저밴드 지지/저항 기준</p>
-                    <button id="refreshWatchlist" class="btn-secondary mt-8"><span class="ms">refresh</span> 데이터 새로고침</button>
+                    <h3><span class="ms filled">star</span> <span data-i18n="wl_tab_title">카테고리별 추천 종목</span></h3>
+                    <p class="caption" data-i18n="wl_tab_caption">기술적 지표 기반 실시간 분석 · 매수·매도가는 볼린저밴드 지지/저항 기준</p>
+                    <button id="refreshWatchlist" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="data_refresh">데이터 새로고침</span></button>
                 </div>
                 <div id="watchlistContent">
-                    <div class="loading">추천 종목 로딩 중...</div>
+                    <div class="loading" data-i18n="wl_loading">추천 종목 로딩 중...</div>
                 </div>
             </div>
 
             <!-- Tab 3: 테마주 -->
             <div id="tab-themes" class="tab-content">
                 <div class="section-header">
-                    <h3><span class="ms">track_changes</span> 테마별 종목</h3>
-                    <p class="caption">테마를 선택하면 현재 매수 신호 강도 순으로 종목을 정렬합니다. <span class="ms filled sm">star</span> 즐겨찾기한 테마는 상단에 고정됩니다.</p>
+                    <h3><span class="ms">track_changes</span> <span data-i18n="theme_tab_title">테마별 종목</span></h3>
+                    <p class="caption"><span data-i18n="theme_tab_caption">테마를 선택하면 현재 매수 신호 강도 순으로 종목을 정렬합니다.</span> <span class="ms filled sm">star</span> <span data-i18n="theme_fav_pin">즐겨찾기한 테마는 상단에 고정됩니다.</span></p>
                 </div>
-                <h4>테마 선택</h4>
+                <h4 data-i18n="theme_select_label">테마 선택</h4>
                 <div id="themeButtons" class="theme-grid"></div>
                 <hr class="divider">
                 <div id="themeContent"></div>
@@ -166,38 +166,38 @@
             <!-- Tab 4: 글로벌 시장 -->
             <div id="tab-global" class="tab-content">
                 <div class="section-header">
-                    <h3><span class="ms">public</span> 글로벌 시장 지수</h3>
-                    <p class="caption">데이터 출처: Yahoo Finance · 5분 단위 자동 갱신</p>
-                    <button id="refreshIndices" class="btn-secondary mt-8"><span class="ms">refresh</span> 시장 새로고침</button>
+                    <h3><span class="ms">public</span> <span data-i18n="global_tab_title">글로벌 시장 지수</span></h3>
+                    <p class="caption" data-i18n="global_tab_caption">데이터 출처: Yahoo Finance · 5분 단위 자동 갱신</p>
+                    <button id="refreshIndices" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="refresh_market_btn">시장 새로고침</span></button>
                 </div>
                 <div id="indicesGrid" class="indices-grid">
-                    <div class="loading">글로벌 지수 로딩 중...</div>
+                    <div class="loading" data-i18n="global_loading">글로벌 지수 로딩 중...</div>
                 </div>
 
                 <hr class="divider">
 
                 <div class="section-header">
-                    <h3><span class="ms">newspaper</span> 네이버 금융 최신 뉴스</h3>
-                    <p class="caption">출처: finance.naver.com · 15분 단위 갱신</p>
-                    <button id="refreshNaverNews" class="btn-secondary mt-8"><span class="ms">refresh</span> 뉴스 새로고침</button>
+                    <h3><span class="ms">newspaper</span> <span data-i18n="naver_news_tab_title">네이버 금융 최신 뉴스</span></h3>
+                    <p class="caption" data-i18n="naver_news_tab_caption">출처: finance.naver.com · 15분 단위 갱신</p>
+                    <button id="refreshNaverNews" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="news_refresh">뉴스 새로고침</span></button>
                 </div>
                 <div id="naverNewsContent">
-                    <div class="loading">뉴스 로딩 중...</div>
+                    <div class="loading" data-i18n="naver_news_loading">뉴스 로딩 중...</div>
                 </div>
 
                 <hr class="divider">
 
                 <div class="section-header">
-                    <h3><span class="ms">rocket_launch</span> 뉴스 기반 상승 예상 종목</h3>
-                    <p class="caption">네이버 금융 최신 뉴스 키워드 분석 · 매수 신호 종목만 표시</p>
+                    <h3><span class="ms">rocket_launch</span> <span data-i18n="naver_signals_title">뉴스 기반 상승 예상 종목</span></h3>
+                    <p class="caption" data-i18n="naver_signals_caption">네이버 금융 최신 뉴스 키워드 분석 · 매수 신호 종목만 표시</p>
                 </div>
                 <div id="naverSignals">
-                    <div class="loading">신호 분석 중...</div>
+                    <div class="loading" data-i18n="signal_loading">신호 분석 중...</div>
                 </div>
             </div>
 
             <!-- 하단 면책조항 -->
-            <div class="disclaimer caption mt-16">
+            <div class="disclaimer caption mt-16" data-i18n="disclaimer_full">
                 본 분석은 참고용이며 투자 권유가 아닙니다. 모든 투자의 책임은 투자자 본인에게 있습니다.
             </div>
         </main>
@@ -207,7 +207,7 @@
     <div id="apiKeyModal" class="modal-overlay" style="display:none;" onclick="handleModalOverlayClick(event)">
         <div class="modal-box">
             <div class="modal-header">
-                <h3><span class="ms">key</span> AI API 키 설정</h3>
+                <h3><span class="ms">key</span> <span data-i18n="api_modal_title">AI API 키 설정</span></h3>
                 <button class="modal-close-btn" onclick="closeApiKeyModal()"><span class="ms">close</span></button>
             </div>
             <div class="modal-body" id="apiKeyModalBody">

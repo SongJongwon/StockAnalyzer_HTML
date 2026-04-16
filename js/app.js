@@ -192,6 +192,45 @@ const LANG = {
         // Analyzing text
         analyzing_stock: '분석 중...',
         fav_title: '즐겨찾기',
+        // Refresh unit options
+        sec_unit: '초', min_unit: '분', hour_unit: '시간',
+        // Sidebar tooltips
+        sidebar_collapse_title: '사이드바 접기', sidebar_expand_title: '사이드바 펼치기',
+        // Watchlist tab static
+        wl_tab_title: '카테고리별 추천 종목',
+        wl_tab_caption: '기술적 지표 기반 실시간 분석 · 매수·매도가는 볼린저밴드 지지/저항 기준',
+        // Theme tab static
+        theme_tab_title: '테마별 종목',
+        theme_tab_caption: '테마를 선택하면 현재 매수 신호 강도 순으로 종목을 정렬합니다.',
+        theme_fav_pin: '즐겨찾기한 테마는 상단에 고정됩니다.',
+        theme_select_label: '테마 선택',
+        // Global tab static
+        global_tab_title: '글로벌 시장 지수',
+        global_tab_caption: '데이터 출처: Yahoo Finance · 5분 단위 자동 갱신',
+        refresh_market_btn: '시장 새로고침',
+        naver_news_tab_title: '네이버 금융 최신 뉴스',
+        naver_news_tab_caption: '출처: finance.naver.com · 15분 단위 갱신',
+        naver_signals_title: '뉴스 기반 상승 예상 종목',
+        naver_signals_caption: '네이버 금융 최신 뉴스 키워드 분석 · 매수 신호 종목만 표시',
+        // Disclaimer & modal
+        disclaimer_full: '본 분석은 참고용이며 투자 권유가 아닙니다. 모든 투자의 책임은 투자자 본인에게 있습니다.',
+        api_modal_title: 'AI API 키 설정', api_menu_label: 'AI API 설정',
+        // My buy analysis
+        eval_amount: '평가금액', eval_pnl: '평가손익', return_rate: '수익률', current_verdict: '현재 판단',
+        target_reached: '목표 도달', stop_zone: '손절 구간', holding: '보유 중',
+        target_profit_label: '목표가 (수익 목표)', rr_label: '손익비 1 :', current_status: '현재 상태',
+        scenario_title: '전략별 손절 · 목표가 시나리오',
+        scenario_short_title: '단기 트레이딩', scenario_short_period: '1일 ~ 2주 | 분봉·시간봉 중심',
+        scenario_short_note: 'VWAP·BB 중심선 저항 돌파 시 목표 / RSI·MACD 단기 신호 활용',
+        scenario_swing_title: '스윙 트레이딩', scenario_swing_period: '2주 ~ 3개월 | 일봉·주봉 중심',
+        scenario_swing_note: 'BB 상단·20/60일 MA 저항선 목표 / 피보나치 61.8~100% 확장 기준',
+        scenario_long_title: '장기 투자', scenario_long_period: '6개월 ~ 수년 | 주봉·월봉 중심',
+        scenario_long_note: 'PER×EPS 적정주가 / 52주 신고가 돌파 추세 / 펀더멘털 성장 기반',
+        // Translation / AI
+        co_trans_badge: '번역',
+        ai_no_result: 'AI 분석 결과를 받지 못했습니다.',
+        // News sources
+        src_naver: '네이버증권', src_investing: '인베스팅닷컴', src_yahoo: '야후파이낸스', src_other: '기타',
     },
     en: {
         // App
@@ -374,6 +413,45 @@ const LANG = {
         // Analyzing text
         analyzing_stock: 'Analyzing...',
         fav_title: 'Favorite',
+        // Refresh unit options
+        sec_unit: 'sec', min_unit: 'min', hour_unit: 'hr',
+        // Sidebar tooltips
+        sidebar_collapse_title: 'Collapse sidebar', sidebar_expand_title: 'Expand sidebar',
+        // Watchlist tab static
+        wl_tab_title: 'Recommended Stocks by Category',
+        wl_tab_caption: 'Real-time technical analysis · Buy/Sell based on Bollinger Band support/resistance',
+        // Theme tab static
+        theme_tab_title: 'Stocks by Theme',
+        theme_tab_caption: 'Select a theme to sort stocks by buy signal strength.',
+        theme_fav_pin: 'Favorites are pinned to the top.',
+        theme_select_label: 'Select Theme',
+        // Global tab static
+        global_tab_title: 'Global Market Indices',
+        global_tab_caption: 'Source: Yahoo Finance · Auto-refreshed every 5 minutes',
+        refresh_market_btn: 'Refresh Market',
+        naver_news_tab_title: 'Naver Finance Latest News',
+        naver_news_tab_caption: 'Source: finance.naver.com · Updated every 15 minutes',
+        naver_signals_title: 'News-Based Surge Candidates',
+        naver_signals_caption: 'Keyword analysis from Naver Finance · Buy signals only',
+        // Disclaimer & modal
+        disclaimer_full: 'For reference only. Not investment advice. All investment decisions are the investor\'s responsibility.',
+        api_modal_title: 'AI API Key Settings', api_menu_label: 'AI API Settings',
+        // My buy analysis
+        eval_amount: 'Portfolio Value', eval_pnl: 'Unrealized P&L', return_rate: 'Return', current_verdict: 'Current Signal',
+        target_reached: 'Target Reached', stop_zone: 'Stop Zone', holding: 'Holding',
+        target_profit_label: 'Target (Profit Goal)', rr_label: 'R:R 1:', current_status: 'Status',
+        scenario_title: 'Strategy Stop/Target Scenarios',
+        scenario_short_title: 'Short-term', scenario_short_period: '1d–2wk | Minute/Hourly Chart',
+        scenario_short_note: 'Target on VWAP/BB mid breakout / RSI·MACD short signals',
+        scenario_swing_title: 'Swing Trade', scenario_swing_period: '2wk–3mo | Daily/Weekly Chart',
+        scenario_swing_note: 'BB upper/MA20-60 resistance targets / Fibonacci 61.8–100% extension',
+        scenario_long_title: 'Long-term', scenario_long_period: '6mo+ | Weekly/Monthly Chart',
+        scenario_long_note: 'PER×EPS fair value / 52-week high breakout / Fundamental growth',
+        // Translation / AI
+        co_trans_badge: 'Translated',
+        ai_no_result: 'No AI analysis result received.',
+        // News sources
+        src_naver: 'Naver Finance', src_investing: 'Investing.com', src_yahoo: 'Yahoo Finance', src_other: 'Other',
     },
 };
 
@@ -399,6 +477,11 @@ function applyLangStatic() {
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         el.placeholder = L(el.dataset.i18nPlaceholder);
     });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        el.title = L(el.dataset.i18nTitle);
+    });
+    // 페이지 타이틀
+    document.title = L('app_title');
     // 토글 버튼 텍스트
     const btn = document.getElementById('langToggleBtn');
     if (btn) btn.textContent = currentLang === 'ko' ? '🇺🇸 EN' : '🇰🇷 KO';
@@ -409,6 +492,15 @@ function applyLangStatic() {
     if (newsToggleEl && newsPanel) {
         const hidden = newsPanel.style.display === 'none';
         newsToggleEl.innerHTML = `<span class="ms">notifications</span> ${hidden ? L('news_show') : L('news_hide')}`;
+    }
+    // 리프레시 상태 텍스트 재업데이트
+    const _rsInterval = document.getElementById('refreshInterval');
+    const _rsUnit = document.getElementById('refreshUnit');
+    const _rsStatus = document.getElementById('refreshStatus');
+    if (_rsInterval && _rsUnit && _rsStatus) {
+        const val = _rsInterval.value;
+        const unitText = _rsUnit.options[_rsUnit.selectedIndex]?.text || '';
+        _rsStatus.innerHTML = `<span class="ms">refresh</span> ${val}${unitText} ${L('auto_update_status')}`;
     }
 }
 
@@ -1500,29 +1592,29 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
                 <div class="value" style="font-size:1.1rem;">${dualPrice(myPrice, sym, rate)}</div>
             </div>
             <div class="metric-card">
-                <div class="label">현재가</div>
+                <div class="label">${L('current_price_label')}</div>
                 <div class="value" style="font-size:1.1rem;">${dualPrice(curPrice, sym, rate)}</div>
                 <div class="delta ${pnlPct >= 0 ? 'positive' : 'negative'}">${pnlIcon} ${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</div>
             </div>`;
     if (myQty > 0) {
         summaryHtml += `
             <div class="metric-card">
-                <div class="label">평가금액</div>
+                <div class="label">${L('eval_amount')}</div>
                 <div class="value" style="font-size:1.1rem;">${dualPrice(curPrice * myQty, sym, rate)}</div>
             </div>
             <div class="metric-card">
-                <div class="label">평가손익</div>
+                <div class="label">${L('eval_pnl')}</div>
                 <div class="value" style="font-size:1.1rem;color:${pnlColor};">${dualPrice(Math.abs(pnlAbs), sym, rate)}</div>
                 <div class="delta" style="color:${pnlColor};">${pnlAbs >= 0 ? '+' : '-'}${Math.abs(pnlPct).toFixed(2)}%</div>
             </div>`;
     } else {
         summaryHtml += `
             <div class="metric-card">
-                <div class="label">수익률</div>
+                <div class="label">${L('return_rate')}</div>
                 <div class="value" style="font-size:1.1rem;color:${pnlColor};">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</div>
             </div>
             <div class="metric-card">
-                <div class="label">현재 판단</div>
+                <div class="label">${L('current_verdict')}</div>
                 <div class="value" style="font-size:1.1rem;">—</div>
             </div>`;
     }
@@ -1533,33 +1625,30 @@ function applyMyBuy(sym, curPrice, entry, t1, t2, sl) {
         const slRet = (slP - myPrice) / myPrice * 100;
         const tgRet = (tgP - myPrice) / myPrice * 100;
         let judge, judgeC;
-        if (curPrice >= tgP) { judge = '<span class="ms orange">my_location</span> 목표 도달'; judgeC = '#ffaa00'; }
-        else if (curPrice <= slP) { judge = '<span class="ms red">stop_circle</span> 손절 구간'; judgeC = '#FF4444'; }
-        else { judge = '<span class="ms">hourglass_empty</span> 보유 중'; judgeC = 'var(--muted)'; }
+        if (curPrice >= tgP) { judge = `<span class="ms orange">my_location</span> ${L('target_reached')}`; judgeC = '#ffaa00'; }
+        else if (curPrice <= slP) { judge = `<span class="ms red">stop_circle</span> ${L('stop_zone')}`; judgeC = '#FF4444'; }
+        else { judge = `<span class="ms">hourglass_empty</span> ${L('holding')}`; judgeC = 'var(--muted)'; }
         return `<div class="scenario-card" style="border:1px solid ${color}55;background:${color}08;">
             <div class="title" style="color:${color};">${title}</div>
             <div class="period">${periodNote}</div>
-            <div class="target-label"><span class="ms orange">my_location</span> 목표가 (수익 목표)</div>
+            <div class="target-label"><span class="ms orange">my_location</span> ${L('target_profit_label')}</div>
             <div class="target-val" style="color:#00C851;">${dualPrice(tgP, sym, rate)} <span style="color:var(--muted-dark);font-size:0.8em;">(+${tgRet.toFixed(1)}%)</span></div>
-            <div class="target-label" style="margin-top:8px;"><span class="ms red">stop_circle</span> 손절선</div>
+            <div class="target-label" style="margin-top:8px;"><span class="ms red">stop_circle</span> ${L('stoploss')}</div>
             <div class="target-val" style="color:#FF4444;">${dualPrice(slP, sym, rate)} <span style="color:var(--muted-dark);font-size:0.8em;">(${slRet.toFixed(1)}%)</span></div>
-            <div class="rr-badge" style="background:${color}18;color:${color};">손익비 1 : ${rr.toFixed(1)}</div>
+            <div class="rr-badge" style="background:${color}18;color:${color};">${L('rr_label')} ${rr.toFixed(1)}</div>
             <div class="strategy-note">${strategyNote}</div>
-            <div class="status" style="color:${judgeC};">현재 상태: ${judge}</div>
+            <div class="status" style="color:${judgeC};">${L('current_status')}: ${judge}</div>
         </div>`;
     }
 
-    summaryHtml += '<h4 class="subheader"><span class="ms">assignment</span> 전략별 손절 · 목표가 시나리오</h4>';
+    summaryHtml += `<h4 class="subheader"><span class="ms">assignment</span> ${L('scenario_title')}</h4>`;
     summaryHtml += '<div class="scenario-grid">';
-    summaryHtml += scenarioCard('<span class="ms">bolt</span> 단기 트레이딩', '#44aaff', slShort, tgShort, rrShort,
-        '1일 ~ 2주 | 분봉·시간봉 중심',
-        'VWAP·BB 중심선 저항 돌파 시 목표 / RSI·MACD 단기 신호 활용');
-    summaryHtml += scenarioCard('<span class="ms">sync</span> 스윙 트레이딩', '#aa88ff', slSwing, tgSwing, rrSwing,
-        '2주 ~ 3개월 | 일봉·주봉 중심',
-        'BB 상단·20/60일 MA 저항선 목표 / 피보나치 61.8~100% 확장 기준');
-    summaryHtml += scenarioCard('<span class="ms green">trending_up</span> 장기 투자', '#44dd88', slLong, tgLong, rrLong,
-        '6개월 ~ 수년 | 주봉·월봉 중심',
-        'PER×EPS 적정주가 / 52주 신고가 돌파 추세 / 펀더멘털 성장 기반');
+    summaryHtml += scenarioCard(`<span class="ms">bolt</span> ${L('scenario_short_title')}`, '#44aaff', slShort, tgShort, rrShort,
+        L('scenario_short_period'), L('scenario_short_note'));
+    summaryHtml += scenarioCard(`<span class="ms">sync</span> ${L('scenario_swing_title')}`, '#aa88ff', slSwing, tgSwing, rrSwing,
+        L('scenario_swing_period'), L('scenario_swing_note'));
+    summaryHtml += scenarioCard(`<span class="ms green">trending_up</span> ${L('scenario_long_title')}`, '#44dd88', slLong, tgLong, rrLong,
+        L('scenario_long_period'), L('scenario_long_note'));
     summaryHtml += '</div>';
 
     resultDiv.innerHTML = summaryHtml;
@@ -2132,7 +2221,7 @@ async function _translateSummary(text) {
         if (data.translated && data.method !== 'original') {
             const badge = data.method.startsWith('AI')
                 ? `<span class="co-trans-badge ai">${L('co_ai_badge')}</span>`
-                : `<span class="co-trans-badge">번역</span>`;
+                : `<span class="co-trans-badge">${L('co_trans_badge')}</span>`;
             el.innerHTML = data.translated + ' ' + badge;
         } else {
             // 번역 실패 → 원문 유지, 표시 안내 제거
@@ -2909,7 +2998,7 @@ function _buildThemeDetailHtml(r, sid) {
 
         <!-- AI 분석 -->
         <div class="ai-analysis-box" id="ai-box-${sid}">
-            <div class="ai-analysis-header"><span class="ms">smart_toy</span> AI 분석 <span class="ai-badge">Claude AI</span></div>
+            <div class="ai-analysis-header"><span class="ms">smart_toy</span> ${L('ai_analysis')} <span class="ai-badge">Claude AI</span></div>
             <div class="ai-analysis-body" id="ai-body-${sid}">
                 <div class="loading" style="font-size:0.9em;">${L('analyzing')}</div>
             </div>
@@ -2967,7 +3056,7 @@ async function _loadThemeAI(sid, r) {
             }),
         });
         const data = await res.json();
-        const text = data.analysis || 'AI 분석 결과를 받지 못했습니다.';
+        const text = data.analysis || L('ai_no_result');
 
         // API 키 미설정 → AI 박스 전체 숨김 (이미 전략 분석이 표시되므로)
         if (text.includes('ANTHROPIC_API_KEY') || text.includes('API 키가 없습니다')) {
@@ -2979,7 +3068,7 @@ async function _loadThemeAI(sid, r) {
         _themeAiCache[sid] = text;
         if (bodyEl) bodyEl.innerHTML = `<p class="ai-text">${text.replace(/\n/g, '<br>')}</p>`;
     } catch (e) {
-        if (bodyEl) bodyEl.innerHTML = `<p style="color:var(--muted);">AI 분석 요청 실패: ${e.message}</p>`;
+        if (bodyEl) bodyEl.innerHTML = `<p style="color:var(--muted);">${L('ai_request_failed')}: ${e.message}</p>`;
     }
 }
 
@@ -3195,7 +3284,7 @@ async function loadSidebarNews() {
     const newsListDiv = document.getElementById('newsList');
     const filterDiv = document.getElementById('newsSourceFilter');
 
-    triggeredDiv.innerHTML = '<div class="loading">로딩 중...</div>';
+    triggeredDiv.innerHTML = `<div class="loading">${L('loading')}</div>`;
     newsListDiv.innerHTML = '';
     filterDiv.innerHTML = '';
 
@@ -3236,10 +3325,10 @@ async function loadSidebarNews() {
         // News by source — key 기반으로 분류
         if (news.length > 0) {
             const SRC_CFG = {
-                naver:     { label: '네이버증권',   icon: 'newspaper', prefix: ''   },
-                investing: { label: '인베스팅닷컴',  icon: 'language',  prefix: ''   },
-                yahoo:     { label: '야후파이낸스',  icon: 'public',    prefix: 'us' },
-                other:     { label: '기타',          icon: 'push_pin',  prefix: ''   },
+                naver:     { label: L('src_naver'),     icon: 'newspaper', prefix: ''   },
+                investing: { label: L('src_investing'), icon: 'language',  prefix: ''   },
+                yahoo:     { label: L('src_yahoo'),     icon: 'public',    prefix: 'us' },
+                other:     { label: L('src_other'),     icon: 'push_pin',  prefix: ''   },
             };
             const sourceMap = {};
             news.forEach(item => {
