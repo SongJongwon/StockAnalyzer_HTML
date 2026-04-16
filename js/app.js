@@ -1463,7 +1463,7 @@ function renderAnalysis(data, container) {
         </div>
         <div class="strategy-grid">
             ${renderStrategyCard(L('buy_target'), entry, '#44aaff', currentLang === 'ko' ? 'BB 하단 / MA20 지지' : 'BB Lower / MA20 Support', sym)}
-            ${renderStrategyCard(L('target1'), t1, '#ffffff', `${currentLang === 'ko' ? '기대수익' : 'Expected'} ${ret1 >= 0 ? '+' : ''}${ret1.toFixed(1)}% | BB Mid`, sym)}
+            ${renderStrategyCard(L('target1'), t1, 'var(--text)', `${currentLang === 'ko' ? '기대수익' : 'Expected'} ${ret1 >= 0 ? '+' : ''}${ret1.toFixed(1)}% | BB Mid`, sym)}
             ${renderStrategyCard(L('target2'), t2, '#ffaa00', `${currentLang === 'ko' ? '기대수익' : 'Expected'} ${ret2 >= 0 ? '+' : ''}${ret2.toFixed(1)}% | BB Upper`, sym)}
             ${renderStrategyCard(L('stoploss'), sl, '#FF4444', `${currentLang === 'ko' ? '손실' : 'Loss'} ${slPct.toFixed(1)}% | -4%`, sym)}
             <div class="strategy-card">
@@ -1754,7 +1754,7 @@ function renderShortTermStrategy(d, sym, rate) {
 
         <h4 class="subheader"><span class="ms">my_location</span> ${L('st_target_title')}</h4>
         <div class="strategy-grid-4">
-            ${renderTargetCard(L('current_price_label'), close, '#ffffff', currentLang === 'ko' ? '기준가' : 'Base', sym)}
+            ${renderTargetCard(L('current_price_label'), close, 'neutral', currentLang === 'ko' ? '기준가' : 'Base', sym)}
             ${renderTargetCard(L('target1_short'), st_t1, '#00C851', `${currentLang === 'ko' ? 'BB중심/VWAP' : 'BB Mid/VWAP'} | ${((st_t1 - close) / close * 100).toFixed(1)}%`, sym)}
             ${renderTargetCard(L('target2_short'), st_t2, '#ffaa00', `${currentLang === 'ko' ? 'BB상단' : 'BB Upper'} | ${((st_t2 - close) / close * 100).toFixed(1)}%`, sym)}
             ${renderTargetCard(L('stoploss_line'), st_sl, '#FF4444', `${currentLang === 'ko' ? 'BB하단·최근저점' : 'BB Lower·Recent Low'} | ${((st_sl - close) / close * 100).toFixed(1)}%`, sym)}
@@ -1783,9 +1783,13 @@ function renderSignalCard(icon, name, value, sig, color, detail) {
 }
 
 function renderTargetCard(label, price, color, desc, sym) {
-    return `<div class="signal-card" style="border:1px solid ${color}55;background:${color}0d;">
+    const neutral = color === 'neutral';
+    const border  = neutral ? 'var(--border)'  : `${color}55`;
+    const bg      = neutral ? 'var(--bg-alt)'  : `${color}0d`;
+    const textCol = neutral ? 'var(--text)'    : color;
+    return `<div class="signal-card" style="border:1px solid ${border};background:${bg};">
         <div class="label" style="font-size:0.75em;color: var(--muted);">${label}</div>
-        <div class="value" style="font-size:0.9em;font-weight:bold;color:${color};margin:5px 0;">${dualPrice(price, sym)}</div>
+        <div class="value" style="font-size:0.9em;font-weight:bold;color:${textCol};margin:5px 0;">${dualPrice(price, sym)}</div>
         <div class="detail" style="font-size:0.67em;color: var(--muted-darker);">${desc}</div>
     </div>`;
 }
@@ -1800,7 +1804,7 @@ function renderSwingStrategy(d, sym, rate) {
     const fibs = d.fibonacci || [];
 
     // Build fib HTML
-    const fibColors = { '0%': '#666', '23.6%': '#4488ff', '38.2%': '#44aaff', '50%': '#ffffff', '61.8%': '#ffaa00', '78.6%': '#ff8844', '100%': '#ff4444' };
+    const fibColors = { '0%': '#666', '23.6%': '#4488ff', '38.2%': '#44aaff', '50%': 'var(--text)', '61.8%': '#ffaa00', '78.6%': '#ff8844', '100%': '#ff4444' };
     let fibHtml = '';
     let nearSupport = fibs[0] || { pct: '0%', level: close * 0.9 };
     let nearResist = fibs[fibs.length - 1] || { pct: '100%', level: close * 1.1 };
@@ -1878,7 +1882,7 @@ function renderSwingStrategy(d, sym, rate) {
 
         <h4 class="subheader"><span class="ms">my_location</span> ${L('swing_target_title')}</h4>
         <div class="strategy-grid-4">
-            ${renderTargetCard(L('entry_price'), sw_entry, '#ffffff', currentLang === 'ko' ? '현재가 기준' : 'Based on current', sym)}
+            ${renderTargetCard(L('entry_price'), sw_entry, 'neutral', currentLang === 'ko' ? '현재가 기준' : 'Based on current', sym)}
             ${renderTargetCard(L('target1_short'), sw_t1, '#00C851', `R:R 1:2 | ${((sw_t1 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
             ${renderTargetCard(L('target2_short'), sw_t2, '#ffaa00', `R:R 1:3 | ${((sw_t2 - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
             ${renderTargetCard(L('stoploss_line'), sw_sl, '#FF4444', `${L('fib_support')} | ${((sw_sl - sw_entry) / sw_entry * 100).toFixed(1)}%`, sym)}
