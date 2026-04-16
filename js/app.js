@@ -133,6 +133,9 @@ const LANG = {
         // Company info
         employees_unit: '명', no_company_info: '회사 정보 없음',
         no_summary: '회사 설명 정보가 없습니다.',
+        no_summary_blocked: 'Yahoo Finance 데이터 제한으로 설명을 가져오지 못했습니다.',
+        no_summary_no_name: '회사명 조회에 실패하여 설명을 검색할 수 없습니다.',
+        no_summary_not_found: '해당 종목의 설명 데이터가 없습니다.',
         // My buy form
         input_currency: '입력 통화', buy_amount: '매수 금액',
         hold_qty: '보유 수량', apply_btn: '적용',
@@ -355,6 +358,9 @@ const LANG = {
         // Company info
         employees_unit: '', no_company_info: 'No company info available',
         no_summary: 'No company description available.',
+        no_summary_blocked: 'Description unavailable due to Yahoo Finance data restrictions.',
+        no_summary_no_name: 'Could not retrieve company name to search for description.',
+        no_summary_not_found: 'No description data found for this stock.',
         // My buy form
         input_currency: 'Currency', buy_amount: 'Buy Price',
         hold_qty: 'Qty', apply_btn: 'Apply',
@@ -2264,13 +2270,18 @@ function renderCompanyInfo(info, card) {
         html += `<div class="co-tags">${parts.join('')}</div>`;
     }
 
-    // 규칙 2: summary 없으면 "회사 설명 정보가 없습니다." 표시
+    // 규칙 2: summary 없으면 이유에 따른 안내 표시
     if (info.summary) {
         const maxLen = 500;
         const shortSummary = info.summary.length > maxLen ? info.summary.slice(0, maxLen) + '...' : info.summary;
         html += `<p class="co-summary" id="coSummaryText">${shortSummary}</p>`;
     } else {
-        html += `<p class="caption muted" id="coSummaryText">${L('no_summary')}</p>`;
+        const reasonKey = {
+            yfinance_blocked: 'no_summary_blocked',
+            no_company_name:  'no_summary_no_name',
+            not_found:        'no_summary_not_found',
+        }[info.summary_reason] || 'no_summary';
+        html += `<p class="caption muted" id="coSummaryText">${L(reasonKey)}</p>`;
     }
 
     if (info.website) {
