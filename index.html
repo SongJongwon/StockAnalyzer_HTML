@@ -14,10 +14,12 @@
         <!-- Left Sidebar -->
         <aside id="sidebar" class="sidebar">
             <button id="sidebarCollapse" class="sidebar-collapse-btn" title="사이드바 접기">«</button>
+            <!-- 언어 토글 버튼 -->
+            <button id="langToggleBtn" class="lang-toggle-btn" onclick="toggleLang()">🇺🇸 EN</button>
             <div class="sidebar-inner">
                 <!-- 자동 업데이트 설정 -->
                 <div class="sidebar-section">
-                    <h3><span class="ms">schedule</span> 자동 업데이트</h3>
+                    <h3><span class="ms">schedule</span> <span data-i18n="auto_update">자동 업데이트</span></h3>
                     <div class="refresh-control">
                         <input type="number" id="refreshInterval" value="30" min="1" max="9999" class="refresh-input">
                         <select id="refreshUnit" class="refresh-select">
@@ -32,17 +34,17 @@
                 <hr class="divider">
 
                 <!-- 뉴스 토글 -->
-                <button id="newsToggle" class="sidebar-toggle-btn"><span class="ms">notifications</span> 뉴스 알림 숨기기</button>
+                <button id="newsToggle" class="sidebar-toggle-btn"><span class="ms">notifications</span> <span data-i18n="news_hide">뉴스 알림 숨기기</span></button>
 
                 <div id="newsPanel">
                     <div class="sidebar-section">
-                        <h3><span class="ms">newspaper</span> 실시간 뉴스 알림</h3>
-                        <p class="caption">출처: 네이버금융 · 인베스팅닷컴(한국어)</p>
+                        <h3><span class="ms">newspaper</span> <span data-i18n="realtime_news">실시간 뉴스 알림</span></h3>
+                        <p class="caption" data-i18n="news_caption">출처: 네이버금융 · 인베스팅닷컴(한국어)</p>
                     </div>
 
                     <!-- 급등 예상 종목 -->
                     <div class="sidebar-section">
-                        <h4><span class="ms orange">bolt</span> 급등 예상 종목</h4>
+                        <h4><span class="ms orange">bolt</span> <span data-i18n="surge_stocks">급등 예상 종목</span></h4>
                         <div id="triggeredStocks">
                             <div class="loading">로딩 중...</div>
                         </div>
@@ -52,12 +54,12 @@
 
                     <!-- 최신 뉴스 -->
                     <div class="sidebar-section">
-                        <h4><span class="ms">feed</span> 최신 뉴스</h4>
+                        <h4><span class="ms">feed</span> <span data-i18n="latest_news">최신 뉴스</span></h4>
                         <div id="newsSourceFilter" class="news-source-filter"></div>
                         <div id="newsList"></div>
                     </div>
 
-                    <button id="refreshNews" class="btn-secondary sidebar-refresh-btn"><span class="ms">refresh</span> 뉴스 새로고침</button>
+                    <button id="refreshNews" class="btn-secondary sidebar-refresh-btn"><span class="ms">refresh</span> <span data-i18n="news_refresh">뉴스 새로고침</span></button>
                 </div>
             </div>
         </aside>
@@ -106,34 +108,34 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" data-tab="tab-analysis"><span class="ms">search</span> 종목 분석</button>
-                <button class="tab" data-tab="tab-watchlist"><span class="ms filled">star</span> 추천 종목</button>
-                <button class="tab" data-tab="tab-themes"><span class="ms">track_changes</span> 테마주</button>
-                <button class="tab" data-tab="tab-global"><span class="ms">public</span> 글로벌 시장 &amp; 뉴스분석</button>
+                <button class="tab active" data-tab="tab-analysis"><span class="ms">search</span> <span data-i18n="tab_analysis">종목 분석</span></button>
+                <button class="tab" data-tab="tab-watchlist"><span class="ms filled">star</span> <span data-i18n="tab_watchlist">추천 종목</span></button>
+                <button class="tab" data-tab="tab-themes"><span class="ms">track_changes</span> <span data-i18n="tab_themes">테마주</span></button>
+                <button class="tab" data-tab="tab-global"><span class="ms">public</span> <span data-i18n="tab_global">글로벌 시장 &amp; 뉴스분석</span></button>
             </div>
 
             <!-- Tab 1: 종목 분석 -->
             <div id="tab-analysis" class="tab-content active">
                 <div class="search-row">
                     <div class="search-input-wrap">
-                        <label class="input-label">티커 또는 종목명 입력</label>
-                        <input type="text" id="searchInput" placeholder="예: 삼성전자, AAPL">
+                        <label class="input-label" data-i18n="ticker_input_label">티커 또는 종목명 입력</label>
+                        <input type="text" id="searchInput" data-i18n-placeholder="ticker_placeholder" placeholder="예: 삼성전자, AAPL">
                         <div id="autocompleteList" class="autocomplete-list" style="display:none;"></div>
                     </div>
                     <div class="search-period-wrap">
-                        <label class="input-label">기간</label>
+                        <label class="input-label" data-i18n="period_label">기간</label>
                         <select id="periodSelect">
-                            <option value="3mo">3개월</option>
-                            <option value="6mo" selected>6개월</option>
-                            <option value="1y">1년</option>
-                            <option value="2y">2년</option>
+                            <option value="3mo" data-i18n="period_3mo">3개월</option>
+                            <option value="6mo" selected data-i18n="period_6mo">6개월</option>
+                            <option value="1y" data-i18n="period_1y">1년</option>
+                            <option value="2y" data-i18n="period_2y">2년</option>
                         </select>
                     </div>
                 </div>
-                <button id="searchBtn" class="btn-analyze">분석하기</button>
+                <button id="searchBtn" class="btn-analyze" data-i18n="analyze_btn">분석하기</button>
 
                 <div class="welcome" id="welcomeMsg">
-                    <p class="muted">티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.</p>
+                    <p class="muted" data-i18n="welcome_msg">티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.</p>
                 </div>
                 <div id="analysisResult" style="display:none;"></div>
             </div>

@@ -5,6 +5,195 @@
 
 const API = "https://stockanalyzer-backend.onrender.com";
 
+// ══════════════════════════════════════════════════════
+// Language / i18n
+// ══════════════════════════════════════════════════════
+let currentLang = localStorage.getItem('lang') || 'ko';
+
+const LANG = {
+    ko: {
+        // App
+        app_title: '주식 기술적 분석기',
+        // Tabs
+        tab_analysis: '종목 분석', tab_watchlist: '추천 종목',
+        tab_themes: '테마주', tab_global: '글로벌 시장 & 뉴스분석',
+        // Sidebar
+        auto_update: '자동 업데이트', news_hide: '뉴스 알림 숨기기',
+        news_show: '뉴스 알림 보기', realtime_news: '실시간 뉴스 알림',
+        news_caption: '출처: 네이버금융 · 인베스팅닷컴(한국어)',
+        surge_stocks: '급등 예상 종목', latest_news: '최신 뉴스',
+        news_refresh: '뉴스 새로고침', no_trigger: '현재 특별한 급등 트리거 없음',
+        // Search
+        ticker_input_label: '티커 또는 종목명 입력',
+        ticker_placeholder: '예: 삼성전자, AAPL',
+        period_label: '기간', analyze_btn: '분석하기',
+        period_3mo: '3개월', period_6mo: '6개월', period_1y: '1년', period_2y: '2년',
+        welcome_msg: '티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.',
+        // Signals (internal values stay Korean; these are display-only)
+        buy: '매수', sell: '매도', neutral: '중립',
+        strong_buy: '강한 매수', buy_lean: '매수 우세',
+        strong_sell: '강한 매도', sell_lean: '매도 우세',
+        // Price cards
+        price: '현재가', high: '고가', low: '저가', volume: '거래량',
+        krx_stock: '원화 종목 (KRX)', usd_stock: '달러 종목',
+        // Verdict
+        verdict_label: '종합 판단', buy_signals: '매수 신호', sell_signals: '매도 신호',
+        // Analysis sections
+        ai_analysis: 'AI 분석', analyzing: '분석 중...',
+        ai_loading: 'AI 코멘트 불러오는 중...', company_loading: '회사 정보 로딩 중...',
+        company_error: '회사 정보를 불러올 수 없습니다.',
+        indicator_analysis: '지표별 분석', trading_strategy: '매매 전략',
+        short_term: '단기 (1일~2주)', swing: '스윙 (2주~3개월)', long_term: '장기 (6개월~수년)',
+        my_buy: '내 매수가 분석', chart_label: '차트',
+        financials_title: '재무제표 분석', pdf_report: 'PDF 보고서 다운로드',
+        disclaimer: '본 분석은 참고용이며 투자 권유가 아닙니다.',
+        // Strategy advice
+        advice_buy: '매수 고려 가능', advice_sell: '매수 비추천 (관망 또는 익절)',
+        advice_neutral: '관망 (추세 확인 후 진입)',
+        // RSI/indicator messages
+        rsi_oversold: '과매도', rsi_overbought: '과매수',
+        macd_up: '상승', macd_down: '하락',
+        bb_lower: '하단 이탈 — 반등 기대', bb_upper: '상단 이탈 — 과열', bb_mid: '중간 범위',
+        ma_up: '정배열 (MA20 > MA60)', ma_down: '역배열', ma_mixed: 'MA 혼조',
+        // Strategy labels
+        buy_target: '매수 목표가', target1: '1차 목표가', target2: '2차 목표가', stoploss: '손절 기준가',
+        // Financials
+        valuation: '밸류에이션', market_cap: '시가총액', div_yield: '배당수익률',
+        profitability: '수익성', revenue_ttm: '매출 (TTM)',
+        op_margin: '영업이익률', net_margin: '순이익률',
+        growth: '성장성 & 현금흐름',
+        rev_growth: '매출 성장률 (YoY)', earn_growth: '영업이익 성장률 (YoY)',
+        op_cf: '영업현금흐름', fcf: '잉여현금흐름 (FCF)',
+        stability: '안정성', debt_equity: '부채비율 (D/E)',
+        current_ratio: '유동비율', interest_coverage: '이자보상배율',
+        native_currency: '원본', unit_label: '단위',
+        // Chart traces
+        annual_chart: '연간 손익 & 현금흐름',
+        c_revenue: '매출', c_op_income: '영업이익', c_net_income: '순이익', c_op_cf: '영업CF',
+        unit_krw: '조원', unit_usd: '십억$',
+        // Misc
+        loading: '로딩 중...', no_data: '데이터 없음',
+        full_analysis_btn: '차트 · 재무 전체 분석 보기',
+        data_refresh: '데이터 새로고침',
+    },
+    en: {
+        // App
+        app_title: 'Stock Technical Analyzer',
+        // Tabs
+        tab_analysis: 'Analysis', tab_watchlist: 'Watchlist',
+        tab_themes: 'Themes', tab_global: 'Global Market & News',
+        // Sidebar
+        auto_update: 'Auto Update', news_hide: 'Hide News',
+        news_show: 'Show News', realtime_news: 'Live News Alerts',
+        news_caption: 'Source: Naver Finance · Investing.com (KR)',
+        surge_stocks: 'Surge Watch', latest_news: 'Latest News',
+        news_refresh: 'Refresh News', no_trigger: 'No surge triggers detected',
+        // Search
+        ticker_input_label: 'Enter Ticker or Stock Name',
+        ticker_placeholder: 'e.g. Samsung, AAPL',
+        period_label: 'Period', analyze_btn: 'Analyze',
+        period_3mo: '3 Months', period_6mo: '6 Months', period_1y: '1 Year', period_2y: '2 Years',
+        welcome_msg: 'Search by ticker (AAPL) or company name in Korean/English.',
+        // Signals
+        buy: 'Buy', sell: 'Sell', neutral: 'Neutral',
+        strong_buy: 'Strong Buy', buy_lean: 'Buy Leaning',
+        strong_sell: 'Strong Sell', sell_lean: 'Sell Leaning',
+        // Price cards
+        price: 'Price', high: 'High', low: 'Low', volume: 'Volume',
+        krx_stock: 'KRW Stock (KRX)', usd_stock: 'USD Stock',
+        // Verdict
+        verdict_label: 'Verdict', buy_signals: 'Buy Signals', sell_signals: 'Sell Signals',
+        // Analysis sections
+        ai_analysis: 'AI Analysis', analyzing: 'Analyzing...',
+        ai_loading: 'Loading AI analysis...', company_loading: 'Loading company info...',
+        company_error: 'Company info unavailable.',
+        indicator_analysis: 'Indicator Analysis', trading_strategy: 'Trading Strategy',
+        short_term: 'Short-term (1d–2wk)', swing: 'Swing (2wk–3mo)', long_term: 'Long-term (6mo+)',
+        my_buy: 'My Buy Price', chart_label: 'Chart',
+        financials_title: 'Financial Analysis', pdf_report: 'Download PDF Report',
+        disclaimer: 'For reference only. Not investment advice.',
+        // Strategy advice
+        advice_buy: 'Consider Buying', advice_sell: 'Avoid (Watch or Take Profit)',
+        advice_neutral: 'Wait (Confirm Trend First)',
+        // RSI/indicator messages
+        rsi_oversold: 'Oversold', rsi_overbought: 'Overbought',
+        macd_up: 'Rising', macd_down: 'Falling',
+        bb_lower: 'Lower Band — Bounce Expected', bb_upper: 'Upper Band — Overheated', bb_mid: 'Mid Range',
+        ma_up: 'Aligned (MA20 > MA60)', ma_down: 'Inverted', ma_mixed: 'MA Mixed',
+        // Strategy labels
+        buy_target: 'Buy Target', target1: 'Target 1', target2: 'Target 2', stoploss: 'Stop Loss',
+        // Financials
+        valuation: 'Valuation', market_cap: 'Market Cap', div_yield: 'Dividend Yield',
+        profitability: 'Profitability', revenue_ttm: 'Revenue (TTM)',
+        op_margin: 'Operating Margin', net_margin: 'Net Margin',
+        growth: 'Growth & Cash Flow',
+        rev_growth: 'Revenue Growth (YoY)', earn_growth: 'Op. Income Growth (YoY)',
+        op_cf: 'Operating Cash Flow', fcf: 'Free Cash Flow (FCF)',
+        stability: 'Stability', debt_equity: 'Debt/Equity',
+        current_ratio: 'Current Ratio', interest_coverage: 'Interest Coverage',
+        native_currency: 'Native', unit_label: 'Unit',
+        // Chart traces
+        annual_chart: 'Annual P&L & Cash Flow',
+        c_revenue: 'Revenue', c_op_income: 'Op. Income', c_net_income: 'Net Income', c_op_cf: 'Op. CF',
+        unit_krw: 'Trillion KRW', unit_usd: 'Billion USD',
+        // Misc
+        loading: 'Loading...', no_data: 'N/A',
+        full_analysis_btn: 'Full Chart & Financial Analysis',
+        data_refresh: 'Refresh Data',
+    },
+};
+
+/** 번역 헬퍼 */
+function L(key) { return LANG[currentLang]?.[key] ?? LANG.ko[key] ?? key; }
+
+/** 내부 신호값(매수/매도/중립)을 현재 언어로 표시 */
+function dSignal(s) {
+    const m = {
+        '매수': 'buy', '매도': 'sell', '중립': 'neutral',
+        '강한 매수': 'strong_buy', '매수 우세': 'buy_lean',
+        '강한 매도': 'strong_sell', '매도 우세': 'sell_lean',
+    };
+    return m[s] ? L(m[s]) : s;
+}
+
+/** 정적 HTML의 data-i18n 요소에 번역 적용 */
+function applyLangStatic() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        el.textContent = L(key);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = L(el.dataset.i18nPlaceholder);
+    });
+    // 토글 버튼 텍스트
+    const btn = document.getElementById('langToggleBtn');
+    if (btn) btn.textContent = currentLang === 'ko' ? '🇺🇸 EN' : '🇰🇷 KO';
+    document.documentElement.lang = currentLang;
+    // 뉴스 토글 버튼 텍스트 동기화 (현재 visible 상태에 따라)
+    const newsPanel = document.getElementById('newsPanel');
+    const newsToggleEl = document.getElementById('newsToggle');
+    if (newsToggleEl && newsPanel) {
+        const hidden = newsPanel.style.display === 'none';
+        newsToggleEl.innerHTML = `<span class="ms">notifications</span> ${hidden ? L('news_show') : L('news_hide')}`;
+    }
+}
+
+/** 언어 전환 */
+function toggleLang() {
+    currentLang = currentLang === 'ko' ? 'en' : 'ko';
+    localStorage.setItem('lang', currentLang);
+    applyLangStatic();
+    // 동적 컨텐츠 재렌더
+    if (window._lastAnalysisData) {
+        renderAnalysis(window._lastAnalysisData, document.getElementById('analysisResult'));
+    }
+    if (window._finData) {
+        _drawFinancials();
+    }
+}
+
+// ══════════════════════════════════════════════════════
+
 // ═══════════════════════════════════════════════
 // Korean Name → Ticker Dictionary
 // ═══════════════════════════════════════════════
@@ -206,6 +395,7 @@ const sidebar = document.getElementById('sidebar');
 // ═══════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
+    applyLangStatic();   // 저장된 언어 설정 즉시 적용
     setupTabs();
     setupSearch();
     setupSidebar();
@@ -754,6 +944,7 @@ async function loadExchangeRate() {
 // ═══════════════════════════════════════════════
 
 function renderAnalysis(data, container) {
+    window._lastAnalysisData = data;  // 언어 전환 시 재렌더용
     const d = data;
     const sym = d.symbol;
     const name = d.name || sym;
@@ -799,45 +990,50 @@ function renderAnalysis(data, container) {
     const volume = d.volume || 0;
 
     // RSI / MACD / BB messages
-    const rsiMsg = `RSI ${fmt(d.rsi, 1)} — ${rsi_s === '매수' ? '과매도' : rsi_s === '매도' ? '과매수' : '중립'}`;
-    const macdMsg = macd_s === '매수' ? 'MACD > Signal — 상승' : 'MACD < Signal — 하락';
-    const bbMsg = bb_s === '매수' ? '하단 이탈 — 반등 기대' : (bb_s === '매도' ? '상단 이탈 — 과열' : '중간 범위');
-    const maMsg = ma_s === '매수' ? '정배열 (MA20 > MA60)' : (ma_s === '매도' ? '역배열' : 'MA 혼조');
-    const stkMsg = `스토캐스틱 ${stk_s === '매수' ? '과매도' : stk_s === '매도' ? '과매수' : '중립'} (K:${fmt(d.stoch_k, 1)})`;
+    const rsiMsg = `RSI ${fmt(d.rsi, 1)} — ${rsi_s === '매수' ? L('rsi_oversold') : rsi_s === '매도' ? L('rsi_overbought') : L('neutral')}`;
+    const macdMsg = macd_s === '매수' ? `MACD > Signal — ${L('macd_up')}` : `MACD < Signal — ${L('macd_down')}`;
+    const bbMsg = bb_s === '매수' ? L('bb_lower') : (bb_s === '매도' ? L('bb_upper') : L('bb_mid'));
+    const maMsg = ma_s === '매수' ? L('ma_up') : (ma_s === '매도' ? L('ma_down') : L('ma_mixed'));
+    const stkMsg = `Stoch ${stk_s === '매수' ? L('rsi_oversold') : stk_s === '매도' ? L('rsi_overbought') : L('neutral')} (K:${fmt(d.stoch_k, 1)})`;
 
     // Strategy advice
     let advTitle, advColor, advDesc, advEntry;
     if (verdict === '강한 매수' || verdict === '매수 우세') {
-        advTitle = '<span class="ms green">check_circle</span> 매수 고려 가능'; advColor = '#00C851';
-        advDesc = `현재 ${buy_cnt}개 지표가 매수 신호. `;
-        if (bb_s === '매수') advDesc += 'BB 하단 지지 → 반등 기대. ';
-        if (rsi_s === '매수') advDesc += 'RSI 과매도 → 단기 반등. ';
-        if (macd_s === '매수') advDesc += 'MACD 상승전환 → 모멘텀 회복. ';
-        if (ma_s === '매수') advDesc += 'MA 정배열 → 상승 추세.';
-        advEntry = `현재가 또는 매수 목표가(${dualPrice(entry, sym, rate)}) 부근 분할 매수 권장`;
+        advTitle = `<span class="ms green">check_circle</span> ${L('advice_buy')}`; advColor = '#00C851';
+        advDesc = currentLang === 'ko'
+            ? `현재 ${buy_cnt}개 지표가 매수 신호. ` + (bb_s === '매수' ? 'BB 하단 지지 → 반등 기대. ' : '') + (rsi_s === '매수' ? 'RSI 과매도 → 단기 반등. ' : '') + (macd_s === '매수' ? 'MACD 상승전환 → 모멘텀 회복. ' : '') + (ma_s === '매수' ? 'MA 정배열 → 상승 추세.' : '')
+            : `${buy_cnt} indicators show Buy. ` + (bb_s === '매수' ? 'BB lower support → bounce expected. ' : '') + (rsi_s === '매수' ? 'RSI oversold → short-term rebound. ' : '') + (macd_s === '매수' ? 'MACD crossover → momentum recovery. ' : '') + (ma_s === '매수' ? 'MA aligned → uptrend.' : '');
+        advEntry = currentLang === 'ko'
+            ? `현재가 또는 매수 목표가(${dualPrice(entry, sym, rate)}) 부근 분할 매수 권장`
+            : `Consider scaling in near current price or buy target (${dualPrice(entry, sym, rate)})`;
     } else if (verdict === '강한 매도' || verdict === '매도 우세') {
-        advTitle = '<span class="ms red">block</span> 매수 비추천 (관망 또는 익절)'; advColor = '#FF4444';
-        advDesc = `현재 ${sell_cnt}개 지표 매도 신호. `;
-        if (bb_s === '매도') advDesc += 'BB 상단 이탈 → 단기 과열. ';
-        if (rsi_s === '매도') advDesc += 'RSI 과매수 → 조정 가능성. ';
-        if (ma_s === '매도') advDesc += 'MA 역배열 → 하락 추세.';
-        advEntry = `추가 하락 시 ${dualPrice(entry, sym, rate)} 부근 재진입 검토`;
+        advTitle = `<span class="ms red">block</span> ${L('advice_sell')}`; advColor = '#FF4444';
+        advDesc = currentLang === 'ko'
+            ? `현재 ${sell_cnt}개 지표 매도 신호. ` + (bb_s === '매도' ? 'BB 상단 이탈 → 단기 과열. ' : '') + (rsi_s === '매도' ? 'RSI 과매수 → 조정 가능성. ' : '') + (ma_s === '매도' ? 'MA 역배열 → 하락 추세.' : '')
+            : `${sell_cnt} indicators show Sell. ` + (bb_s === '매도' ? 'BB upper breakout → overheated. ' : '') + (rsi_s === '매도' ? 'RSI overbought → pullback risk. ' : '') + (ma_s === '매도' ? 'MA inverted → downtrend.' : '');
+        advEntry = currentLang === 'ko'
+            ? `추가 하락 시 ${dualPrice(entry, sym, rate)} 부근 재진입 검토`
+            : `Watch for re-entry near ${dualPrice(entry, sym, rate)} on further dip`;
     } else {
-        advTitle = '<span class="ms orange">hourglass_empty</span> 관망 (추세 확인 후 진입)'; advColor = '#FFA500';
-        advDesc = '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 진입 시 매수 신호. 분할 접근 권장.';
-        advEntry = `목표 매수가 ${dualPrice(entry, sym, rate)} 부근 분할 접근 검토`;
+        advTitle = `<span class="ms orange">hourglass_empty</span> ${L('advice_neutral')}`; advColor = '#FFA500';
+        advDesc = currentLang === 'ko'
+            ? '지표 혼조. MACD 방향 전환 또는 RSI 30 이하 진입 시 매수 신호. 분할 접근 권장.'
+            : 'Mixed signals. Watch for MACD reversal or RSI below 30 before entry. Scale in cautiously.';
+        advEntry = currentLang === 'ko'
+            ? `목표 매수가 ${dualPrice(entry, sym, rate)} 부근 분할 접근 검토`
+            : `Consider scaling in near target entry ${dualPrice(entry, sym, rate)}`;
     }
 
     // Build reasons string
     let reasons = [];
-    if (rsi_s === '매수') reasons.push(`RSI ${fmt(d.rsi, 0)} 과매도`);
-    if (macd_s === '매수') reasons.push('MACD 상승전환');
-    if (bb_s === '매수') reasons.push('BB 하단 지지');
-    if (ma_s === '매수') reasons.push('MA 정배열');
-    if (stk_s === '매수') reasons.push('스토캐스틱 과매도');
-    if (rsi_s === '매도') reasons.push(`RSI ${fmt(d.rsi, 0)} 과매수`);
-    if (bb_s === '매도') reasons.push('BB 상단 이탈');
-    if (ma_s === '매도') reasons.push('MA 역배열');
+    if (rsi_s === '매수') reasons.push(`RSI ${fmt(d.rsi, 0)} ${L('rsi_oversold')}`);
+    if (macd_s === '매수') reasons.push(currentLang === 'ko' ? 'MACD 상승전환' : 'MACD Crossover Up');
+    if (bb_s === '매수') reasons.push(currentLang === 'ko' ? 'BB 하단 지지' : 'BB Lower Support');
+    if (ma_s === '매수') reasons.push(currentLang === 'ko' ? 'MA 정배열' : 'MA Aligned');
+    if (stk_s === '매수') reasons.push(`Stoch ${L('rsi_oversold')}`);
+    if (rsi_s === '매도') reasons.push(`RSI ${fmt(d.rsi, 0)} ${L('rsi_overbought')}`);
+    if (bb_s === '매도') reasons.push(currentLang === 'ko' ? 'BB 상단 이탈' : 'BB Upper Breakout');
+    if (ma_s === '매도') reasons.push(currentLang === 'ko' ? 'MA 역배열' : 'MA Inverted');
 
     const rrColor = rr >= 1.5 ? '#aaffaa' : '#ffaaaa';
 
@@ -846,74 +1042,74 @@ function renderAnalysis(data, container) {
 
         <!-- Company Info Card -->
         <div class="company-info-card" id="companyInfoCard">
-            <div class="loading" style="font-size:0.85em;">회사 정보 로딩 중...</div>
+            <div class="loading" style="font-size:0.85em;">${L('company_loading')}</div>
         </div>
 
         <!-- Price Metrics Row -->
         <div class="metrics-row">
             <div class="metric-card">
-                <div class="label">현재가</div>
+                <div class="label">${L('price')}</div>
                 <div class="value">${priceMain}</div>
                 <div class="delta ${chg >= 0 ? 'positive' : 'negative'}">${chg >= 0 ? '+' : ''}${fmt(chg)}%</div>
                 <div class="sub">${priceSub}</div>
             </div>
             <div class="metric-card">
-                <div class="label">고가</div>
+                <div class="label">${L('high')}</div>
                 <div class="value">${dualPrice(high, sym, rate)}</div>
             </div>
             <div class="metric-card">
-                <div class="label">저가</div>
+                <div class="label">${L('low')}</div>
                 <div class="value">${dualPrice(low, sym, rate)}</div>
             </div>
             <div class="metric-card">
-                <div class="label">거래량</div>
+                <div class="label">${L('volume')}</div>
                 <div class="value">${Number(volume).toLocaleString()}</div>
             </div>
         </div>
-        <div class="info-bar">USD/KRW: ${fmt(rate, 1)} · ${krw ? '원화 종목 (KRX)' : '달러 종목'}</div>
+        <div class="info-bar">USD/KRW: ${fmt(rate, 1)} · ${krw ? L('krx_stock') : L('usd_stock')}</div>
         <hr class="divider">
 
         <!-- Verdict Banner -->
         <div class="verdict-banner" style="background:${vColor}22;border-color:${vColor};color:${vColor};">
-            <h2>종합 판단: ${verdict}</h2>
-            <div class="sub">매수 신호 ${buy_cnt}개 · 매도 신호 ${sell_cnt}개 · 중립 ${5 - buy_cnt - sell_cnt}개</div>
+            <h2>${L('verdict_label')}: ${dSignal(verdict)}</h2>
+            <div class="sub">${L('buy_signals')} ${buy_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('sell_signals')} ${sell_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('neutral')} ${5 - buy_cnt - sell_cnt}</div>
         </div>
 
         <!-- AI 분석 (키 등록 시 자동 표시) -->
         <div class="ai-analysis-box" id="mainAiBox" style="margin-bottom:16px;">
-            <div class="ai-analysis-header"><span class="ms">smart_toy</span> AI 분석 <span class="ai-badge" id="mainAiBadge">분석 중...</span></div>
+            <div class="ai-analysis-header"><span class="ms">smart_toy</span> ${L('ai_analysis')} <span class="ai-badge" id="mainAiBadge">${L('analyzing')}</span></div>
             <div class="ai-analysis-body" id="mainAiBody">
-                <div class="loading" style="font-size:0.9em;">AI 코멘트 불러오는 중...</div>
+                <div class="loading" style="font-size:0.9em;">${L('ai_loading')}</div>
             </div>
         </div>
 
         <!-- Indicator Cards -->
-        <h3 class="subheader"><span class="ms">bar_chart</span> 지표별 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> ${L('indicator_analysis')}</h3>
         <div class="indicators-grid">
             ${renderIndicatorCard('RSI (14)', rsi_s, rsiMsg, `${fmt(d.rsi, 1)}`)}
             ${renderIndicatorCard('MACD', macd_s, macdMsg, `${fmt(d.macd, 3)}`)}
-            ${renderIndicatorCard('볼린저밴드', bb_s, bbMsg, `상단 ${fmtPrice(d.bb_u)} / 하단 ${fmtPrice(d.bb_l)}`)}
-            ${renderIndicatorCard('이동평균', ma_s, maMsg, `MA20: ${fmtPrice(d.ma20)} / MA60: ${fmtPrice(d.ma60)}`)}
-            ${renderIndicatorCard('스토캐스틱', stk_s, stkMsg, `K: ${fmt(d.stoch_k, 1)} / D: ${fmt(d.stoch_d, 1)}`)}
+            ${renderIndicatorCard(currentLang === 'ko' ? '볼린저밴드' : 'Bollinger Band', bb_s, bbMsg, `Upper ${fmtPrice(d.bb_u)} / Lower ${fmtPrice(d.bb_l)}`)}
+            ${renderIndicatorCard(currentLang === 'ko' ? '이동평균' : 'Moving Avg', ma_s, maMsg, `MA20: ${fmtPrice(d.ma20)} / MA60: ${fmtPrice(d.ma60)}`)}
+            ${renderIndicatorCard(currentLang === 'ko' ? '스토캐스틱' : 'Stochastic', stk_s, stkMsg, `K: ${fmt(d.stoch_k, 1)} / D: ${fmt(d.stoch_d, 1)}`)}
         </div>
         <hr class="divider">
 
         <!-- Strategy Panel -->
-        <h3 class="subheader"><span class="ms">lightbulb</span> 매매 전략</h3>
+        <h3 class="subheader"><span class="ms">lightbulb</span> ${L('trading_strategy')}</h3>
         <div class="action-banner" style="background:${advColor}18;border-color:${advColor};">
             <div class="title" style="color:${advColor};">${advTitle}</div>
             <div class="detail">${advDesc}</div>
             <div class="note">${advEntry}</div>
         </div>
         <div class="strategy-grid">
-            ${renderStrategyCard('매수 목표가', entry, '#44aaff', 'BB 하단 / MA20 지지', sym)}
-            ${renderStrategyCard('1차 목표가', t1, '#ffffff', `기대수익 ${ret1 >= 0 ? '+' : ''}${ret1.toFixed(1)}% | BB 중심`, sym)}
-            ${renderStrategyCard('2차 목표가', t2, '#ffaa00', `기대수익 ${ret2 >= 0 ? '+' : ''}${ret2.toFixed(1)}% | BB 상단`, sym)}
-            ${renderStrategyCard('손절 기준가', sl, '#FF4444', `손실 ${slPct.toFixed(1)}% | 매수가 -4%`, sym)}
+            ${renderStrategyCard(L('buy_target'), entry, '#44aaff', currentLang === 'ko' ? 'BB 하단 / MA20 지지' : 'BB Lower / MA20 Support', sym)}
+            ${renderStrategyCard(L('target1'), t1, '#ffffff', `${currentLang === 'ko' ? '기대수익' : 'Expected'} ${ret1 >= 0 ? '+' : ''}${ret1.toFixed(1)}% | BB Mid`, sym)}
+            ${renderStrategyCard(L('target2'), t2, '#ffaa00', `${currentLang === 'ko' ? '기대수익' : 'Expected'} ${ret2 >= 0 ? '+' : ''}${ret2.toFixed(1)}% | BB Upper`, sym)}
+            ${renderStrategyCard(L('stoploss'), sl, '#FF4444', `${currentLang === 'ko' ? '손실' : 'Loss'} ${slPct.toFixed(1)}% | -4%`, sym)}
             <div class="strategy-card">
                 <div class="label">Risk/Reward</div>
                 <div class="price" style="color:${rrColor};">1 : ${rr.toFixed(2)}</div>
-                <div class="desc">1.5 이상 양호 · 2.0 이상 우수</div>
+                <div class="desc">${currentLang === 'ko' ? '1.5 이상 양호 · 2.0 이상 우수' : '≥1.5 Good · ≥2.0 Excellent'}</div>
             </div>
         </div>
         <hr class="divider">
@@ -960,31 +1156,31 @@ function renderAnalysis(data, container) {
         <!-- Chart -->
         <hr class="divider">
         <div class="chart-header">
-            <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> 차트</h3>
+            <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> ${L('chart_label')}</h3>
             <div class="chart-currency-toggle">
-                <span class="caption" style="margin-right:0.5rem;">Y축 단위:</span>
+                <span class="caption" style="margin-right:0.5rem;">${currentLang === 'ko' ? 'Y축 단위:' : 'Y-Axis:'}</span>
                 <button class="chart-currency-btn active" onclick="toggleChartCurrency(this, 'native')">${krw ? 'KRW' : 'USD'}</button>
                 <button class="chart-currency-btn" onclick="toggleChartCurrency(this, '${krw ? 'USD' : 'KRW'}')">${krw ? 'USD' : 'KRW'}</button>
             </div>
         </div>
-        <p class="caption mb-8">범례를 클릭하면 해당 라인을 숨기거나 표시할 수 있습니다.</p>
+        <p class="caption mb-8">${currentLang === 'ko' ? '범례를 클릭하면 해당 라인을 숨기거나 표시할 수 있습니다.' : 'Click legend items to show/hide lines.'}</p>
         <div id="chartContainer"></div>
         <hr class="divider">
 
         <!-- Financials Expandable -->
         <div class="expandable" id="financialsSection">
             <div class="expandable-header" onclick="toggleExpandable('financialsSection')">
-                <span><span class="ms">assignment</span> 재무제표 분석</span>
+                <span><span class="ms">assignment</span> ${L('financials_title')}</span>
                 <span class="arrow">▶</span>
             </div>
             <div class="expandable-body" id="financialsBody">
-                <div class="loading">재무 데이터 로딩 중... <span class="caption">(Yahoo Finance 조회 중)</span></div>
+                <div class="loading">${currentLang === 'ko' ? '재무 데이터 로딩 중...' : 'Loading financial data...'} <span class="caption">(Yahoo Finance)</span></div>
             </div>
         </div>
 
         <!-- PDF Download -->
-        <button class="pdf-btn" onclick="downloadPDF('${sym}')"><span class="ms">description</span> PDF 보고서 다운로드</button>
-        <p class="caption mt-8 text-center">본 분석은 참고용이며 투자 권유가 아닙니다.</p>
+        <button class="pdf-btn" onclick="downloadPDF('${sym}')"><span class="ms">description</span> ${L('pdf_report')}</button>
+        <p class="caption mt-8 text-center">${L('disclaimer')}</p>
     `;
 
     // Setup sub-tabs
@@ -1800,22 +1996,22 @@ function _drawFinancials() {
             : `$${converted.toFixed(2)}`;
     }
 
-    const nativeLabel = nativeKrw ? '원화(KRW)' : '달러(USD)';
+    const nativeLabel = nativeKrw ? 'KRW' : 'USD';
     const toggleHtml = ''; // 토글은 차트 헤더 우측으로 이동
 
     // ── 밸류에이션 ──────────────────────────────────────────
     const valItems = [
-        { label: '시가총액',    value: moneyVal(fin.market_cap) },
-        { label: 'PER (TTM)',  value: fmtX(fin.pe_trailing) },
-        { label: 'PER (Fwd)', value: fmtX(fin.pe_forward) },
-        { label: 'PBR',        value: fmtX(fin.pb) },
-        { label: 'PSR',        value: fmtX(fin.ps) },
-        { label: 'EV/EBITDA',  value: fmtX(fin.ev_ebitda) },
-        { label: '배당수익률', value: fmtPct(fin.div_yield) },
-        { label: 'EPS (TTM)',  value: epsVal(fin.eps_ttm) },
+        { label: L('market_cap'),   value: moneyVal(fin.market_cap) },
+        { label: 'PER (TTM)',       value: fmtX(fin.pe_trailing) },
+        { label: 'PER (Fwd)',       value: fmtX(fin.pe_forward) },
+        { label: 'PBR',             value: fmtX(fin.pb) },
+        { label: 'PSR',             value: fmtX(fin.ps) },
+        { label: 'EV/EBITDA',       value: fmtX(fin.ev_ebitda) },
+        { label: L('div_yield'),    value: fmtPct(fin.div_yield) },
+        { label: 'EPS (TTM)',       value: epsVal(fin.eps_ttm) },
     ];
 
-    let valHtml = '<h4 class="subheader"><span class="ms">straighten</span> 밸류에이션</h4><div class="fin-val-grid">';
+    let valHtml = `<h4 class="subheader"><span class="ms">straighten</span> ${L('valuation')}</h4><div class="fin-val-grid">`;
     valItems.forEach(({ label, value }) => {
         valHtml += `<div class="fin-val-card"><div class="label">${label}</div><div class="value">${value}</div></div>`;
     });
@@ -1823,19 +2019,19 @@ function _drawFinancials() {
 
     // ── 수익성 ──────────────────────────────────────────────
     const profItems = [
-        ['매출 (TTM)',       moneyVal(fin.rev_ttm)],
-        ['영업이익률',       fmtPct(fin.op_margin)],
-        ['순이익률',         fmtPct(fin.net_margin)],
-        ['ROE',              fmtPct(fin.roe)],
-        ['ROA',              fmtPct(fin.roa)],
+        [L('revenue_ttm'),  moneyVal(fin.rev_ttm)],
+        [L('op_margin'),    fmtPct(fin.op_margin)],
+        [L('net_margin'),   fmtPct(fin.net_margin)],
+        ['ROE',             fmtPct(fin.roe)],
+        ['ROA',             fmtPct(fin.roa)],
     ];
 
     // ── 성장성 & 현금흐름 ────────────────────────────────────
     const growthItems = [
-        ['매출 성장률 (YoY)',      fmtPct(fin.rev_growth)],
-        ['영업이익 성장률 (YoY)', fmtPct(fin.earn_growth)],
-        ['영업현금흐름',           moneyVal(fin.op_cf)],
-        ['잉여현금흐름 (FCF)',     moneyVal(fin.fcf)],
+        [L('rev_growth'),   fmtPct(fin.rev_growth)],
+        [L('earn_growth'),  fmtPct(fin.earn_growth)],
+        [L('op_cf'),        moneyVal(fin.op_cf)],
+        [L('fcf'),          moneyVal(fin.fcf)],
     ];
 
     // ── 안정성 ──────────────────────────────────────────────
@@ -1846,23 +2042,23 @@ function _drawFinancials() {
     const crColor = cr != null ? (cr < 1   ? '#FF4444' : cr < 1.5 ? '#FFA500' : '#00C851') : null;
     const icColor = ic != null ? (ic < 1.5 ? '#FF4444' : ic < 3   ? '#FFA500' : '#00C851') : null;
     const stabItems = [
-        ['부채비율 (D/E)',  de != null ? `${de.toFixed(1)}%`  : '—', deColor],
-        ['유동비율',        cr != null ? cr.toFixed(2)         : '—', crColor],
-        ['이자보상배율',    ic != null ? `${ic.toFixed(1)}x`  : '—', icColor],
+        [L('debt_equity'),       de != null ? `${de.toFixed(1)}%` : '—', deColor],
+        [L('current_ratio'),     cr != null ? cr.toFixed(2)        : '—', crColor],
+        [L('interest_coverage'), ic != null ? `${ic.toFixed(1)}x` : '—', icColor],
     ];
 
     let colHtml = '<div class="fin-3col">';
-    colHtml += '<div><h4 class="subheader"><span class="ms">bar_chart</span> 수익성</h4>';
+    colHtml += `<div><h4 class="subheader"><span class="ms">bar_chart</span> ${L('profitability')}</h4>`;
     profItems.forEach(([l, v]) => {
         colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
     });
     colHtml += '</div>';
-    colHtml += '<div><h4 class="subheader"><span class="ms">trending_up</span> 성장성 & 현금흐름</h4>';
+    colHtml += `<div><h4 class="subheader"><span class="ms">trending_up</span> ${L('growth')}</h4>`;
     growthItems.forEach(([l, v]) => {
         colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value">${v}</span></div>`;
     });
     colHtml += '</div>';
-    colHtml += '<div><h4 class="subheader"><span class="ms">shield</span> 안정성</h4>';
+    colHtml += `<div><h4 class="subheader"><span class="ms">shield</span> ${L('stability')}</h4>`;
     stabItems.forEach(([l, v, c]) => {
         const style = c ? ` style="color:${c};"` : '';
         colHtml += `<div class="fin-row"><span class="label">${l}</span><span class="value"${style}>${v}</span></div>`;
@@ -1873,9 +2069,9 @@ function _drawFinancials() {
     const hasChart = fin.income && Object.keys(fin.income).length > 0;
     const chartHtml = hasChart
         ? `<div class="fin-chart-header">
-               <h4 class="subheader" style="margin:0;"><span class="ms">insert_chart</span> 연간 손익 & 현금흐름</h4>
+               <h4 class="subheader" style="margin:0;"><span class="ms">insert_chart</span> ${L('annual_chart')}</h4>
                <div class="fin-currency-toggle" style="margin:0;">
-                   <span class="caption" style="color:var(--muted);">원본: ${nativeLabel} · 단위:</span>
+                   <span class="caption" style="color:var(--muted);">${L('native_currency')}: ${nativeLabel} · ${L('unit_label')}:</span>
                    <button class="fin-currency-btn ${!displayKrw ? 'active' : ''}" onclick="toggleFinCurrency(this)">USD ($)</button>
                    <button class="fin-currency-btn ${displayKrw  ? 'active' : ''}" onclick="toggleFinCurrency(this)">KRW (₩)</button>
                </div>
@@ -1909,17 +2105,17 @@ function _drawFinancials() {
         const cfs  = years.map(y => toChartVal(fin.cashflow?.[y]?.op_cf));
 
         const traces = [
-            { x: years, y: revs, type: 'bar',   name: '매출',    marker: { color: '#4488ff' } },
-            { x: years, y: ops,  type: 'bar',   name: '영업이익', marker: { color: '#00C851' } },
-            { x: years, y: nets, type: 'bar',   name: '순이익',   marker: { color: '#ffaa00' } },
+            { x: years, y: revs, type: 'bar',   name: L('c_revenue'),   marker: { color: '#4488ff' } },
+            { x: years, y: ops,  type: 'bar',   name: L('c_op_income'), marker: { color: '#00C851' } },
+            { x: years, y: nets, type: 'bar',   name: L('c_net_income'), marker: { color: '#ffaa00' } },
             { x: years, y: cfs,  type: 'scatter', mode: 'lines+markers',
-              name: '영업CF', line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
+              name: L('c_op_cf'), line: { color: '#ff4488', width: 2 }, marker: { size: 8 } },
         ];
 
         const fc = chartColors();
         const layout = {
             title: {
-                text: `연간 손익 & 현금흐름 (단위: ${unitLabel})`,
+                text: `${L('annual_chart')} (${L('unit_label')}: ${unitLabel})`,
                 font: { size: 13, color: fc.text },
                 x: 0.5,
             },
