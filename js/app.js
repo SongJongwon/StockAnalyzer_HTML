@@ -147,6 +147,51 @@ const LANG = {
         sidebar_news_error: '뉴스를 불러올 수 없습니다.',
         fin_error: '재무 데이터를 불러올 수 없습니다.',
         chart_no_data: '차트 데이터 없음',
+        // Chart traces
+        bb_upper_trace: 'BB 상단', bb_lower_trace: 'BB 하단',
+        macd_hist: 'MACD 히스토그램', macd_line: 'MACD선', signal_line: 'Signal선',
+        overbought_70: '과매수(70)', oversold_30: '과매도(30)',
+        ma20_trace: 'MA-20', ma60_trace: 'MA-60',
+        // Chart annotations
+        buy_target_ann: '매수', target1_ann: '1차', target2_ann: '2차', stoploss_ann: '손절',
+        // Loading/error
+        searching: '종목 검색 중...',
+        not_found_err: '종목을 찾을 수 없습니다. 영문 종목명 또는 티커로 검색해보세요.',
+        data_load_error: '데이터를 불러올 수 없습니다.',
+        yahoo_hint: 'Yahoo Finance API 요청 제한 / 데이터 부족 / 티커 심볼 오류를 확인해주세요.',
+        // Trading section
+        trading_analysis: '트레이딩 전략 분석',
+        // API modal
+        api_view_hide: '보기/숨기기', api_save: '저장', api_delete: '삭제', api_register: '등록',
+        api_priority: 'AI 우선순위', api_auto: '자동',
+        api_claude_first: 'Claude 우선', api_gpt_first: 'GPT 우선', api_gemini_first: 'Gemini 우선',
+        api_delete_confirm: '등록된 API 키를 삭제하시겠습니까?',
+        claude_model_desc: 'claude-haiku-4-5 모델 사용',
+        openai_model_desc: 'gpt-4o-mini 모델 사용',
+        gemini_model_desc: 'gemini-1.5-flash 모델 사용',
+        // PDF
+        pdf_generating: 'PDF 생성 중...', pdf_failed: 'PDF 생성 실패',
+        // Financials
+        fin_loading: '재무 데이터 로딩 중...',
+        fin_unit_krw: '조원', fin_unit_usd: '십억$',
+        fin_legend_hint: '범례를 클릭하면 해당 라인을 숨기거나 표시할 수 있습니다.',
+        fin_y_axis: 'Y축 단위:',
+        // Theme pagination
+        prev_page: '◀ 이전', next_page: '다음 ▶',
+        per_page_title: '페이지당 종목 수',
+        // Disclaimer (used in multiple places)
+        disclaimer_text: '본 분석은 참고용이며 투자 권유가 아닙니다.',
+        // News
+        news_count_unit: '건',
+        // Auto-update
+        auto_update_status: '마다 자동 업데이트',
+        // Company info translation badge
+        co_translating: '번역 중...', co_ai_badge: 'AI번역',
+        // AI error
+        ai_request_failed: 'AI 분석 요청 실패',
+        // Analyzing text
+        analyzing_stock: '분석 중...',
+        fav_title: '즐겨찾기',
     },
     en: {
         // App
@@ -284,6 +329,51 @@ const LANG = {
         sidebar_news_error: 'Failed to load news.',
         fin_error: 'Failed to load financial data.',
         chart_no_data: 'No chart data',
+        // Chart traces
+        bb_upper_trace: 'BB Upper', bb_lower_trace: 'BB Lower',
+        macd_hist: 'MACD Histogram', macd_line: 'MACD', signal_line: 'Signal',
+        overbought_70: 'Overbought(70)', oversold_30: 'Oversold(30)',
+        ma20_trace: 'MA-20', ma60_trace: 'MA-60',
+        // Chart annotations
+        buy_target_ann: 'Buy', target1_ann: 'T1', target2_ann: 'T2', stoploss_ann: 'SL',
+        // Loading/error
+        searching: 'Searching stock...',
+        not_found_err: 'Stock not found. Try an English name or ticker.',
+        data_load_error: 'Failed to load data.',
+        yahoo_hint: 'Check: Yahoo Finance rate limit / insufficient data / invalid ticker symbol.',
+        // Trading section
+        trading_analysis: 'Trading Strategy Analysis',
+        // API modal
+        api_view_hide: 'Show/Hide', api_save: 'Save', api_delete: 'Delete', api_register: 'Register',
+        api_priority: 'AI Priority', api_auto: 'Auto',
+        api_claude_first: 'Claude First', api_gpt_first: 'GPT First', api_gemini_first: 'Gemini First',
+        api_delete_confirm: 'Delete this API key?',
+        claude_model_desc: 'Uses claude-haiku-4-5 model',
+        openai_model_desc: 'Uses gpt-4o-mini model',
+        gemini_model_desc: 'Uses gemini-1.5-flash model',
+        // PDF
+        pdf_generating: 'Generating PDF...', pdf_failed: 'PDF generation failed',
+        // Financials
+        fin_loading: 'Loading financial data...',
+        fin_unit_krw: 'Tril KRW', fin_unit_usd: 'Bil USD',
+        fin_legend_hint: 'Click legend items to show/hide lines.',
+        fin_y_axis: 'Y-Axis:',
+        // Theme pagination
+        prev_page: '◀ Prev', next_page: 'Next ▶',
+        per_page_title: 'Stocks per page',
+        // Disclaimer
+        disclaimer_text: 'For reference only. Not investment advice.',
+        // News
+        news_count_unit: '',
+        // Auto-update
+        auto_update_status: 'auto-update interval',
+        // Company info translation badge
+        co_translating: 'translating...', co_ai_badge: 'AI-translated',
+        // AI error
+        ai_request_failed: 'AI analysis request failed',
+        // Analyzing text
+        analyzing_stock: 'Analyzing...',
+        fav_title: 'Favorite',
     },
 };
 
@@ -707,7 +797,7 @@ const AI_PROVIDERS = [
     {
         id: 'anthropic',
         name: 'Anthropic Claude',
-        sub: 'claude-haiku-4-5 모델 사용',
+        sub: L('claude_model_desc'),
         icon: 'psychology',
         iconBg: '#7c3aed22',
         iconColor: '#7c3aed',
@@ -717,7 +807,7 @@ const AI_PROVIDERS = [
     {
         id: 'openai',
         name: 'OpenAI GPT',
-        sub: 'gpt-4o-mini 모델 사용',
+        sub: L('openai_model_desc'),
         icon: 'auto_awesome',
         iconBg: '#10a37f22',
         iconColor: '#10a37f',
@@ -727,7 +817,7 @@ const AI_PROVIDERS = [
     {
         id: 'gemini',
         name: 'Google Gemini',
-        sub: 'gemini-1.5-flash 모델 사용',
+        sub: L('gemini_model_desc'),
         icon: 'stars',
         iconBg: '#4285f422',
         iconColor: '#4285f4',
@@ -831,11 +921,11 @@ function renderApiKeyModal() {
                 <div id="kinput-${p.id}" style="display:none;">
                     <div class="api-key-input-wrap">
                         <input type="password" id="kinput-field-${p.id}" placeholder="${p.placeholder}" autocomplete="off">
-                        <button class="api-key-btn" onclick="toggleKeyVisibility('${p.id}')" title="보기/숨기기">
+                        <button class="api-key-btn" onclick="toggleKeyVisibility('${p.id}')" title="${L('api_view_hide')}">
                             <span class="ms" id="keye-${p.id}">visibility</span>
                         </button>
                         <button class="api-key-btn primary" onclick="saveApiKey('${p.id}')">
-                            <span class="ms">save</span> 저장
+                            <span class="ms">save</span> ${L('api_save')}
                         </button>
                     </div>
                 </div>
@@ -844,8 +934,8 @@ function renderApiKeyModal() {
                 <span class="api-status-badge ${hasKey ? 'on' : 'off'}" id="kbadge-${p.id}">${hasKey ? 'ON' : 'OFF'}</span>
                 <div style="display:flex;gap:6px;">
                     ${hasKey
-                        ? `<button class="api-key-btn danger" onclick="deleteApiKey('${p.id}')"><span class="ms">delete</span> 삭제</button>`
-                        : `<button class="api-key-btn" onclick="showKeyInput('${p.id}')"><span class="ms">add</span> 등록</button>`
+                        ? `<button class="api-key-btn danger" onclick="deleteApiKey('${p.id}')"><span class="ms">delete</span> ${L('api_delete')}</button>`
+                        : `<button class="api-key-btn" onclick="showKeyInput('${p.id}')"><span class="ms">add</span> ${L('api_register')}</button>`
                     }
                 </div>
             </div>
@@ -854,15 +944,15 @@ function renderApiKeyModal() {
 
     // Priority selector
     const priorityOptions = [
-        { val: 'auto',      label: '자동' },
-        { val: 'anthropic', label: 'Claude 우선' },
-        { val: 'openai',    label: 'GPT 우선' },
-        { val: 'gemini',    label: 'Gemini 우선' },
+        { val: 'auto',      label: L('api_auto') },
+        { val: 'anthropic', label: L('api_claude_first') },
+        { val: 'openai',    label: L('api_gpt_first') },
+        { val: 'gemini',    label: L('api_gemini_first') },
     ];
 
     html += `
     <div class="api-priority-section">
-        <label><span class="ms sm">tune</span> AI 우선순위</label>
+        <label><span class="ms sm">tune</span> ${L('api_priority')}</label>
         <div class="api-priority-btns">
             ${priorityOptions.map(o => `
                 <button class="api-priority-btn ${priority === o.val ? 'active' : ''}"
@@ -903,7 +993,7 @@ function saveApiKey(providerId) {
 }
 
 function deleteApiKey(providerId) {
-    if (!confirm('등록된 API 키를 삭제하시겠습니까?')) return;
+    if (!confirm(L('api_delete_confirm'))) return;
     removeApiKey(providerId);
     renderApiKeyModal();
 }
@@ -993,14 +1083,14 @@ async function runAnalysis() {
     const resultDiv = document.getElementById('analysisResult');
     if (welcomeMsg) welcomeMsg.style.display = 'none';
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div class="loading">종목 검색 중...</div>';
+    resultDiv.innerHTML = `<div class="loading">${L('searching')}</div>`;
 
     try {
         // 1단계: 검색 → 티커 확보
         const searchRes = await fetch(`${API}/api/stock/search?q=${encodeURIComponent(query)}`);
         if (!searchRes.ok) {
             const err = await searchRes.json().catch(() => ({}));
-            throw new Error(err.detail || `'${query}' 종목을 찾을 수 없습니다. 영문 종목명 또는 티커로 검색해보세요.`);
+            throw new Error(err.detail || `'${query}' ${L('not_found_err')}`);
         }
         const searchData = await searchRes.json();
         const symbol = searchData.symbol;
@@ -1019,13 +1109,13 @@ async function runAnalysis() {
         }
 
         // 검색 결과 안내
-        resultDiv.innerHTML = `<div class="loading">${name} (${symbol}) 분석 중...</div>`;
+        resultDiv.innerHTML = `<div class="loading">${name} (${symbol}) ${L('analyzing_stock')}</div>`;
 
         // 2단계: 분석
         const res = await fetch(`${API}/api/stock/analyze/${encodeURIComponent(symbol)}?period=${period}`);
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.detail || '데이터를 불러올 수 없습니다.');
+            throw new Error(err.detail || L('data_load_error'));
         }
         const data = await res.json();
         data.symbol = symbol;
@@ -1036,7 +1126,7 @@ async function runAnalysis() {
     } catch (e) {
         resultDiv.innerHTML = `<div class="error-msg">
             <p>${e.message}</p>
-            <p class="caption mt-8">Yahoo Finance API 요청 제한 / 데이터 부족 / 티커 심볼 오류를 확인해주세요.</p>
+            <p class="caption mt-8">${L('yahoo_hint')}</p>
         </div>`;
     }
 }
@@ -1271,11 +1361,11 @@ function renderAnalysis(data, container) {
         <hr class="divider">
 
         <!-- Trading Strategy Sub-tabs -->
-        <h3 class="subheader"><span class="ms">bar_chart</span> 트레이딩 전략 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> ${L('trading_analysis')}</h3>
         <div class="sub-tabs" id="tradingSubTabs">
-            <button class="sub-tab active" data-subtab="st-short"><span class="ms">bolt</span> 단기 (1일~2주)</button>
-            <button class="sub-tab" data-subtab="st-swing"><span class="ms">sync</span> 스윙 (2주~3개월)</button>
-            <button class="sub-tab" data-subtab="st-long"><span class="ms">trending_up</span> 장기 (6개월~수년)</button>
+            <button class="sub-tab active" data-subtab="st-short"><span class="ms">bolt</span> ${L('short_term')}</button>
+            <button class="sub-tab" data-subtab="st-swing"><span class="ms">sync</span> ${L('swing')}</button>
+            <button class="sub-tab" data-subtab="st-long"><span class="ms">trending_up</span> ${L('long_term')}</button>
         </div>
         <div id="st-short" class="sub-tab-content active">${renderShortTermStrategy(d, sym, rate)}</div>
         <div id="st-swing" class="sub-tab-content">${renderSwingStrategy(d, sym, rate)}</div>
@@ -1314,12 +1404,12 @@ function renderAnalysis(data, container) {
         <div class="chart-header">
             <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> ${L('chart_label')}</h3>
             <div class="chart-currency-toggle">
-                <span class="caption" style="margin-right:0.5rem;">${currentLang === 'ko' ? 'Y축 단위:' : 'Y-Axis:'}</span>
+                <span class="caption" style="margin-right:0.5rem;">${L('fin_y_axis')}</span>
                 <button class="chart-currency-btn active" onclick="toggleChartCurrency(this, 'native')">${krw ? 'KRW' : 'USD'}</button>
                 <button class="chart-currency-btn" onclick="toggleChartCurrency(this, '${krw ? 'USD' : 'KRW'}')">${krw ? 'USD' : 'KRW'}</button>
             </div>
         </div>
-        <p class="caption mb-8">${currentLang === 'ko' ? '범례를 클릭하면 해당 라인을 숨기거나 표시할 수 있습니다.' : 'Click legend items to show/hide lines.'}</p>
+        <p class="caption mb-8">${L('fin_legend_hint')}</p>
         <div id="chartContainer"></div>
         <hr class="divider">
 
@@ -1330,7 +1420,7 @@ function renderAnalysis(data, container) {
                 <span class="arrow">▶</span>
             </div>
             <div class="expandable-body" id="financialsBody">
-                <div class="loading">${currentLang === 'ko' ? '재무 데이터 로딩 중...' : 'Loading financial data...'} <span class="caption">(Yahoo Finance)</span></div>
+                <div class="loading">${L('fin_loading')} <span class="caption">(Yahoo Finance)</span></div>
             </div>
         </div>
 
@@ -1922,8 +2012,8 @@ function _buildChart(d, currencyMode) {
 
     const ma20Trace = { x: dates, y: ma20s, type: 'scatter', mode: 'lines', name: 'MA20', line: { color: 'orange', width: 1.2 }, legendgroup: 'ma' };
     const ma60Trace = { x: dates, y: ma60s, type: 'scatter', mode: 'lines', name: 'MA60', line: { color: 'cyan', width: 1.2 }, legendgroup: 'ma' };
-    const bbUTrace = { x: dates, y: bbUs, type: 'scatter', mode: 'lines', name: 'BB 상단', line: { color: 'gray', width: 1, dash: 'dot' }, legendgroup: 'bb' };
-    const bbLTrace = { x: dates, y: bbLs, type: 'scatter', mode: 'lines', name: 'BB 하단', line: { color: 'gray', width: 1, dash: 'dot' }, fill: 'tonexty', fillcolor: 'rgba(128,128,128,0.08)', legendgroup: 'bb' };
+    const bbUTrace = { x: dates, y: bbUs, type: 'scatter', mode: 'lines', name: L('bb_upper_trace'), line: { color: 'gray', width: 1, dash: 'dot' }, legendgroup: 'bb' };
+    const bbLTrace = { x: dates, y: bbLs, type: 'scatter', mode: 'lines', name: L('bb_lower_trace'), line: { color: 'gray', width: 1, dash: 'dot' }, fill: 'tonexty', fillcolor: 'rgba(128,128,128,0.08)', legendgroup: 'bb' };
 
     // ── 전략 라인 (라인만 표시, 우측 annotation으로 가격 레이블) ──
     const hline = (y, color, name) => ({
@@ -1933,29 +2023,29 @@ function _buildChart(d, currencyMode) {
         legendgroup: 'strategy', showlegend: false,
     });
 
-    const entryTrace = hline(entry, '#44aaff', `매수목표`);
-    const t1Trace = hline(t1, '#ffaa00', `1차 목표`);
-    const t2Trace = hline(t2, '#aaaaaa', `2차 목표`);
-    const slTrace = hline(sl, '#FF4444', `손절선`);
+    const entryTrace = hline(entry, '#44aaff', L('buy_target'));
+    const t1Trace = hline(t1, '#ffaa00', L('target1'));
+    const t2Trace = hline(t2, '#aaaaaa', L('target2'));
+    const slTrace = hline(sl, '#FF4444', L('stoploss'));
 
     // 우측 차트 바깥에 가격 레이블 annotation
     const strategyAnnotations = [
-        { x: 1.002, y: entry, xref: 'paper', yref: 'y', text: `매수 ${prefix}${fmtPrice(entry)}`, showarrow: false, font: { color: '#44aaff', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
-        { x: 1.002, y: t1,    xref: 'paper', yref: 'y', text: `1차  ${prefix}${fmtPrice(t1)}`,    showarrow: false, font: { color: '#ffaa00', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
-        { x: 1.002, y: t2,    xref: 'paper', yref: 'y', text: `2차  ${prefix}${fmtPrice(t2)}`,    showarrow: false, font: { color: '#aaaaaa', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
-        { x: 1.002, y: sl,    xref: 'paper', yref: 'y', text: `손절 ${prefix}${fmtPrice(sl)}`,    showarrow: false, font: { color: '#FF4444', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: entry, xref: 'paper', yref: 'y', text: `${L('buy_target_ann')} ${prefix}${fmtPrice(entry)}`, showarrow: false, font: { color: '#44aaff', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: t1,    xref: 'paper', yref: 'y', text: `${L('target1_ann')}  ${prefix}${fmtPrice(t1)}`,    showarrow: false, font: { color: '#ffaa00', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: t2,    xref: 'paper', yref: 'y', text: `${L('target2_ann')}  ${prefix}${fmtPrice(t2)}`,    showarrow: false, font: { color: '#aaaaaa', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
+        { x: 1.002, y: sl,    xref: 'paper', yref: 'y', text: `${L('stoploss_ann')} ${prefix}${fmtPrice(sl)}`,    showarrow: false, font: { color: '#FF4444', size: 10 }, xanchor: 'left', bgcolor: 'rgba(0,0,0,0)' },
     ];
 
     // ── MACD 서브차트 ──
     const histColors = macdHists.map(h => h >= 0 ? '#00C851' : '#FF4444');
-    const histTrace = { x: dates, y: macdHists, type: 'bar', name: 'MACD 히스토그램', marker: { color: histColors }, yaxis: 'y2', showlegend: true, legendgroup: 'macd' };
-    const macdTrace = { x: dates, y: macds, type: 'scatter', mode: 'lines', name: 'MACD선', line: { color: '#4488ff', width: 1.5 }, yaxis: 'y2', legendgroup: 'macd' };
-    const macdSigTrace = { x: dates, y: macdSigs, type: 'scatter', mode: 'lines', name: 'Signal선', line: { color: '#ff8800', width: 1.5 }, yaxis: 'y2', legendgroup: 'macd' };
+    const histTrace = { x: dates, y: macdHists, type: 'bar', name: L('macd_hist'), marker: { color: histColors }, yaxis: 'y2', showlegend: true, legendgroup: 'macd' };
+    const macdTrace = { x: dates, y: macds, type: 'scatter', mode: 'lines', name: L('macd_line'), line: { color: '#4488ff', width: 1.5 }, yaxis: 'y2', legendgroup: 'macd' };
+    const macdSigTrace = { x: dates, y: macdSigs, type: 'scatter', mode: 'lines', name: L('signal_line'), line: { color: '#ff8800', width: 1.5 }, yaxis: 'y2', legendgroup: 'macd' };
 
     // ── RSI 서브차트 ──
     const rsiTrace = { x: dates, y: rsis, type: 'scatter', mode: 'lines', name: 'RSI', line: { color: 'purple', width: 1.5 }, yaxis: 'y3', legendgroup: 'rsi' };
-    const rsi70Trace = { x: [dates[0], dates[dates.length-1]], y: [70, 70], type: 'scatter', mode: 'lines', name: '과매수(70)', line: { color: '#FF4444', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
-    const rsi30Trace = { x: [dates[0], dates[dates.length-1]], y: [30, 30], type: 'scatter', mode: 'lines', name: '과매도(30)', line: { color: '#00C851', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
+    const rsi70Trace = { x: [dates[0], dates[dates.length-1]], y: [70, 70], type: 'scatter', mode: 'lines', name: L('overbought_70'), line: { color: '#FF4444', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
+    const rsi30Trace = { x: [dates[0], dates[dates.length-1]], y: [30, 30], type: 'scatter', mode: 'lines', name: L('oversold_30'), line: { color: '#00C851', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
 
     const cc = chartColors();
     const layout = {
@@ -2013,7 +2103,7 @@ async function loadCompanyInfo(sym) {
             _translateSummary(info.summary);
         }
     } catch (e) {
-        card.innerHTML = `<span class="caption muted">회사 정보를 불러올 수 없습니다.</span>`;
+        card.innerHTML = `<span class="caption muted">${L('company_error')}</span>`;
     }
 }
 
@@ -2021,7 +2111,7 @@ async function _translateSummary(text) {
     const el = document.getElementById('coSummaryText');
     if (!el) return;
 
-    el.innerHTML += ` <span class="co-translating caption">(번역 중...)</span>`;
+    el.innerHTML += ` <span class="co-translating caption">(${L('co_translating')})</span>`;
 
     try {
         const body = {
@@ -2041,7 +2131,7 @@ async function _translateSummary(text) {
 
         if (data.translated && data.method !== 'original') {
             const badge = data.method.startsWith('AI')
-                ? `<span class="co-trans-badge ai">AI번역</span>`
+                ? `<span class="co-trans-badge ai">${L('co_ai_badge')}</span>`
                 : `<span class="co-trans-badge">번역</span>`;
             el.innerHTML = data.translated + ' ' + badge;
         } else {
@@ -2244,7 +2334,7 @@ function _drawFinancials() {
         // 표시 단위 결정
         // KRW 표시: 조원(1e12) / USD 표시: 십억달러(1e9)
         const chartUnit  = displayKrw ? 1e12 : 1e9;
-        const unitLabel  = displayKrw ? '조원' : '십억$';
+        const unitLabel  = displayKrw ? L('fin_unit_krw') : L('fin_unit_usd');
 
         // 원본값 → 표시 통화 → 차트 단위로 나누기
         function toChartVal(v) {
@@ -2389,7 +2479,7 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
 
         bodyEl.innerHTML = `<p class="ai-text">${text.replace(/\n/g, '<br>')}</p>`;
     } catch (e) {
-        bodyEl.innerHTML = `<p style="color:var(--muted);font-size:0.85em;">AI 분석 요청 실패: ${e.message}</p>`;
+        bodyEl.innerHTML = `<p style="color:var(--muted);font-size:0.85em;">${L('ai_request_failed')}: ${e.message}</p>`;
     }
 }
 
@@ -2400,7 +2490,7 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
 async function downloadPDF(sym) {
     const btn = document.querySelector('.pdf-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="ms">hourglass_empty</span> PDF 생성 중...';
+    btn.innerHTML = `<span class="ms">hourglass_empty</span> ${L('pdf_generating')}`;
     try {
         const name = _chartData?.name || sym;
         const res = await fetch(`${API}/api/pdf/report`, {
@@ -2413,7 +2503,7 @@ async function downloadPDF(sym) {
             }),
         });
         if (!res.ok) {
-            let msg = 'PDF 생성 실패';
+            let msg = L('pdf_failed');
             try { const j = await res.json(); msg = j.detail || msg; } catch (_) {}
             throw new Error(msg);
         }
@@ -2421,14 +2511,14 @@ async function downloadPDF(sym) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${sym.replace(/\./g, '_')}_분석보고서.pdf`;
+        a.download = `${sym.replace(/\./g, '_')}_analysis.pdf`;
         a.click();
         URL.revokeObjectURL(url);
     } catch (e) {
         alert(e.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span class="ms">description</span> PDF 보고서 다운로드';
+        btn.innerHTML = `<span class="ms">description</span> ${L('pdf_report')}`;
     }
 }
 
@@ -2498,7 +2588,7 @@ function renderWatchlist(data, container) {
         }
         html += '</tbody></table></div>';
     }
-    html += '<hr class="divider"><p class="caption">본 분석은 참고용이며 투자 권유가 아닙니다.</p>';
+    html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
     container.innerHTML = html;
 }
 
@@ -2569,7 +2659,7 @@ async function renderThemeContent(name) {
 
     let headerHtml = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-            <button onclick="toggleFavorite('${escapedName}')" class="btn-icon" title="즐겨찾기">${isFav ? '<span class="ms filled orange">star</span>' : '<span class="ms">star</span>'}</button>
+            <button onclick="toggleFavorite('${escapedName}')" class="btn-icon" title="${L('fav_title')}">${isFav ? '<span class="ms filled orange">star</span>' : '<span class="ms">star</span>'}</button>
             <div>
                 <h4>${name}</h4>
                 <p class="caption">${theme.desc || ''}</p>
@@ -2654,7 +2744,7 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <td style="color:#ffaa00;">${noData ? '—' : fmtPrice(r.target2)}</td>
             <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};font-weight:600;">${noData ? '—' : Number(r.ret_short || 0).toFixed(1) + '%'}</td>
             <td style="color:${vColor};font-weight:bold;">${r.verdict || '—'}</td>
-            <td style="color:var(--text-secondary);font-size:0.88em;">${r.reason || '지표 혼조'}</td>
+            <td style="color:var(--text-secondary);font-size:0.88em;">${r.reason || L('wl_mixed')}</td>
             <td style="text-align:center;color:var(--muted);font-size:0.8em;" class="tsr-arrow">▶</td>
         </tr>
         <tr class="theme-detail-row" id="tdr-${sid}">
@@ -2666,16 +2756,16 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
 
     html += '</tbody></table>';
     html += `<div class="pagination">
-        <button class="btn-secondary" onclick="themePagePrev()" ${page === 0 ? 'disabled' : ''}>◀ 이전</button>
-        <span class="info">페이지 ${page + 1} / ${totalPages} · 전체 ${total}개 종목</span>
-        <button class="btn-secondary" onclick="themePageNext()" ${page >= totalPages - 1 ? 'disabled' : ''}>다음 ▶</button>
-        <select class="per-page-select" onchange="setPerPage(this.value)" title="페이지당 종목 수">
-            <option value="10"  ${STOCKS_PER_PAGE === 10  ? 'selected' : ''}>10개</option>
-            <option value="20"  ${STOCKS_PER_PAGE === 20  ? 'selected' : ''}>20개</option>
-            <option value="50"  ${STOCKS_PER_PAGE === 50  ? 'selected' : ''}>50개</option>
+        <button class="btn-secondary" onclick="themePagePrev()" ${page === 0 ? 'disabled' : ''}>${L('prev_page')}</button>
+        <span class="info">${currentLang === 'ko' ? `페이지 ${page + 1} / ${totalPages} · 전체 ${total}개 종목` : `Page ${page + 1} / ${totalPages} · ${total} stocks`}</span>
+        <button class="btn-secondary" onclick="themePageNext()" ${page >= totalPages - 1 ? 'disabled' : ''}>${L('next_page')}</button>
+        <select class="per-page-select" onchange="setPerPage(this.value)" title="${L('per_page_title')}">
+            <option value="10"  ${STOCKS_PER_PAGE === 10  ? 'selected' : ''}>${currentLang === 'ko' ? '10개' : '10'}</option>
+            <option value="20"  ${STOCKS_PER_PAGE === 20  ? 'selected' : ''}>${currentLang === 'ko' ? '20개' : '20'}</option>
+            <option value="50"  ${STOCKS_PER_PAGE === 50  ? 'selected' : ''}>${currentLang === 'ko' ? '50개' : '50'}</option>
         </select>
     </div>`;
-    html += '<hr class="divider"><p class="caption">본 분석은 참고용이며 투자 권유가 아닙니다.</p>';
+    html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
 
     container.innerHTML = html;
 }
@@ -2806,7 +2896,7 @@ function _buildThemeDetailHtml(r, sid) {
         <hr class="divider">
 
         <!-- 트레이딩 전략 서브탭 -->
-        <h3 class="subheader"><span class="ms">bar_chart</span> 트레이딩 전략 분석</h3>
+        <h3 class="subheader"><span class="ms">bar_chart</span> ${L('trading_analysis')}</h3>
         <div class="sub-tabs" id="tst-${sid}">
             <button class="sub-tab active" data-subtab="ts-short-${sid}"><span class="ms">bolt</span> ${L('short_term')}</button>
             <button class="sub-tab" data-subtab="ts-swing-${sid}"><span class="ms">sync</span> ${L('swing')}</button>
@@ -3093,7 +3183,7 @@ function setupSidebar() {
         if (refreshInterval && refreshUnit && refreshStatus) {
             const val = refreshInterval.value;
             const unitText = refreshUnit.options[refreshUnit.selectedIndex].text;
-            refreshStatus.innerHTML = `<span class="ms">refresh</span> ${val}${unitText}마다 자동 업데이트`;
+            refreshStatus.innerHTML = `<span class="ms">refresh</span> ${val}${unitText} ${L('auto_update_status')}`;
         }
     }
     if (refreshInterval) refreshInterval.addEventListener('change', updateRefreshStatus);
@@ -3209,7 +3299,7 @@ function renderSidebarNewsList(key) {
     // 선택된 소스 타이틀 + 건수
     const titleHtml = `<div class="news-source-title">
         ${cfg.prefix ? `<span class="news-src-prefix">${cfg.prefix}</span>` : ''}
-        ${cfg.label} · <span class="news-source-count">${items.length}건</span>
+        ${cfg.label} · <span class="news-source-count">${items.length}${L('news_count_unit')}</span>
     </div>`;
 
     container.innerHTML = titleHtml + items.map(item =>
