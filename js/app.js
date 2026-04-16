@@ -8,7 +8,7 @@ const API = "https://stockanalyzer-backend.onrender.com";
 // ══════════════════════════════════════════════════════
 // Language / i18n
 // ══════════════════════════════════════════════════════
-let currentLang = localStorage.getItem('lang') || 'ko';
+let currentLang = 'ko';
 
 const LANG = {
     ko: {
@@ -507,7 +507,6 @@ function applyLangStatic() {
 /** 언어 전환 */
 function toggleLang() {
     currentLang = currentLang === 'ko' ? 'en' : 'ko';
-    localStorage.setItem('lang', currentLang);
     applyLangStatic();
     // 동적 컨텐츠 재렌더
     if (window._lastAnalysisData) {
