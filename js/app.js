@@ -512,6 +512,21 @@ function toggleLang() {
     if (window._lastAnalysisData) {
         renderAnalysis(window._lastAnalysisData, document.getElementById('analysisResult'));
     }
+    // 회사 설명 언어 동기화: 원문(EN) ↔ 번역(KO)
+    if (window._lastCompanyInfo?.summary) {
+        const el = document.getElementById('coSummaryText');
+        if (el) {
+            if (currentLang === 'ko') {
+                // KO: 번역 요청
+                _translateSummary(window._lastCompanyInfo.summary);
+            } else {
+                // EN: 원문 복원
+                const maxLen = 500;
+                const s = window._lastCompanyInfo.summary;
+                el.textContent = s.length > maxLen ? s.slice(0, maxLen) + '...' : s;
+            }
+        }
+    }
     if (window._finData) {
         _drawFinancials();
     }
@@ -2185,9 +2200,10 @@ async function loadCompanyInfo(sym) {
         const res = await fetch(`${API}/api/stock/info/${encodeURIComponent(sym)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const info = await res.json();
+        window._lastCompanyInfo = info;  // 언어 전환 시 재사용
         renderCompanyInfo(info, card);
-        // 영문 설명이 있으면 비동기 번역
-        if (info.summary) {
+        // KO 모드일 때만 한국어 번역, EN 모드면 영문 원문 그대로 표시
+        if (info.summary && currentLang === 'ko') {
             _translateSummary(info.summary);
         }
     } catch (e) {
