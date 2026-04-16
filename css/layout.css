@@ -1,0 +1,287 @@
+/* ═══════════════════════════════════════════════════════════════
+   StockAnalyzer B — layout.css
+   레이아웃 전용 파일 (구조·배치 속성만 포함)
+
+   ⚠️  수정 금지 규칙 ⚠️
+   명시적인 "레이아웃 수정" 요청이 없는 한 이 파일을 절대 수정하지 말 것.
+   색상·폰트·그림자 등 시각적 스타일 변경은 style.css 에서만 작업할 것.
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ─── 1. 전체 앱 구조 ─────────────────────────────────────────── */
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding: 2.75rem 3rem 7rem 3rem;
+    min-width: 0;
+}
+
+
+/* ─── 2. 사이드바 ─────────────────────────────────────────────── */
+
+.sidebar {
+    width: 21rem;
+    min-width: 21rem;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    transition: width 0.3s, min-width 0.3s, padding 0.3s;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.sidebar-expand-btn {
+    position: fixed;
+    top: 0.75rem;
+    left: 0;
+}
+.sidebar-expand-btn.visible { display: flex; }
+
+.sidebar-inner {
+    padding: 1.5rem 1rem 6rem 1rem;
+    position: relative;
+}
+
+
+/* ─── 3. 탭 네비게이션 ────────────────────────────────────────── */
+
+.tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* 트레이딩 전략 서브탭 */
+.sub-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+}
+
+.sub-tab-content { display: none; }
+.sub-tab-content.active { display: block; }
+
+
+/* ─── 4. 검색 바 (Tab1) ───────────────────────────────────────── */
+
+.search-row {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+
+/* ─── 5. 지표 분석 카드 그리드 (5열) ─────────────────────────── */
+
+.indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.indicator-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 145px;
+}
+
+
+/* ─── 6. 매매 전략 카드 그리드 ───────────────────────────────── */
+
+/* 종합 전략 (5열: 매수목표·1차·2차·손절·R/R) */
+.strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* 단기/스윙 목표가 산출 (4열: 현재가·1차·2차·손절) */
+.strategy-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.strategy-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 115px;
+}
+
+
+/* ─── 7. 손익비 바 ────────────────────────────────────────────── */
+
+.rr-bar {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+
+/* ─── 8. 피보나치 되돌림 그리드 (7열) ────────────────────────── */
+
+.fib-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+
+/* ─── 9. 재무제표 섹션 그리드 ────────────────────────────────── */
+
+/* 밸류에이션 (6열) */
+.fin-val-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+/* 수익성·성장성·안정성 (3열) */
+.fin-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* 장기 분석 */
+.profitability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.fair-value-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.dcf-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* 시나리오 (3열) */
+.scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+
+/* ─── 10. 메트릭 카드 행 (4열) ───────────────────────────────── */
+
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+
+/* ─── 11. 내 매수가 분석 폼 ──────────────────────────────────── */
+
+.my-buy-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1.5fr 1.2fr;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+
+/* ─── 12. 추천 종목 탭 (Tab2) ────────────────────────────────── */
+
+.wl-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+/* ─── 13. 테마주 탭 (Tab3) ───────────────────────────────────── */
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.theme-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+/* ─── 14. 글로벌 시장 탭 (Tab4) ─────────────────────────────── */
+
+.indices-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+
+/* ─── 15. 반응형 브레이크포인트 ──────────────────────────────── */
+
+@media (max-width: 1200px) {
+    .indicators-grid      { grid-template-columns: repeat(3, 1fr); }
+    .strategy-grid        { grid-template-columns: repeat(3, 1fr); }
+    .fin-val-grid         { grid-template-columns: repeat(3, 1fr); }
+    .fib-grid             { grid-template-columns: repeat(4, 1fr); }
+    .indices-grid         { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 900px) {
+    .app-layout           { flex-direction: column; }
+    .sidebar              { width: 100%; min-width: 100%; height: auto; position: static; }
+    .search-row           { grid-template-columns: 1fr; }
+    .metrics-row          { grid-template-columns: repeat(2, 1fr); }
+    .indicators-grid      { grid-template-columns: repeat(2, 1fr); }
+    .strategy-grid,
+    .strategy-grid-4      { grid-template-columns: repeat(2, 1fr); }
+    .scenario-grid        { grid-template-columns: 1fr; }
+    .theme-grid           { grid-template-columns: repeat(2, 1fr); }
+    .indices-grid         { grid-template-columns: repeat(2, 1fr); }
+    .fin-3col             { grid-template-columns: 1fr; }
+    .dcf-layout           { grid-template-columns: 1fr; }
+    .fib-grid             { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .metrics-row          { grid-template-columns: 1fr; }
+    .indicators-grid      { grid-template-columns: 1fr; }
+    .theme-grid           { grid-template-columns: 1fr; }
+    .indices-grid         { grid-template-columns: 1fr; }
+    .fib-grid             { grid-template-columns: repeat(2, 1fr); }
+}
