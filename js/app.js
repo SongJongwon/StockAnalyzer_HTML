@@ -2253,9 +2253,14 @@ function renderCompanyInfo(info, card) {
         html += `<a class="co-link caption" href="${info.website}" target="_blank" rel="noopener"><span class="ms sm">link</span> ${info.website}</a>`;
     }
 
+    // 태그도 설명도 없지만 회사명은 있는 경우 — 최소 안내 표시
     if (!html) {
-        card.innerHTML = `<span class="caption muted">${L('no_company_info')}</span>`;
-        return;
+        if (info.long_name) {
+            html = `<span class="caption muted">${info.long_name}</span>`;
+        } else {
+            card.innerHTML = `<span class="caption muted">${L('no_company_info')}</span>`;
+            return;
+        }
     }
     card.innerHTML = html;
 }
