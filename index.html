@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/layout.css">
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head>
@@ -112,6 +113,7 @@
                 <button class="tab" data-tab="tab-watchlist"><span class="ms filled">star</span> <span data-i18n="tab_watchlist">추천 종목</span></button>
                 <button class="tab" data-tab="tab-themes"><span class="ms">track_changes</span> <span data-i18n="tab_themes">테마주</span></button>
                 <button class="tab" data-tab="tab-global"><span class="ms">public</span> <span data-i18n="tab_global">글로벌 시장 &amp; 뉴스분석</span></button>
+                <button class="tab" data-tab="tab-panel"><span class="ms">forum</span> <span data-i18n="tab_panel">투자자 패널</span></button>
             </div>
 
             <!-- Tab 1: 종목 분석 -->
@@ -197,6 +199,54 @@
                 </div>
             </div>
 
+            <!-- Tab 5: 투자자 패널 -->
+            <div id="tab-panel" class="tab-content">
+                <div class="section-header">
+                    <h3><span class="ms">forum</span> <span data-i18n="panel_tab_title">투자자 패널 토론</span></h3>
+                    <p class="caption" data-i18n="panel_tab_caption">전설적 투자자 페르소나들이 토론을 통해 합의된 추천 종목을 제시합니다.</p>
+                </div>
+
+                <div class="panel-setup">
+                    <div class="panel-field">
+                        <label class="input-label" data-i18n="panel_query_label">질문 또는 섹터</label>
+                        <textarea id="panelQuery" rows="2" data-i18n-placeholder="panel_query_placeholder" placeholder="예: 2026년 AI 반도체 섹터에서 장기 투자할 만한 종목은?"></textarea>
+                    </div>
+
+                    <div class="panel-field">
+                        <label class="input-label"><span data-i18n="panel_personas_label">참여 투자자 선택</span> <span class="caption muted" data-i18n="panel_personas_hint">(2명 이상 권장)</span></label>
+                        <div id="panelPersonaList" class="panel-persona-list">
+                            <div class="loading" data-i18n="panel_loading_personas">페르소나 목록 불러오는 중...</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-field panel-options">
+                        <div class="panel-option-item">
+                            <label class="input-label" data-i18n="panel_max_rounds">최대 라운드</label>
+                            <select id="panelMaxRounds">
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div class="panel-option-item">
+                            <label class="input-label" data-i18n="panel_threshold">수렴 임계값</label>
+                            <select id="panelThreshold">
+                                <option value="0.6">0.6</option>
+                                <option value="0.7" selected>0.7</option>
+                                <option value="0.8">0.8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="panelStartBtn" class="btn-analyze" data-i18n="panel_start_btn">토론 시작</button>
+                </div>
+
+                <div class="panel-caption caption muted mt-8" data-i18n="panel_api_hint">※ 상단 우측 메뉴에서 AI API 키를 먼저 등록해주세요. Gemini 무료 키만 있어도 작동합니다.</div>
+
+                <div id="panelResult" style="display:none;"></div>
+            </div>
+
             <!-- 하단 면책조항 -->
             <div class="disclaimer caption mt-16" data-i18n="disclaimer_full">
                 본 분석은 참고용이며 투자 권유가 아닙니다. 모든 투자의 책임은 투자자 본인에게 있습니다.
@@ -218,5 +268,6 @@
     </div>
 
     <script src="js/app.js"></script>
+    <script src="js/panel.js"></script>
 </body>
 </html>
