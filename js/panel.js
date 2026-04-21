@@ -155,6 +155,30 @@ function renderPanelResult(data, el) {
 
     const s = data.final_synthesis || {};
     const scorePct = Math.round((s.convergence_score || 0) * 100);
+    const isParseError = s.termination_reason === 'parse_error';
+    const isParseSuspicious = s.termination_reason === 'parse_suspicious';
+
+    // 파싱 실패/의심 경고 배너 (디버깅용)
+    const parseWarningHtml = (isParseError || isParseSuspicious) ? `
+        <div class="panel-parse-warning">
+            <div class="panel-parse-warning-head">
+                <span class="ms orange">warning</span>
+                <strong>${isParseError ? '중재자 응답 파싱 실패' : '중재자 응답 이상 (빈 배열 + 높은 수렴 점수)'}</strong>
+            </div>
+            <p class="caption">
+                ${isParseError
+                    ? 'LLM 이 요청한 JSON 형식으로 응답하지 않았거나 응답이 절단되었습니다.'
+                    : 'LLM 이 JSON 형식은 지켰지만 consensus/disputed/orphan 배열이 비어있습니다. 쿼터 초과로 Flash-Lite 폴백 시 발생 가능.'}
+                중재자 원본을 아래에서 확인하세요.
+            </p>
+            ${s.raw_json ? `
+                <details class="panel-parse-raw" open>
+                    <summary class="caption">중재자 원본 응답 보기</summary>
+                    <pre>${escapeHtml((s.raw_json || '').slice(0, 3000))}</pre>
+                </details>
+            ` : ''}
+        </div>
+    ` : '';
 
     // 메타 정보 카드
     const metaHtml = `
@@ -188,7 +212,11 @@ function renderPanelResult(data, el) {
     // 토론 로그 (접어두기)
     const roundsHtml = renderPanelRounds(data.rounds);
 
+    // 최종 요약 (토론 보기 아래)
+    const finalSummaryHtml = renderPanelFinalSummary(s, data);
+
     el.innerHTML = `
+        ${parseWarningHtml}
         ${metaHtml}
         <hr class="divider">
         ${recommendationsHtml}
@@ -196,6 +224,7 @@ function renderPanelResult(data, el) {
         <details class="panel-rounds-details">
             <summary><span class="ms">forum</span> 토론 과정 전체 보기</summary>
             ${roundsHtml}
+            ${finalSummaryHtml}
         </details>
     `;
 }
@@ -216,70 +245,55 @@ function renderPanelRecommendations(s) {
         return p ? `${p.emoji || ''} ${p.name_ko}` : id;
     };
 
+    const joinReasons = (arr) => {
+        const joined = (arr || []).filter(Boolean).join(' · ');
+        return joined || '(근거 미제공)';
+    };
+    const safeAttr = (s) => String(s || '').replace(/['"\\]/g, '');
+
     const consensusCards = consensus.length === 0 ? `<div class="caption muted">${L('panel_none')}</div>` :
         consensus.map(c => `
             <div class="panel-rec-card panel-rec-consensus">
                 <div class="panel-rec-header">
-                    <span class="panel-rec-ticker">${c.ticker}</span>
-                    <span class="panel-rec-name">${c.name}</span>
-                    <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${c.ticker}', '${(c.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
+                    <span class="panel-rec-ticker">${escapeHtml(c.ticker)}</span>
+                    <span class="panel-rec-name">${escapeHtml(c.name || '')}</span>
+                    <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${safeAttr(c.ticker)}', '${safeAttr(c.name)}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
                 </div>
-                <div class="panel-rec-body">
-                    <div class="panel-rec-row">
-                        <span class="panel-rec-label">${L('panel_support')}:</span>
-                        <span>${(c.supporters || []).map(personaLabel).join(' · ')}</span>
-                    </div>
-                    ${(c.reasons || []).length > 0 ? `
-                        <div class="panel-rec-row">
-                            <span class="panel-rec-label">${L('panel_reason')}:</span>
-                            <span>${(c.reasons || []).join(', ')}</span>
-                        </div>
-                    ` : ''}
+                <div class="panel-rec-summary">${escapeHtml(joinReasons(c.reasons))}</div>
+                <div class="panel-rec-foot caption muted">
+                    ${L('panel_support')}: ${(c.supporters || []).map(personaLabel).map(escapeHtml).join(' · ')}
                 </div>
             </div>
         `).join('');
 
     const disputedCards = disputed.length === 0 ? `<div class="caption muted">${L('panel_none')}</div>` :
-        disputed.map(d => `
-            <div class="panel-rec-card panel-rec-disputed">
-                <div class="panel-rec-header">
-                    <span class="panel-rec-ticker">${d.ticker}</span>
-                    <span class="panel-rec-name">${d.name}</span>
-                    <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${d.ticker}', '${(d.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
-                </div>
-                <div class="panel-rec-body">
-                    <div class="panel-rec-row panel-rec-for">
-                        <span class="panel-rec-label">${L('panel_for')} (${(d.for_side || []).map(personaLabel).join(', ')}):</span>
-                        <span>${(d.for_reasons || []).join(', ')}</span>
+        disputed.map(d => {
+            const forLine = `${L('panel_for')}(${(d.for_side || []).map(personaLabel).join(', ')}) ${joinReasons(d.for_reasons)}`;
+            const againstLine = `${L('panel_against')}(${(d.against_side || []).map(personaLabel).join(', ')}) ${joinReasons(d.against_reasons)}`;
+            return `
+                <div class="panel-rec-card panel-rec-disputed">
+                    <div class="panel-rec-header">
+                        <span class="panel-rec-ticker">${escapeHtml(d.ticker)}</span>
+                        <span class="panel-rec-name">${escapeHtml(d.name || '')}</span>
+                        <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${safeAttr(d.ticker)}', '${safeAttr(d.name)}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
                     </div>
-                    <div class="panel-rec-row panel-rec-against">
-                        <span class="panel-rec-label">${L('panel_against')} (${(d.against_side || []).map(personaLabel).join(', ')}):</span>
-                        <span>${(d.against_reasons || []).join(', ')}</span>
-                    </div>
-                    ${d.next_question ? `
-                        <div class="panel-rec-row">
-                            <span class="panel-rec-label">${L('panel_next_q')}:</span>
-                            <span>${d.next_question}</span>
-                        </div>
-                    ` : ''}
+                    <div class="panel-rec-summary panel-rec-for-line">👍 ${escapeHtml(forLine)}</div>
+                    <div class="panel-rec-summary panel-rec-against-line">👎 ${escapeHtml(againstLine)}</div>
+                    ${d.next_question ? `<div class="panel-rec-foot caption muted">${L('panel_next_q')}: ${escapeHtml(d.next_question)}</div>` : ''}
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     const orphanCards = orphan.length === 0 ? `<div class="caption muted">${L('panel_none')}</div>` :
         orphan.map(o => `
             <div class="panel-rec-card panel-rec-orphan">
                 <div class="panel-rec-header">
-                    <span class="panel-rec-ticker">${o.ticker}</span>
-                    <span class="panel-rec-name">${o.name}</span>
-                    <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${o.ticker}', '${(o.name || '').replace(/'/g, '')}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
+                    <span class="panel-rec-ticker">${escapeHtml(o.ticker)}</span>
+                    <span class="panel-rec-name">${escapeHtml(o.name || '')}</span>
+                    <button class="btn-secondary panel-rec-analyze" onclick="analyzeFromPanel('${safeAttr(o.ticker)}', '${safeAttr(o.name)}')"><span class="ms">bar_chart</span> ${L('panel_analyze_stock')}</button>
                 </div>
-                <div class="panel-rec-body">
-                    <div class="panel-rec-row">
-                        <span class="panel-rec-label">${personaLabel(o.supporter)}:</span>
-                        <span>${o.reason || ''}</span>
-                    </div>
-                </div>
+                <div class="panel-rec-summary">${escapeHtml(o.reason || '(근거 미제공)')}</div>
+                <div class="panel-rec-foot caption muted">${escapeHtml(personaLabel(o.supporter))}</div>
             </div>
         `).join('');
 
@@ -292,6 +306,65 @@ function renderPanelRecommendations(s) {
 
         <h3 class="subheader mt-16"><span class="ms">lightbulb</span> ${L('panel_orphan')}</h3>
         <div class="panel-rec-list">${orphanCards}</div>
+    `;
+}
+
+
+// ──────────────────────────────────────────
+// 토론 전체보기 맨 아래에 들어갈 최종 요약 블록
+// ──────────────────────────────────────────
+function renderPanelFinalSummary(s, data) {
+    const cons = s.consensus || [];
+    const disp = s.disputed || [];
+    const orph = s.orphan || [];
+    if (cons.length + disp.length + orph.length === 0) {
+        return `
+            <div class="panel-final-summary">
+                <h4><span class="ms">summarize</span> ${L('panel_final_summary') || '최종 요약'}</h4>
+                <p class="caption muted">중재자가 추천 종목을 분류하지 못했습니다.</p>
+            </div>
+        `;
+    }
+
+    const personaMap = {};
+    _panelPersonas.forEach(p => { personaMap[p.id] = p; });
+    const personaLabel = id => {
+        const p = personaMap[id];
+        return p ? `${p.emoji || ''} ${p.name_ko}` : id;
+    };
+
+    const consItems = cons.map(c => `
+        <li><strong>${escapeHtml(c.ticker)}</strong> — ${escapeHtml((c.reasons || []).filter(Boolean).join(' · ') || '합의 도출')}
+            <span class="caption muted"> (${(c.supporters || []).map(personaLabel).map(escapeHtml).join(' · ')})</span>
+        </li>`).join('');
+    const dispItems = disp.map(d => `
+        <li><strong>${escapeHtml(d.ticker)}</strong> — 찬성 ${(d.for_side || []).length}명 vs 반대 ${(d.against_side || []).length}명</li>
+    `).join('');
+    const orphItems = orph.map(o => `
+        <li><strong>${escapeHtml(o.ticker)}</strong> — ${escapeHtml(o.reason || '단독 추천')}
+            <span class="caption muted"> (${escapeHtml(personaLabel(o.supporter))})</span>
+        </li>
+    `).join('');
+
+    return `
+        <div class="panel-final-summary">
+            <h4><span class="ms">summarize</span> ${L('panel_final_summary') || '최종 요약'}</h4>
+            <div class="panel-final-summary-meta caption muted">
+                ${data.personas.length}명 · ${data.rounds.length} 라운드 · 수렴 ${Math.round((s.convergence_score || 0) * 100)}%
+            </div>
+            ${cons.length ? `<div class="panel-final-summary-block">
+                <div class="panel-final-summary-title"><span class="ms green">check_circle</span> ${L('panel_consensus')}</div>
+                <ul>${consItems}</ul>
+            </div>` : ''}
+            ${disp.length ? `<div class="panel-final-summary-block">
+                <div class="panel-final-summary-title"><span class="ms orange">help_center</span> ${L('panel_disputed')}</div>
+                <ul>${dispItems}</ul>
+            </div>` : ''}
+            ${orph.length ? `<div class="panel-final-summary-block">
+                <div class="panel-final-summary-title"><span class="ms">lightbulb</span> ${L('panel_orphan')}</div>
+                <ul>${orphItems}</ul>
+            </div>` : ''}
+        </div>
     `;
 }
 

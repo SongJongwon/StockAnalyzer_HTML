@@ -3,7 +3,10 @@
    Complete JS matching A version functionality
    ═══════════════════════════════════════════════════════════ */
 
-const API = "https://stockanalyzer-backend.onrender.com";
+// 로컬 개발(localhost/127.0.0.1)은 같은 origin 사용, 배포는 Render
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? location.origin
+    : "https://stockanalyzer-backend.onrender.com";
 
 // ══════════════════════════════════════════════════════
 // Language / i18n
@@ -53,6 +56,8 @@ const LANG = {
         panel_reason: '근거',
         panel_next_q: '추가 논의',
         panel_analyze_stock: '이 종목 분석',
+        panel_final_summary: '최종 요약',
+        panel_parse_error: '중재자 응답 파싱 실패',
         panel_term_convergence: '합의 달성',
         panel_term_max_rounds: '최대 라운드 도달',
         panel_term_error: '오류 종료',
@@ -317,6 +322,8 @@ const LANG = {
         panel_reason: 'Reason',
         panel_next_q: 'Further discussion',
         panel_analyze_stock: 'Analyze this stock',
+        panel_final_summary: 'Final Summary',
+        panel_parse_error: 'Moderator response parse failed',
         panel_term_convergence: 'Consensus reached',
         panel_term_max_rounds: 'Max rounds reached',
         panel_term_error: 'Error',

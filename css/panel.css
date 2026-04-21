@@ -357,3 +357,114 @@
 [data-theme="dark"] .panel-round-moderator {
     background: rgba(255,165,0,0.08);
 }
+
+
+/* ─────────────────────────────────────────────
+   추천 카드 — 한 줄 요약 형식
+   ───────────────────────────────────────────── */
+.panel-rec-summary {
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin: 6px 0 4px;
+    color: var(--text);
+}
+
+.panel-rec-for-line { color: var(--green, #2ecc71); }
+.panel-rec-against-line { color: var(--red, #e74c3c); }
+
+.panel-rec-foot {
+    margin-top: 4px;
+    font-size: 0.85em;
+}
+
+
+/* ─────────────────────────────────────────────
+   파싱 실패 경고 배너
+   ───────────────────────────────────────────── */
+.panel-parse-warning {
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--orange, #f39c12);
+    background: rgba(243,156,18,0.08);
+    border-radius: 10px;
+}
+
+.panel-parse-warning-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.panel-parse-warning-head strong {
+    color: var(--orange, #f39c12);
+}
+
+.panel-parse-raw {
+    margin-top: 10px;
+}
+
+.panel-parse-raw pre {
+    max-height: 240px;
+    overflow: auto;
+    padding: 10px;
+    background: var(--bg-subtle, rgba(0,0,0,0.05));
+    border-radius: 6px;
+    font-size: 0.82em;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+/* ─────────────────────────────────────────────
+   최종 요약 (토론 전체보기 맨 아래)
+   ───────────────────────────────────────────── */
+.panel-final-summary {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-top: 2px solid var(--border, #3a3a4e);
+    background: var(--card-bg, rgba(255,255,255,0.03));
+    border-radius: 0 0 10px 10px;
+}
+
+.panel-final-summary h4 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 6px;
+    font-size: 1.05em;
+}
+
+.panel-final-summary-meta {
+    margin-bottom: 12px;
+}
+
+.panel-final-summary-block {
+    margin-top: 12px;
+}
+
+.panel-final-summary-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.panel-final-summary-block ul {
+    margin: 4px 0 0 8px;
+    padding-left: 16px;
+}
+
+.panel-final-summary-block li {
+    margin-bottom: 4px;
+    line-height: 1.55;
+}
+
+[data-theme="dark"] .panel-parse-warning {
+    background: rgba(243,156,18,0.12);
+}
+
+[data-theme="dark"] .panel-parse-raw pre {
+    background: rgba(255,255,255,0.04);
+}
