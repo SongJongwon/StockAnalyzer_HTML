@@ -3273,10 +3273,21 @@ function setupSidebar() {
     const collapseBtn = document.getElementById('sidebarCollapse');
     const expandBtn = document.getElementById('sidebarExpand');
 
+    // 사이드바 폭 변경 완료 후 Plotly 차트들 리사이즈 (transition: 0.3s)
+    const resizeChartsAfterSidebar = () => {
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+            document.querySelectorAll('.js-plotly-plot').forEach(el => {
+                try { Plotly.Plots.resize(el); } catch (_) {}
+            });
+        }, 320);
+    };
+
     if (collapseBtn) {
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.add('collapsed');
             if (expandBtn) expandBtn.classList.add('visible');
+            resizeChartsAfterSidebar();
         });
     }
 
@@ -3284,6 +3295,7 @@ function setupSidebar() {
         expandBtn.addEventListener('click', () => {
             sidebar.classList.remove('collapsed');
             expandBtn.classList.remove('visible');
+            resizeChartsAfterSidebar();
         });
     }
 
