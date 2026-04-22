@@ -1180,6 +1180,32 @@ main {
     gap: 0.25rem;
 }
 
+.chart-interval-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.chart-interval-btn {
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 2rem;
+}
+.chart-interval-btn:hover { border-color: var(--accent); color: var(--accent); }
+.chart-interval-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+[data-theme="dark"] .chart-interval-btn { background: var(--bg-alt); border-color: var(--border); color: var(--muted); }
+[data-theme="dark"] .chart-interval-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
 .chart-currency-btn {
     padding: 0.25rem 0.75rem;
     border: 1px solid var(--border);
@@ -1205,9 +1231,39 @@ main {
     width: 100%;
     min-height: 850px;
     background: var(--bg);
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
     margin-bottom: 16px;
 }
+
+/* ── 커스텀 차트 범례 (Plotly 기본 legend 대체) ── */
+.chart-legend {
+    background: #172033;
+    border-bottom: 1px solid #334155;
+    padding: 8px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-items: center;
+    font-size: 11px;
+    border-radius: 8px 8px 0 0;
+}
+.chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    color: #cbd5e1;
+    transition: opacity 0.15s;
+}
+.chart-legend-item:hover { color: #fff; }
+.chart-legend-item.inactive { opacity: 0.35; }
+
+.legend-icon { display: inline-block; flex-shrink: 0; }
+.legend-icon-candle { width: 12px; height: 14px; border-radius: 1px; }
+.legend-icon-line   { width: 20px; height: 2px;  border-radius: 1px; }
+.legend-icon-dashed { width: 20px; height: 0;    border-top: 1.5px dashed gray; }
+.legend-icon-bar    { width: 12px; height: 14px; border-radius: 1px; }
 
 /* ═══════════════════════════════════════════════
    Expandable sections
