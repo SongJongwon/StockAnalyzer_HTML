@@ -2321,11 +2321,7 @@ function _buildChart(d, currencyMode) {
         doubleClick: 'reset',   // 더블클릭 = 초기 범위로 복귀
     });
 
-    // 현재 차트의 데이터 범위를 엘리먼트에 저장 (이벤트 핸들러가 참조)
-    chartDiv._chartBounds = { dataStart: firstDate, dataEnd: lastDate };
-
-    // 팬/줌 시 데이터 범위 바깥으로 나가는 것 방지 + 우클릭 드래그 = 팬
-    // (같은 엘리먼트 재사용 시 중복 바인딩 방지 플래그)
+    // 우클릭 드래그 = 팬 인터랙션 바인딩 (중복 바인딩 방지 플래그)
     if (!chartDiv._chartInteractionsBound) {
         chartDiv._chartInteractionsBound = true;
         _setupChartInteractions(chartDiv);
@@ -2337,64 +2333,14 @@ function _buildChart(d, currencyMode) {
 // 차트 인터랙션: 팬 경계 클램프 + 우클릭 드래그 팬
 // ═══════════════════════════════════════════════
 function _setupChartInteractions(chartDiv) {
-    // 상태 변수 (클로저)
-    let _clamping = false;
+    // 우클릭 드래그 = 좌우 팬 (제한 없음, 데이터 범위 밖으로도 자유 이동)
+    // 휠 줌·좌클릭 드래그 팬은 Plotly config 쪽에서 이미 설정됨.
     let rightDrag = null;
-    const MIN_RANGE_MS = 1000 * 60 * 60 * 24;  // 최소 범위 1일 (너무 좁은 범위 방지)
 
-    // 주어진 (start, end) 를 데이터 경계 안으로 클램프해서 반환
-    function clampRange(start, end) {
-        const bounds = chartDiv._chartBounds;
-        if (!bounds) return [start, end];
-        const dataStart = new Date(bounds.dataStart).getTime();
-        const dataEnd = new Date(bounds.dataEnd).getTime();
-        const width = end - start;
-        const dataWidth = dataEnd - dataStart;
-
-        // degenerate / 전체 초과 → 전체 범위 복귀
-        if (!Number.isFinite(width) || width <= 0 || width > dataWidth) {
-            return [dataStart, dataEnd];
-        }
-        if (start < dataStart) return [dataStart, dataStart + width];
-        if (end > dataEnd)     return [dataEnd - width, dataEnd];
-        return [start, end];
-    }
-
-    // ── 1. plotly_relayout 이벤트 기반 클램프 (휠 줌, Plotly 기본 팬 대응) ──
-    chartDiv.on('plotly_relayout', (eventData) => {
-        if (_clamping) return;
-        // 우클릭 드래그 중에는 mousemove 쪽에서 직접 클램프하므로 여기선 스킵 (경쟁 조건 방지)
-        if (rightDrag) return;
-
-        // eventData 에서 새 range 추출 (Plotly 버전별로 키 형태가 다를 수 있음)
-        let r0 = eventData['xaxis.range[0]'];
-        let r1 = eventData['xaxis.range[1]'];
-        if (r0 === undefined && Array.isArray(eventData['xaxis.range'])) {
-            [r0, r1] = eventData['xaxis.range'];
-        }
-        if (r0 === undefined && r1 === undefined) return;
-
-        const bounds = chartDiv._chartBounds;
-        if (!bounds) return;
-        const start = new Date(r0 !== undefined ? r0 : bounds.dataStart).getTime();
-        const end = new Date(r1 !== undefined ? r1 : bounds.dataEnd).getTime();
-        const [cs, ce] = clampRange(start, end);
-
-        if (cs !== start || ce !== end) {
-            _clamping = true;
-            Plotly.relayout(chartDiv, {
-                'xaxis.range': [new Date(cs).toISOString(), new Date(ce).toISOString()]
-            }).then(() => { _clamping = false; })
-              .catch(() => { _clamping = false; });
-        }
-    });
-
-    // ── 2. 우클릭 드래그 = 팬 (mousemove 에서 직접 클램프) ──
     chartDiv.addEventListener('contextmenu', (e) => e.preventDefault());
 
     chartDiv.addEventListener('mousedown', (e) => {
         if (e.button !== 2) return;
-        // 최신 range 는 _fullLayout 쪽이 더 안전 (Plotly 내부 canonical)
         const fullRange = chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis.range;
         const layoutRange = chartDiv.layout && chartDiv.layout.xaxis && chartDiv.layout.xaxis.range;
         const range = fullRange || layoutRange;
@@ -2417,41 +2363,18 @@ function _setupChartInteractions(chartDiv) {
 
         const dx = e.clientX - rightDrag.startX;
         const rangeMs = rightDrag.endMs - rightDrag.startMs;
-        if (!Number.isFinite(rangeMs) || rangeMs <= 0) return;   // 원래 range 가 이상하면 스킵
+        if (!Number.isFinite(rangeMs) || rangeMs <= 0) return;
         const shiftMs = -(dx / plotWidth) * rangeMs;
 
-        let newStart = rightDrag.startMs + shiftMs;
-        let newEnd = rightDrag.endMs + shiftMs;
-
-        // 직접 클램프 적용 (이벤트 핸들러 경유 X → 경쟁 조건 회피)
-        [newStart, newEnd] = clampRange(newStart, newEnd);
-
-        // degenerate 범위 방지
-        if (newEnd - newStart < MIN_RANGE_MS) return;
+        const newStart = rightDrag.startMs + shiftMs;
+        const newEnd = rightDrag.endMs + shiftMs;
 
         Plotly.relayout(chartDiv, {
             'xaxis.range': [new Date(newStart).toISOString(), new Date(newEnd).toISOString()]
         });
     });
 
-    const endRightDrag = () => {
-        if (!rightDrag) return;
-        rightDrag = null;
-
-        // 마우스 뗐을 때 현재 range 가 정상인지 최종 검증 (safety net)
-        const fullRange = chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis.range;
-        if (!fullRange) return;
-        const cur0 = new Date(fullRange[0]).getTime();
-        const cur1 = new Date(fullRange[1]).getTime();
-        const [cs, ce] = clampRange(cur0, cur1);
-        if (cs !== cur0 || ce !== cur1 || (ce - cs) < MIN_RANGE_MS) {
-            _clamping = true;
-            Plotly.relayout(chartDiv, {
-                'xaxis.range': [new Date(cs).toISOString(), new Date(ce).toISOString()]
-            }).then(() => { _clamping = false; })
-              .catch(() => { _clamping = false; });
-        }
-    };
+    const endRightDrag = () => { rightDrag = null; };
     chartDiv.addEventListener('mouseup', (e) => { if (e.button === 2) endRightDrag(); });
     chartDiv.addEventListener('mouseleave', endRightDrag);
 }
