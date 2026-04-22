@@ -90,8 +90,9 @@ async function startPanelDiscussion() {
         anthropic: getApiKey('anthropic') || '',
         openai:    getApiKey('openai')    || '',
         gemini:    getApiKey('gemini')    || '',
+        groq:      getApiKey('groq')      || '',
     };
-    if (!keys.anthropic && !keys.openai && !keys.gemini) {
+    if (!keys.anthropic && !keys.openai && !keys.gemini && !keys.groq) {
         alert(L('panel_no_keys'));
         return;
     }
@@ -117,6 +118,7 @@ async function startPanelDiscussion() {
                 user_anthropic_key: keys.anthropic,
                 user_openai_key:    keys.openai,
                 user_gemini_key:    keys.gemini,
+                user_groq_key:      keys.groq,
                 ai_provider:        getAiPriority(),
             }),
         });

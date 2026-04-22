@@ -212,11 +212,12 @@ const LANG = {
         // API modal
         api_view_hide: '보기/숨기기', api_save: '저장', api_delete: '삭제', api_register: '등록',
         api_priority: 'AI 우선순위', api_auto: '자동',
-        api_claude_first: 'Claude 우선', api_gpt_first: 'GPT 우선', api_gemini_first: 'Gemini 우선',
+        api_claude_first: 'Claude 우선', api_gpt_first: 'GPT 우선', api_gemini_first: 'Gemini 우선', api_groq_first: 'Groq 우선',
         api_delete_confirm: '등록된 API 키를 삭제하시겠습니까?',
         claude_model_desc: 'claude-haiku-4-5 모델 사용',
         openai_model_desc: 'gpt-4o-mini 모델 사용',
-        gemini_model_desc: 'gemini-1.5-flash 모델 사용',
+        gemini_model_desc: 'gemini-2.5-flash 모델 사용',
+        groq_model_desc: 'llama-3.1-8b-instant 모델 사용 (무료)',
         // PDF
         pdf_generating: 'PDF 생성 중...', pdf_failed: 'PDF 생성 실패',
         // Financials
@@ -478,11 +479,12 @@ const LANG = {
         // API modal
         api_view_hide: 'Show/Hide', api_save: 'Save', api_delete: 'Delete', api_register: 'Register',
         api_priority: 'AI Priority', api_auto: 'Auto',
-        api_claude_first: 'Claude First', api_gpt_first: 'GPT First', api_gemini_first: 'Gemini First',
+        api_claude_first: 'Claude First', api_gpt_first: 'GPT First', api_gemini_first: 'Gemini First', api_groq_first: 'Groq First',
         api_delete_confirm: 'Delete this API key?',
         claude_model_desc: 'Uses claude-haiku-4-5 model',
         openai_model_desc: 'Uses gpt-4o-mini model',
-        gemini_model_desc: 'Uses gemini-1.5-flash model',
+        gemini_model_desc: 'Uses gemini-2.5-flash model',
+        groq_model_desc: 'Uses llama-3.1-8b-instant (free)',
         // PDF
         pdf_generating: 'Generating PDF...', pdf_failed: 'PDF generation failed',
         // Financials
@@ -1023,6 +1025,16 @@ const AI_PROVIDERS = [
         placeholder: 'AIza...',
         storageKey: 'sa_key_gemini',
     },
+    {
+        id: 'groq',
+        name: 'Groq (무료)',
+        sub: L('groq_model_desc'),
+        icon: 'bolt',
+        iconBg: '#ff6b3522',
+        iconColor: '#ff6b35',
+        placeholder: 'gsk_...',
+        storageKey: 'sa_key_groq',
+    },
 ];
 
 function getApiKey(providerId) {
@@ -1147,6 +1159,7 @@ function renderApiKeyModal() {
         { val: 'anthropic', label: L('api_claude_first') },
         { val: 'openai',    label: L('api_gpt_first') },
         { val: 'gemini',    label: L('api_gemini_first') },
+        { val: 'groq',      label: L('api_groq_first') },
     ];
 
     html += `
