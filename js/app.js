@@ -71,7 +71,7 @@ const LANG = {
         ticker_input_label: '티커 또는 종목명 입력',
         ticker_placeholder: '예: 삼성전자, AAPL',
         period_label: '기간', analyze_btn: '분석하기',
-        period_3mo: '3개월', period_6mo: '6개월', period_1y: '1년', period_2y: '2년',
+        period_3mo: '3개월', period_6mo: '6개월', period_1y: '1년', period_2y: '2년', period_5y: '5년', period_max: '전체',
         welcome_msg: '티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.',
         // Signals (internal values stay Korean; these are display-only)
         buy: '매수', sell: '매도', neutral: '중립',
@@ -338,7 +338,7 @@ const LANG = {
         ticker_input_label: 'Enter Ticker or Stock Name',
         ticker_placeholder: 'e.g. Samsung, AAPL',
         period_label: 'Period', analyze_btn: 'Analyze',
-        period_3mo: '3 Months', period_6mo: '6 Months', period_1y: '1 Year', period_2y: '2 Years',
+        period_3mo: '3 Months', period_6mo: '6 Months', period_1y: '1 Year', period_2y: '2 Years', period_5y: '5 Years', period_max: 'All',
         welcome_msg: 'Search by ticker (AAPL) or company name in Korean/English.',
         // Signals
         buy: 'Buy', sell: 'Sell', neutral: 'Neutral',
@@ -2262,6 +2262,11 @@ function _buildChart(d, currencyMode) {
     const rsi30Trace = { x: [dates[0], dates[dates.length-1]], y: [30, 30], type: 'scatter', mode: 'lines', name: L('oversold_30'), line: { color: '#00C851', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
 
     const cc = chartColors();
+
+    // x축 범위를 데이터 범위로 명시적 고정 (줌 아웃 시 미래 구간 확장 방지)
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+
     const layout = {
         height: 850,
         template: cc.template,
@@ -2279,10 +2284,21 @@ function _buildChart(d, currencyMode) {
             tracegroupgap: 4,
         },
         margin: { l: 55, r: 115, t: 130, b: 30 },
-        xaxis: { rangeslider: { visible: false }, domain: [0, 1], gridcolor: cc.grid },
-        yaxis:  { domain: [0.42, 1],    title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true },
-        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid, anchor: 'x' },
-        yaxis3: { domain: [0, 0.20],    title: { text: 'RSI',  font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100], anchor: 'x' },
+        // 드래그 = 좌우 이동(팬), 마우스 휠 = 줌 (토스/TradingView 스타일)
+        dragmode: 'pan',
+        // x 축: 초기 범위는 데이터 구간, 사용자 팬/줌 허용 (autorange 제거 → 제약 없음)
+        xaxis: {
+            rangeslider: { visible: false },
+            domain: [0, 1],
+            gridcolor: cc.grid,
+            type: 'date',
+            range: [firstDate, lastDate],
+            tickformat: '%Y-%m-%d',
+            hoverformat: '%Y-%m-%d',
+        },
+        yaxis:  { domain: [0.42, 1],    title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true, fixedrange: false },
+        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid, anchor: 'x', fixedrange: false },
+        yaxis3: { domain: [0, 0.20],    title: { text: 'RSI',  font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100], anchor: 'x', fixedrange: true },
         annotations: strategyAnnotations,
         shapes: [
             // RSI 30-70 밴드
@@ -2297,7 +2313,105 @@ function _buildChart(d, currencyMode) {
         rsiTrace, rsi70Trace, rsi30Trace,
     ];
 
-    Plotly.newPlot('chartContainer', traces, layout, { responsive: true, displayModeBar: true });
+    const chartDiv = document.getElementById('chartContainer');
+    Plotly.newPlot(chartDiv, traces, layout, {
+        responsive: true,
+        displayModeBar: true,
+        scrollZoom: true,       // 마우스 휠로 줌 인/아웃
+        doubleClick: 'reset',   // 더블클릭 = 초기 범위로 복귀
+    });
+
+    // 현재 차트의 데이터 범위를 엘리먼트에 저장 (이벤트 핸들러가 참조)
+    chartDiv._chartBounds = { dataStart: firstDate, dataEnd: lastDate };
+
+    // 팬/줌 시 데이터 범위 바깥으로 나가는 것 방지 + 우클릭 드래그 = 팬
+    // (같은 엘리먼트 재사용 시 중복 바인딩 방지 플래그)
+    if (!chartDiv._chartInteractionsBound) {
+        chartDiv._chartInteractionsBound = true;
+        _setupChartInteractions(chartDiv);
+    }
+}
+
+
+// ═══════════════════════════════════════════════
+// 차트 인터랙션: 팬 경계 클램프 + 우클릭 드래그 팬
+// ═══════════════════════════════════════════════
+function _setupChartInteractions(chartDiv) {
+    // ── 1. 팬/줌 시 데이터 범위 바깥 방지 (plotly_relayout 이벤트 후킹) ──
+    let _clamping = false;
+    chartDiv.on('plotly_relayout', (eventData) => {
+        if (_clamping) return;
+        const r0 = eventData['xaxis.range[0]'];
+        const r1 = eventData['xaxis.range[1]'];
+        if (r0 === undefined && r1 === undefined) return;
+
+        const bounds = chartDiv._chartBounds;
+        if (!bounds) return;
+
+        const dataStart = new Date(bounds.dataStart).getTime();
+        const dataEnd = new Date(bounds.dataEnd).getTime();
+        let start = new Date(r0 !== undefined ? r0 : bounds.dataStart).getTime();
+        let end = new Date(r1 !== undefined ? r1 : bounds.dataEnd).getTime();
+        const width = end - start;
+        const dataWidth = dataEnd - dataStart;
+
+        let changed = false;
+        if (width > dataWidth) {
+            // 데이터 전체보다 넓게 줌 아웃 → 전체 범위로 복귀
+            start = dataStart; end = dataEnd; changed = true;
+        } else {
+            // 윈도우 width 유지하며 shift (pan 경우)
+            if (start < dataStart) { start = dataStart; end = start + width; changed = true; }
+            if (end > dataEnd)     { end = dataEnd; start = end - width; changed = true; }
+        }
+
+        if (changed) {
+            _clamping = true;
+            Plotly.relayout(chartDiv, {
+                'xaxis.range': [new Date(start).toISOString(), new Date(end).toISOString()]
+            }).then(() => { _clamping = false; })
+              .catch(() => { _clamping = false; });
+        }
+    });
+
+    // ── 2. 우클릭 드래그 = 팬 ──
+    chartDiv.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    let rightDrag = null;
+    chartDiv.addEventListener('mousedown', (e) => {
+        if (e.button !== 2) return;   // 우클릭만
+        const range = chartDiv.layout && chartDiv.layout.xaxis && chartDiv.layout.xaxis.range;
+        if (!range) return;
+        e.preventDefault();
+        rightDrag = {
+            startX: e.clientX,
+            startMs: new Date(range[0]).getTime(),
+            endMs: new Date(range[1]).getTime(),
+        };
+    });
+
+    chartDiv.addEventListener('mousemove', (e) => {
+        if (!rightDrag) return;
+        e.preventDefault();
+        // 플롯 영역 실제 픽셀 폭 (margin 제외)
+        const plotWidth = (chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis._length)
+            || (chartDiv.offsetWidth - 170);
+        if (plotWidth <= 0) return;
+
+        const dx = e.clientX - rightDrag.startX;
+        const rangeMs = rightDrag.endMs - rightDrag.startMs;
+        const shiftMs = -(dx / plotWidth) * rangeMs;
+        const newStart = rightDrag.startMs + shiftMs;
+        const newEnd = rightDrag.endMs + shiftMs;
+
+        Plotly.relayout(chartDiv, {
+            'xaxis.range': [new Date(newStart).toISOString(), new Date(newEnd).toISOString()]
+        });
+    });
+
+    const endRightDrag = () => { rightDrag = null; };
+    chartDiv.addEventListener('mouseup', (e) => { if (e.button === 2) endRightDrag(); });
+    chartDiv.addEventListener('mouseleave', endRightDrag);
 }
 
 // ═══════════════════════════════════════════════
