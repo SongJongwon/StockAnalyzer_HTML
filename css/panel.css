@@ -1,0 +1,470 @@
+/* ═══════════════════════════════════════════════════════════════
+   Investor Panel (Tab 5) — 시각 스타일
+   기존 탭 디자인 통일 (CSS 변수 · 버튼 · 카드 스타일 재사용)
+   레이아웃 관련 속성은 여기서 다루지 않음 (layout.css 담당)
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ── 1. 질문 · 설정 블록 ─────────────────────────────── */
+
+.panel-setup {
+    margin-bottom: 0.75rem;
+}
+
+.panel-field {
+    margin-bottom: 0.75rem;
+}
+
+.panel-field textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid rgba(49,51,63,0.2);
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.panel-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+}
+
+.panel-field select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(49,51,63,0.2);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    height: 2.375rem;
+    min-width: 5rem;
+}
+
+
+/* ── 2. 페르소나 체크박스 그리드 ──────────────────────── */
+
+.panel-persona-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+}
+
+.panel-persona-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--bg);
+}
+
+.panel-persona-item:hover {
+    border-color: var(--accent);
+    background: var(--card-hover);
+}
+
+.panel-persona-item input[type="checkbox"] {
+    accent-color: var(--accent);
+    margin: 0;
+}
+
+.panel-persona-emoji {
+    font-size: 1.25em;
+    line-height: 1;
+}
+
+.panel-persona-name {
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.panel-persona-title {
+    margin-left: auto;
+    font-size: 0.78em;
+    text-align: right;
+}
+
+
+/* ── 3. 옵션 행 (최대 라운드, 임계값) ──────────────────── */
+
+.panel-options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.panel-option-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+
+/* ── 4. 상태 메시지 ─────────────────────────────────── */
+
+.panel-caption {
+    display: block;
+}
+
+.panel-error {
+    padding: 16px 20px;
+    border-left: 4px solid var(--red);
+    background: var(--red-pale);
+    border-radius: 10px;
+    margin-top: 12px;
+}
+
+.panel-error strong {
+    color: var(--red);
+    font-size: 1.05em;
+}
+
+
+/* ── 5. 메타 카드 행 (수렴점수, 라운드 등) ─────────────── */
+
+.panel-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.panel-meta-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    background: var(--bg-alt);
+}
+
+.panel-meta-item .label {
+    font-size: 0.78em;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.panel-meta-item .value {
+    font-size: 1.15em;
+    font-weight: bold;
+    color: var(--text);
+}
+
+
+/* ── 6. 추천 카드 (합의·논쟁·단독) ─────────────────────── */
+
+.panel-rec-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.panel-rec-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--bg-alt);
+    border-left-width: 4px;
+}
+
+.panel-rec-consensus {
+    border-left-color: var(--green);
+}
+.panel-rec-disputed {
+    border-left-color: var(--orange);
+}
+.panel-rec-orphan {
+    border-left-color: var(--blue);
+}
+
+.panel-rec-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.panel-rec-ticker {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 1.15em;
+    color: var(--accent);
+}
+
+.panel-rec-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.panel-rec-analyze {
+    margin-left: auto;
+    font-size: 0.82em;
+    padding: 4px 10px;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.panel-rec-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.88em;
+    line-height: 1.55;
+    color: var(--text);
+}
+
+.panel-rec-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.panel-rec-label {
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.panel-rec-for .panel-rec-label {
+    color: var(--green);
+}
+.panel-rec-against .panel-rec-label {
+    color: var(--red);
+}
+
+
+/* ── 7. 토론 로그 (라운드별 채팅 버블) ──────────────────── */
+
+.panel-rounds-details {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    background: var(--bg-alt);
+}
+
+.panel-rounds-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.panel-rounds-details[open] summary {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-round {
+    margin-bottom: 16px;
+}
+
+.panel-round-header {
+    font-weight: 600;
+    font-size: 0.92em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.panel-round-moderator {
+    background: rgba(255,165,0,0.05);
+    border-left: 3px solid var(--orange);
+    padding: 10px 14px;
+    border-radius: 8px;
+}
+
+.panel-round-moderator-summary {
+    font-size: 0.88em;
+    color: var(--text);
+    line-height: 1.8;
+}
+
+.panel-bubble {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: var(--bg);
+    margin-bottom: 10px;
+}
+
+.panel-bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.panel-bubble-emoji {
+    font-size: 1.1em;
+}
+
+.panel-bubble-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.panel-bubble-body {
+    font-size: 0.9em;
+    color: var(--text);
+    line-height: 1.7;
+}
+
+
+/* ── 8. 다크 모드 보정 ─────────────────────────────── */
+
+[data-theme="dark"] .panel-field textarea,
+[data-theme="dark"] .panel-field select {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .panel-persona-item {
+    background: var(--card);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .panel-persona-item:hover {
+    background: var(--card-hover);
+}
+
+[data-theme="dark"] .panel-error {
+    background: rgba(255,68,68,0.1);
+}
+
+[data-theme="dark"] .panel-round-moderator {
+    background: rgba(255,165,0,0.08);
+}
+
+
+/* ─────────────────────────────────────────────
+   추천 카드 — 한 줄 요약 형식
+   ───────────────────────────────────────────── */
+.panel-rec-summary {
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin: 6px 0 4px;
+    color: var(--text);
+}
+
+.panel-rec-for-line { color: var(--green, #2ecc71); }
+.panel-rec-against-line { color: var(--red, #e74c3c); }
+
+.panel-rec-foot {
+    margin-top: 4px;
+    font-size: 0.85em;
+}
+
+
+/* ─────────────────────────────────────────────
+   파싱 실패 경고 배너
+   ───────────────────────────────────────────── */
+.panel-parse-warning {
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--orange, #f39c12);
+    background: rgba(243,156,18,0.08);
+    border-radius: 10px;
+}
+
+.panel-parse-warning-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.panel-parse-warning-head strong {
+    color: var(--orange, #f39c12);
+}
+
+.panel-parse-raw {
+    margin-top: 10px;
+}
+
+.panel-parse-raw pre {
+    max-height: 240px;
+    overflow: auto;
+    padding: 10px;
+    background: var(--bg-subtle, rgba(0,0,0,0.05));
+    border-radius: 6px;
+    font-size: 0.82em;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+/* ─────────────────────────────────────────────
+   최종 요약 (토론 전체보기 맨 아래)
+   ───────────────────────────────────────────── */
+.panel-final-summary {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-top: 2px solid var(--border, #3a3a4e);
+    background: var(--card-bg, rgba(255,255,255,0.03));
+    border-radius: 0 0 10px 10px;
+}
+
+.panel-final-summary h4 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 6px;
+    font-size: 1.05em;
+}
+
+.panel-final-summary-meta {
+    margin-bottom: 12px;
+}
+
+.panel-final-summary-block {
+    margin-top: 12px;
+}
+
+.panel-final-summary-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.panel-final-summary-block ul {
+    margin: 4px 0 0 8px;
+    padding-left: 16px;
+}
+
+.panel-final-summary-block li {
+    margin-bottom: 4px;
+    line-height: 1.55;
+}
+
+[data-theme="dark"] .panel-parse-warning {
+    background: rgba(243,156,18,0.12);
+}
+
+[data-theme="dark"] .panel-parse-raw pre {
+    background: rgba(255,255,255,0.04);
+}

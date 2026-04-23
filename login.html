@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 — Nexus Alpha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <!-- DEV MODE 로딩 오버레이 (auth.js 가 dev_mode=true 확인 시 자동 리다이렉트 전에 짧게 표시) -->
+    <div id="devLoadingOverlay" class="auth-dev-overlay" hidden>
+        <div class="auth-dev-overlay__panel">
+            <div class="auth-spinner"></div>
+            <h2>🔓 DEV MODE</h2>
+            <p>로컬 개발 환경 감지 — 자동 로그인 중…</p>
+            <p class="auth-dev-overlay__muted">프로덕션에서는 이 화면이 표시되지 않습니다.</p>
+        </div>
+    </div>
+
+    <main class="auth-shell" id="authShell" hidden>
+        <div class="auth-card">
+            <header class="auth-card__header">
+                <h1>Nexus Alpha</h1>
+                <p>계정에 로그인하세요</p>
+            </header>
+
+            <form id="loginForm" class="auth-form" novalidate>
+                <label class="auth-field">
+                    <span>이메일</span>
+                    <input type="email" name="email" required autocomplete="email" placeholder="name@example.com">
+                </label>
+
+                <label class="auth-field">
+                    <span>비밀번호</span>
+                    <input type="password" name="password" required autocomplete="current-password" minlength="8" placeholder="최소 8자, 문자+숫자 포함">
+                </label>
+
+                <label class="auth-field" id="otpField" hidden>
+                    <span>2FA 코드 (마스터)</span>
+                    <input type="text" name="otp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6자리 숫자">
+                </label>
+
+                <div id="loginError" class="auth-error" hidden></div>
+
+                <button type="submit" class="auth-btn auth-btn--primary">로그인</button>
+            </form>
+
+            <footer class="auth-card__footer">
+                <p>아직 계정이 없으신가요? <a href="signup.html">회원가입</a></p>
+                <p><a href="index.html" class="auth-link-muted">← 메인으로 돌아가기</a></p>
+            </footer>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // DEV_MODE 체크 → 활성이면 자동 리다이렉트, 아니면 일반 폼 표시.
+        // auth.js 에서 전역 NexusAuth 객체 노출.
+        (async () => {
+            const devActive = await NexusAuth.checkAndRedirectIfDev();
+            if (!devActive) {
+                // 토큰 이미 있으면 메인으로
+                if (NexusAuth.getAccessToken()) {
+                    window.location.replace('index.html');
+                    return;
+                }
+                document.getElementById('authShell').hidden = false;
+                NexusAuth.installDevBannerIfNeeded();
+            }
+        })();
+
+        // 로그인 제출
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const err = document.getElementById('loginError');
+            err.hidden = true;
+            err.textContent = '';
+            const fd = new FormData(e.target);
+            const payload = {
+                email: fd.get('email').trim(),
+                password: fd.get('password'),
+            };
+            const otp = (fd.get('otp_code') || '').toString().trim();
+            if (otp) payload.otp_code = otp;
+
+            try {
+                const res = await NexusAuth.login(payload);
+                // 성공 → 메인 이동
+                window.location.replace('index.html');
+            } catch (e2) {
+                // 2FA 요구 시 필드 노출
+                if (/2FA/.test(e2.message)) {
+                    document.getElementById('otpField').hidden = false;
+                }
+                err.textContent = e2.message || '로그인 실패';
+                err.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>

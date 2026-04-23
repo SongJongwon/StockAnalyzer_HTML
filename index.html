@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 기술적 분석기</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/panel.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Left Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <button id="sidebarCollapse" class="sidebar-collapse-btn" data-i18n-title="sidebar_collapse_title" title="사이드바 접기">«</button>
+            <button id="langToggleBtn" class="lang-toggle-btn" onclick="toggleLang()">🇺🇸 EN</button>
+            <div class="sidebar-inner">
+                <!-- 자동 업데이트 설정 -->
+                <div class="sidebar-section">
+                    <h3><span class="ms">schedule</span> <span data-i18n="auto_update">자동 업데이트</span></h3>
+                    <div class="refresh-control">
+                        <input type="number" id="refreshInterval" value="30" min="1" max="9999" class="refresh-input">
+                        <select id="refreshUnit" class="refresh-select">
+                            <option value="1" data-i18n="sec_unit">초</option>
+                            <option value="60" selected data-i18n="min_unit">분</option>
+                            <option value="3600" data-i18n="hour_unit">시간</option>
+                        </select>
+                    </div>
+                    <div id="refreshStatus" class="caption mt-8"><span class="ms">refresh</span> <span id="refreshStatusText" data-i18n-refresh>30분마다 자동 업데이트</span></div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- 뉴스 토글 -->
+                <button id="newsToggle" class="sidebar-toggle-btn"><span class="ms">notifications</span> <span data-i18n="news_hide">뉴스 알림 숨기기</span></button>
+
+                <div id="newsPanel">
+                    <div class="sidebar-section">
+                        <h3><span class="ms">newspaper</span> <span data-i18n="realtime_news">실시간 뉴스 알림</span></h3>
+                        <p class="caption" data-i18n="news_caption">출처: 네이버금융 · 인베스팅닷컴(한국어)</p>
+                    </div>
+
+                    <!-- 급등 예상 종목 -->
+                    <div class="sidebar-section">
+                        <h4><span class="ms orange">bolt</span> <span data-i18n="surge_stocks">급등 예상 종목</span></h4>
+                        <div id="triggeredStocks">
+                            <div class="loading" data-i18n="loading">로딩 중...</div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <!-- 최신 뉴스 -->
+                    <div class="sidebar-section">
+                        <h4><span class="ms">feed</span> <span data-i18n="latest_news">최신 뉴스</span></h4>
+                        <div id="newsSourceFilter" class="news-source-filter"></div>
+                        <div id="newsList"></div>
+                    </div>
+
+                    <button id="refreshNews" class="btn-secondary sidebar-refresh-btn"><span class="ms">refresh</span> <span data-i18n="news_refresh">뉴스 새로고침</span></button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 사이드바 펼치기 버튼 -->
+        <button id="sidebarExpand" class="sidebar-expand-btn" data-i18n-title="sidebar_expand_title" title="사이드바 펼치기">»</button>
+
+        <!-- Main Content -->
+        <main id="mainContent">
+            <!-- 우측 상단 메뉴 -->
+            <div class="top-menu">
+                <button id="topMenuBtn" class="top-menu-btn" title="Main menu"><span class="ms">more_vert</span></button>
+                <div id="topMenuDropdown" class="top-menu-dropdown">
+                    <!-- 테마 모드 전환 -->
+                    <div class="menu-theme-row">
+                        <button class="theme-mode-btn active" data-mode="system" title="Use system setting"><span class="ms">desktop_windows</span></button>
+                        <button class="theme-mode-btn" data-mode="light" title="Light"><span class="ms">light_mode</span></button>
+                        <button class="theme-mode-btn" data-mode="dark" title="Dark"><span class="ms">dark_mode</span></button>
+                    </div>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuRerun">
+                        <span class="menu-icon ms">refresh</span> Rerun
+                        <span class="menu-shortcut">R</span>
+                    </button>
+                    <button class="menu-item" id="menuAutoRerun">
+                        <span class="menu-icon ms">autorenew</span> Auto rerun
+                    </button>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuClearCache">
+                        <span class="menu-icon ms">delete_sweep</span> Clear cache
+                    </button>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuApiKeys">
+                        <span class="menu-icon ms">key</span> <span data-i18n="api_menu_label">AI API 설정</span>
+                        <span class="api-status-mini" id="apiStatusMini"></span>
+                    </button>
+                    <hr class="menu-divider">
+                    <button class="menu-item" id="menuPrint">
+                        <span class="menu-icon ms">print</span> Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- 전체 타이틀 -->
+            <h1 class="app-title"><span class="ms">trending_up</span> <span data-i18n="app_title">주식 기술적 분석기</span></h1>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="tab-analysis"><span class="ms">search</span> <span data-i18n="tab_analysis">종목 분석</span></button>
+                <button class="tab" data-tab="tab-watchlist"><span class="ms filled">star</span> <span data-i18n="tab_watchlist">추천 종목</span></button>
+                <button class="tab" data-tab="tab-themes"><span class="ms">track_changes</span> <span data-i18n="tab_themes">테마주</span></button>
+                <button class="tab" data-tab="tab-global"><span class="ms">public</span> <span data-i18n="tab_global">글로벌 시장 &amp; 뉴스분석</span></button>
+                <button class="tab" data-tab="tab-panel"><span class="ms">forum</span> <span data-i18n="tab_panel">투자자 패널</span></button>
+            </div>
+
+            <!-- Tab 1: 종목 분석 -->
+            <div id="tab-analysis" class="tab-content active">
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <label class="input-label" data-i18n="ticker_input_label">티커 또는 종목명 입력</label>
+                        <input type="text" id="searchInput" data-i18n-placeholder="ticker_placeholder" placeholder="예: 삼성전자, AAPL" autocomplete="off">
+                        <div id="autocompleteList" class="autocomplete-list" style="display:none;"></div>
+                    </div>
+                    <div class="search-period-wrap">
+                        <label class="input-label" data-i18n="period_label">기간</label>
+                        <select id="periodSelect">
+                            <option value="3mo" data-i18n="period_3mo">3개월</option>
+                            <option value="6mo" selected data-i18n="period_6mo">6개월</option>
+                            <option value="1y" data-i18n="period_1y">1년</option>
+                            <option value="2y" data-i18n="period_2y">2년</option>
+                            <option value="5y" data-i18n="period_5y">5년</option>
+                            <option value="max" data-i18n="period_max">전체</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="searchBtn" class="btn-analyze" data-i18n="analyze_btn">분석하기</button>
+
+                <div class="welcome" id="welcomeMsg">
+                    <p class="muted" data-i18n="welcome_msg">티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.</p>
+                </div>
+                <div id="analysisResult" style="display:none;"></div>
+            </div>
+
+            <!-- Tab 2: 추천 종목 -->
+            <div id="tab-watchlist" class="tab-content">
+                <div class="section-header">
+                    <h3><span class="ms filled">star</span> <span data-i18n="wl_tab_title">카테고리별 추천 종목</span></h3>
+                    <p class="caption" data-i18n="wl_tab_caption">기술적 지표 기반 실시간 분석 · 매수·매도가는 볼린저밴드 지지/저항 기준</p>
+                    <button id="refreshWatchlist" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="data_refresh">데이터 새로고침</span></button>
+                </div>
+                <div id="watchlistContent">
+                    <div class="loading" data-i18n="wl_loading">추천 종목 로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- Tab 3: 테마주 -->
+            <div id="tab-themes" class="tab-content">
+                <div class="section-header">
+                    <h3><span class="ms">track_changes</span> <span data-i18n="theme_tab_title">테마별 종목</span></h3>
+                    <p class="caption"><span data-i18n="theme_tab_caption">테마를 선택하면 현재 매수 신호 강도 순으로 종목을 정렬합니다.</span> <span class="ms filled sm">star</span> <span data-i18n="theme_fav_pin">즐겨찾기한 테마는 상단에 고정됩니다.</span></p>
+                </div>
+                <h4 data-i18n="theme_select_label">테마 선택</h4>
+                <div id="themeButtons" class="theme-grid"></div>
+                <hr class="divider">
+                <div id="themeContent"></div>
+            </div>
+
+            <!-- Tab 4: 글로벌 시장 -->
+            <div id="tab-global" class="tab-content">
+                <div class="section-header">
+                    <h3><span class="ms">public</span> <span data-i18n="global_tab_title">글로벌 시장 지수</span></h3>
+                    <p class="caption" data-i18n="global_tab_caption">데이터 출처: Yahoo Finance · 5분 단위 자동 갱신</p>
+                    <button id="refreshIndices" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="refresh_market_btn">시장 새로고침</span></button>
+                </div>
+                <div id="indicesGrid" class="indices-grid">
+                    <div class="loading" data-i18n="global_loading">글로벌 지수 로딩 중...</div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="section-header">
+                    <h3><span class="ms">newspaper</span> <span data-i18n="naver_news_tab_title">네이버 금융 최신 뉴스</span></h3>
+                    <p class="caption" data-i18n="naver_news_tab_caption">출처: finance.naver.com · 15분 단위 갱신</p>
+                    <button id="refreshNaverNews" class="btn-secondary mt-8"><span class="ms">refresh</span> <span data-i18n="news_refresh">뉴스 새로고침</span></button>
+                </div>
+                <div id="naverNewsContent">
+                    <div class="loading" data-i18n="naver_news_loading">뉴스 로딩 중...</div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="section-header">
+                    <h3><span class="ms">rocket_launch</span> <span data-i18n="naver_signals_title">뉴스 기반 상승 예상 종목</span></h3>
+                    <p class="caption" data-i18n="naver_signals_caption">네이버 금융 최신 뉴스 키워드 분석 · 매수 신호 종목만 표시</p>
+                </div>
+                <div id="naverSignals">
+                    <div class="loading" data-i18n="signal_loading">신호 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- Tab 5: 투자자 패널 -->
+            <div id="tab-panel" class="tab-content">
+                <div class="section-header">
+                    <h3><span class="ms">forum</span> <span data-i18n="panel_tab_title">투자자 패널 토론</span></h3>
+                    <p class="caption" data-i18n="panel_tab_caption">전설적 투자자 페르소나들이 토론을 통해 합의된 추천 종목을 제시합니다.</p>
+                </div>
+
+                <div class="panel-setup">
+                    <div class="panel-field">
+                        <label class="input-label" data-i18n="panel_query_label">질문 또는 섹터</label>
+                        <textarea id="panelQuery" rows="2" data-i18n-placeholder="panel_query_placeholder" placeholder="예: 2026년 AI 반도체 섹터에서 장기 투자할 만한 종목은?"></textarea>
+                    </div>
+
+                    <div class="panel-field">
+                        <label class="input-label"><span data-i18n="panel_personas_label">참여 투자자 선택</span> <span class="caption muted" data-i18n="panel_personas_hint">(2명 이상 권장)</span></label>
+                        <div id="panelPersonaList" class="panel-persona-list">
+                            <div class="loading" data-i18n="panel_loading_personas">페르소나 목록 불러오는 중...</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-field panel-options">
+                        <div class="panel-option-item">
+                            <label class="input-label" data-i18n="panel_max_rounds">최대 라운드</label>
+                            <select id="panelMaxRounds">
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div class="panel-option-item">
+                            <label class="input-label" data-i18n="panel_threshold">수렴 임계값</label>
+                            <select id="panelThreshold">
+                                <option value="0.6">0.6</option>
+                                <option value="0.7" selected>0.7</option>
+                                <option value="0.8">0.8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="panelStartBtn" class="btn-analyze" data-i18n="panel_start_btn">토론 시작</button>
+                </div>
+
+                <div class="panel-caption caption muted mt-8" data-i18n="panel_api_hint">※ 상단 우측 메뉴에서 AI API 키를 먼저 등록해주세요. Gemini 무료 키만 있어도 작동합니다.</div>
+
+                <div id="panelResult" style="display:none;"></div>
+            </div>
+
+            <!-- 하단 면책조항 -->
+            <div class="disclaimer caption mt-16" data-i18n="disclaimer_full">
+                본 분석은 참고용이며 투자 권유가 아닙니다. 모든 투자의 책임은 투자자 본인에게 있습니다.
+            </div>
+        </main>
+    </div>
+
+    <!-- AI API Key Modal -->
+    <div id="apiKeyModal" class="modal-overlay" style="display:none;" onclick="handleModalOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><span class="ms">key</span> <span data-i18n="api_modal_title">AI API 키 설정</span></h3>
+                <button class="modal-close-btn" onclick="closeApiKeyModal()"><span class="ms">close</span></button>
+            </div>
+            <div class="modal-body" id="apiKeyModalBody">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/panel.js"></script>
+</body>
+</html>
