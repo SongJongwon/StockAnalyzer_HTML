@@ -71,7 +71,8 @@ const LANG = {
         ticker_input_label: '티커 또는 종목명 입력',
         ticker_placeholder: '예: 삼성전자, AAPL',
         period_label: '기간', analyze_btn: '분석하기',
-        period_3mo: '3개월', period_6mo: '6개월', period_1y: '1년', period_2y: '2년',
+        period_3mo: '3개월', period_6mo: '6개월', period_1y: '1년', period_2y: '2년', period_5y: '5년', period_max: '전체',
+        interval_day: '일', interval_week: '주', interval_month: '월', interval_year: '년',
         welcome_msg: '티커(AAPL) 또는 한글·영문 종목명 모두 검색 가능합니다.',
         // Signals (internal values stay Korean; these are display-only)
         buy: '매수', sell: '매도', neutral: '중립',
@@ -338,7 +339,8 @@ const LANG = {
         ticker_input_label: 'Enter Ticker or Stock Name',
         ticker_placeholder: 'e.g. Samsung, AAPL',
         period_label: 'Period', analyze_btn: 'Analyze',
-        period_3mo: '3 Months', period_6mo: '6 Months', period_1y: '1 Year', period_2y: '2 Years',
+        period_3mo: '3 Months', period_6mo: '6 Months', period_1y: '1 Year', period_2y: '2 Years', period_5y: '5 Years', period_max: 'All',
+        interval_day: 'D', interval_week: 'W', interval_month: 'M', interval_year: 'Y',
         welcome_msg: 'Search by ticker (AAPL) or company name in Korean/English.',
         // Signals
         buy: 'Buy', sell: 'Sell', neutral: 'Neutral',
@@ -1333,6 +1335,7 @@ async function runAnalysis() {
         const data = await res.json();
         data.symbol = symbol;
         data.name = name;
+        data.displayPeriod = period;
         // 입력창에 "네이버 (035420.KS)" 형식으로 표시
         searchInput.value = name !== symbol ? `${name} (${symbol})` : symbol;
         renderAnalysis(data, resultDiv);
@@ -1615,14 +1618,22 @@ function renderAnalysis(data, container) {
         <!-- Chart -->
         <hr class="divider">
         <div class="chart-header">
-            <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> ${L('chart_label')}</h3>
+            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <h3 class="subheader" style="margin:0;"><span class="ms">show_chart</span> ${L('chart_label')}</h3>
+                <div class="chart-interval-toggle">
+                    <button class="chart-interval-btn active" data-interval="D" onclick="setChartInterval(this, 'D')">${L('interval_day')}</button>
+                    <button class="chart-interval-btn" data-interval="W" onclick="setChartInterval(this, 'W')">${L('interval_week')}</button>
+                    <button class="chart-interval-btn" data-interval="M" onclick="setChartInterval(this, 'M')">${L('interval_month')}</button>
+                    <button class="chart-interval-btn" data-interval="Y" onclick="setChartInterval(this, 'Y')">${L('interval_year')}</button>
+                </div>
+            </div>
             <div class="chart-currency-toggle">
                 <span class="caption" style="margin-right:0.5rem;">${L('fin_y_axis')}</span>
                 <button class="chart-currency-btn active" onclick="toggleChartCurrency(this, 'native')">${krw ? 'KRW' : 'USD'}</button>
                 <button class="chart-currency-btn" onclick="toggleChartCurrency(this, '${krw ? 'USD' : 'KRW'}')">${krw ? 'USD' : 'KRW'}</button>
             </div>
         </div>
-        <p class="caption mb-8">${L('fin_legend_hint')}</p>
+        <div class="chart-legend" id="chartLegend">${_buildLegendHtml()}</div>
         <div id="chartContainer"></div>
         <hr class="divider">
 
@@ -2153,14 +2164,68 @@ function renderLongTermStrategy(d, sym, rate) {
 // Plotly Chart
 // ═══════════════════════════════════════════════
 
-// 차트 데이터를 전역에 저장 (통화 토글용)
-let _chartData = null;
-let _chartCurrency = 'native'; // 'native' | 'KRW' | 'USD'
+// 차트 데이터를 전역에 저장 (통화 토글·인터벌 전환용)
+let _chartData = null;          // 현재 표시 중인 데이터 (집계된 상태일 수 있음)
+let _chartDataDaily = null;     // 백엔드가 보낸 원본 일봉 데이터 (집계 기준)
+let _chartCurrency = 'native';  // 'native' | 'KRW' | 'USD'
+let _chartInterval = 'D';       // 'D'일 | 'W'주 | 'M'월 | 'Y'년
+let _hiddenTraces = new Set();  // 사용자가 legend 로 숨긴 trace index 들
+
+// 커스텀 범례 항목 정의. trace index 는 _buildChart 의 traces 배열 순서와 정확히 일치해야 함.
+// 0:candle 1:ma20 2:ma60 3:bbU 4:bbL 5-8:strategy(범례없음) 9:hist 10:macd 11:signal 12:rsi 13:rsi70 14:rsi30
+const _LEGEND_ITEMS = [
+    { label: '캔들',              trace: [0],  icon: 'candle', color: '#00C851' },
+    { label: 'MA20',              trace: [1],  icon: 'line',   color: 'orange'  },
+    { label: 'MA60',              trace: [2],  icon: 'line',   color: 'cyan'    },
+    { label: 'BB 상단',           trace: [3],  icon: 'dashed', color: 'gray'    },
+    { label: 'BB 하단',           trace: [4],  icon: 'dashed', color: 'gray'    },
+    { label: 'Signal선',          trace: [11], icon: 'line',   color: '#ff8800' },
+    { label: 'MACD선',            trace: [10], icon: 'line',   color: '#4488ff' },
+    { label: '과매도(30)',        trace: [14], icon: 'dashed', color: '#00C851' },
+    { label: '과매수(70)',        trace: [13], icon: 'dashed', color: '#FF4444' },
+    { label: 'MACD 히스토그램',   trace: [9],  icon: 'bar',    color: '#00C851' },
+    { label: 'RSI',               trace: [12], icon: 'line',   color: 'purple'  },
+];
+
+function _legendIconHtml(kind, color) {
+    // SVG 는 기본 inline (baseline 정렬) → display:block 으로 flex 부모의 align-items:center 적용
+    if (kind === 'candle') return `<svg class="legend-icon" width="20" height="14" viewBox="0 0 20 14" style="display:block"><line x1="4" y1="0" x2="4" y2="14" stroke="#22c55e" stroke-width="1.5"/><rect x="1" y="3" width="6" height="7" fill="#22c55e"/><line x1="14" y1="0" x2="14" y2="14" stroke="#ef4444" stroke-width="1.5"/><rect x="11" y="4" width="6" height="7" fill="#ef4444"/></svg>`;
+    if (kind === 'line')   return `<span class="legend-icon legend-icon-line"   style="background:${color};vertical-align:middle"></span>`;
+    if (kind === 'dashed') return `<span class="legend-icon legend-icon-dashed" style="border-top-color:${color};vertical-align:middle"></span>`;
+    if (kind === 'bar')    return `<svg class="legend-icon" width="16" height="14" viewBox="0 0 16 14" style="vertical-align:middle;display:inline-block"><rect x="1" y="5" width="5" height="8" fill="#22c55e"/><rect x="9" y="1" width="5" height="12" fill="#22c55e" opacity="0.6"/></svg>`;
+    return '';
+}
+
+function _buildLegendHtml() {
+    return _LEGEND_ITEMS.map(it => {
+        const hidden = it.trace.some(t => _hiddenTraces.has(t));
+        return `<span class="chart-legend-item${hidden ? ' inactive' : ''}" data-trace="${it.trace.join(',')}" onclick="toggleLegendItem(this)">${_legendIconHtml(it.icon, it.color)}<span>${it.label}</span></span>`;
+    }).join('');
+}
+
+function toggleLegendItem(el) {
+    const traces = el.dataset.trace.split(',').map(Number);
+    const willHide = !el.classList.contains('inactive');
+    el.classList.toggle('inactive', willHide);
+    traces.forEach(t => { willHide ? _hiddenTraces.add(t) : _hiddenTraces.delete(t); });
+    const chartDiv = document.getElementById('chartContainer');
+    if (chartDiv && chartDiv.data) {
+        Plotly.restyle(chartDiv, { visible: willHide ? 'legendonly' : true }, traces);
+    }
+}
+
+function _applyHiddenTraces(chartDiv) {
+    if (_hiddenTraces.size === 0) return;
+    Plotly.restyle(chartDiv, { visible: 'legendonly' }, Array.from(_hiddenTraces));
+}
 
 function renderPlotlyChart(d) {
-    _chartData = d;
+    _chartDataDaily = d;
+    _chartInterval = 'D';
+    _chartData = { ...d, displayInterval: 'D' };
     _chartCurrency = 'native';
-    _buildChart(d, 'native');
+    _hiddenTraces = new Set();  // 새 종목 분석 시 legend 상태 초기화
+    _buildChart(_chartData, 'native');
 }
 
 function toggleChartCurrency(btn, mode) {
@@ -2170,12 +2235,250 @@ function toggleChartCurrency(btn, mode) {
     if (_chartData) _buildChart(_chartData, mode);
 }
 
+function setChartInterval(btn, interval) {
+    if (!_chartDataDaily) return;
+    if (_chartInterval === interval) return;
+    _chartInterval = interval;
+    document.querySelectorAll('.chart-interval-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const aggChart = _aggregateChart(_chartDataDaily.chart, interval);
+    _chartData = { ..._chartDataDaily, chart: aggChart, displayInterval: interval };
+    _buildChart(_chartData, _chartCurrency);
+}
+
+// ─── 집계 ───────────────────────────────────────
+// daily OHLCV → 주/월/년 단위로 그룹. open=첫날, high=max, low=min, close=끝날, volume=합계.
+// 그룹핑 후 MA20/MA60/BB/RSI/MACD 를 집계된 close 기준으로 재계산.
+function _aggregateChart(dailyChart, interval) {
+    if (interval === 'D' || !dailyChart?.length) {
+        return dailyChart.slice();  // 복사본 (뒤에서 재계산 안 함)
+    }
+
+    const keyOf = {
+        'W': (s) => {
+            // ISO week: 월요일 기준
+            const d = new Date(s + 'T00:00:00Z');
+            const dow = d.getUTCDay() || 7;   // Sun→7
+            d.setUTCDate(d.getUTCDate() - dow + 1);
+            return d.toISOString().slice(0, 10);
+        },
+        'M': (s) => s.slice(0, 7) + '-01',
+        'Y': (s) => s.slice(0, 4) + '-01-01',
+    }[interval];
+
+    const map = new Map();
+    const order = [];
+    for (const c of dailyChart) {
+        const k = keyOf(c.date);
+        if (!map.has(k)) {
+            map.set(k, { date: k, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume || 0 });
+            order.push(k);
+        } else {
+            const g = map.get(k);
+            if (c.high > g.high) g.high = c.high;
+            if (c.low  < g.low)  g.low  = c.low;
+            g.close = c.close;
+            g.volume = (g.volume || 0) + (c.volume || 0);
+        }
+    }
+    const out = order.map(k => map.get(k));
+
+    // 지표 재계산
+    const closes = out.map(c => c.close);
+    const ma20 = _sma(closes, 20);
+    const ma60 = _sma(closes, 60);
+    const bb   = _bbands(closes, 20, 2);
+    const rsi  = _rsi(closes, 14);
+    const mac  = _macd(closes, 12, 26, 9);
+    for (let i = 0; i < out.length; i++) {
+        out[i].ma20     = ma20[i];
+        out[i].ma60     = ma60[i];
+        out[i].bb_u     = bb.upper[i];
+        out[i].bb_l     = bb.lower[i];
+        out[i].rsi      = rsi[i];
+        out[i].macd     = mac.macd[i];
+        out[i].macd_sig = mac.signal[i];
+        out[i].macd_hist= mac.hist[i];
+    }
+    return out;
+}
+
+// ─── 지표 계산 (백엔드 analysis.py 와 동일한 공식의 JS 포팅) ───
+function _sma(values, period) {
+    const out = new Array(values.length).fill(null);
+    for (let i = period - 1; i < values.length; i++) {
+        let s = 0, ok = true;
+        for (let j = i - period + 1; j <= i; j++) {
+            const v = values[j];
+            if (v == null || !Number.isFinite(v)) { ok = false; break; }
+            s += v;
+        }
+        if (ok) out[i] = s / period;
+    }
+    return out;
+}
+
+function _ema(values, period) {
+    const out = new Array(values.length).fill(null);
+    const k = 2 / (period + 1);
+    let prev = null;
+    for (let i = 0; i < values.length; i++) {
+        const v = values[i];
+        if (v == null || !Number.isFinite(v)) continue;
+        if (prev == null) {
+            // 시드: 첫 period 개 평균
+            if (i >= period - 1) {
+                let s = 0, ok = true;
+                for (let j = i - period + 1; j <= i; j++) {
+                    const vv = values[j];
+                    if (vv == null) { ok = false; break; }
+                    s += vv;
+                }
+                if (ok) { prev = s / period; out[i] = prev; }
+            }
+        } else {
+            prev = v * k + prev * (1 - k);
+            out[i] = prev;
+        }
+    }
+    return out;
+}
+
+function _rsi(close, period = 14) {
+    const out = new Array(close.length).fill(null);
+    if (close.length < period + 1) return out;
+    let avgG = 0, avgL = 0;
+    for (let i = 1; i <= period; i++) {
+        const ch = close[i] - close[i-1];
+        avgG += Math.max(ch, 0) / period;
+        avgL += Math.max(-ch, 0) / period;
+    }
+    const firstRs = avgL === 0 ? Infinity : avgG / avgL;
+    out[period] = avgL === 0 ? 100 : (100 - 100 / (1 + firstRs));
+    for (let i = period + 1; i < close.length; i++) {
+        const ch = close[i] - close[i-1];
+        const g = Math.max(ch, 0), l = Math.max(-ch, 0);
+        avgG = (avgG * (period - 1) + g) / period;
+        avgL = (avgL * (period - 1) + l) / period;
+        const rs = avgL === 0 ? Infinity : avgG / avgL;
+        out[i] = avgL === 0 ? 100 : (100 - 100 / (1 + rs));
+    }
+    return out;
+}
+
+function _bbands(close, period = 20, mult = 2) {
+    const mid = _sma(close, period);
+    const upper = new Array(close.length).fill(null);
+    const lower = new Array(close.length).fill(null);
+    for (let i = period - 1; i < close.length; i++) {
+        if (mid[i] == null) continue;
+        let ssq = 0;
+        for (let j = i - period + 1; j <= i; j++) ssq += (close[j] - mid[i]) ** 2;
+        const sd = Math.sqrt(ssq / period);
+        upper[i] = mid[i] + mult * sd;
+        lower[i] = mid[i] - mult * sd;
+    }
+    return { mid, upper, lower };
+}
+
+function _macd(close, fast = 12, slow = 26, signal = 9) {
+    const ef = _ema(close, fast);
+    const es = _ema(close, slow);
+    const macdLine = close.map((_, i) => (ef[i] != null && es[i] != null) ? ef[i] - es[i] : null);
+    // signal: MACD 가 null 이 아닌 첫 인덱스부터 EMA
+    const firstIdx = macdLine.findIndex(v => v != null);
+    let sigLine = new Array(close.length).fill(null);
+    if (firstIdx >= 0) {
+        const sub = macdLine.slice(firstIdx).map(v => v == null ? 0 : v);
+        const subEma = _ema(sub, signal);
+        for (let i = 0; i < subEma.length; i++) sigLine[firstIdx + i] = subEma[i];
+    }
+    const hist = macdLine.map((v, i) => (v != null && sigLine[i] != null) ? v - sigLine[i] : null);
+    return { macd: macdLine, signal: sigLine, hist };
+}
+
+function _periodStartDate(lastDateStr, period, earliestDataDateStr) {
+    if (period === 'max') return earliestDataDateStr;
+    const daysBack = { '3mo': 90, '6mo': 180, '1y': 365, '2y': 730, '5y': 1825 }[period] || 180;
+    const start = new Date(lastDateStr);
+    start.setDate(start.getDate() - daysBack);
+    const startStr = start.toISOString().split('T')[0];
+    return startStr < earliestDataDateStr ? earliestDataDateStr : startStr;
+}
+
+// 가시 구간의 min/max 를 계산 → 메인/MACD y축 자동 스케일에 사용.
+// 가격축은 캔들 고/저 + 볼린저 밴드(bb_u/bb_l) + 이평선(MA20/MA60) 값을 모두 포함 → 지표선이 화면 밖으로 잘리지 않도록.
+// 패딩: 가격축 위아래 각 10%, MACD 15%.
+function _computeVisibleYRanges(chart, xStart, xEnd, convert) {
+    const t0 = new Date(xStart).getTime();
+    const t1 = new Date(xEnd).getTime();
+    let pMin = Infinity, pMax = -Infinity;
+    let mMin = Infinity, mMax = -Infinity;
+    for (const c of chart) {
+        const t = new Date(c.date).getTime();
+        if (t < t0 || t > t1) continue;
+        // 가격축: 캔들 + 지표선 모두 고려 (통화 변환 필요)
+        const lo = convert(c.low), hi = convert(c.high);
+        if (lo < pMin) pMin = lo;
+        if (hi > pMax) pMax = hi;
+        for (const f of ['bb_u', 'bb_l', 'ma20', 'ma60']) {
+            const v = c[f];
+            if (v == null) continue;
+            const cv = convert(v);
+            if (cv < pMin) pMin = cv;
+            if (cv > pMax) pMax = cv;
+        }
+        // MACD 축: 가격과 스케일이 달라 별도
+        for (const f of ['macd', 'macd_sig', 'macd_hist']) {
+            const v = c[f];
+            if (v == null) continue;
+            if (v < mMin) mMin = v;
+            if (v > mMax) mMax = v;
+        }
+    }
+    const out = {};
+    if (Number.isFinite(pMin) && Number.isFinite(pMax)) {
+        const pad = (pMax - pMin) * 0.10 || Math.abs(pMax) * 0.05 || 1;
+        out.price = [pMin - pad, pMax + pad];
+    }
+    if (Number.isFinite(mMin) && Number.isFinite(mMax)) {
+        const pad = (mMax - mMin) * 0.15 || Math.abs(mMax) * 0.1 || 1;
+        out.macd = [mMin - pad, mMax + pad];
+    }
+    return out;
+}
+
+function _currentConvert() {
+    const d = _chartData;
+    if (!d) return v => v;
+    const krw = isKRW(d.symbol || '');
+    const rate = exchangeRate;
+    if (_chartCurrency === 'KRW' && !krw) return v => v * rate;
+    if (_chartCurrency === 'USD' && krw)  return v => v / rate;
+    return v => v;
+}
+
+function _autoScaleYAxes(chartDiv, explicitRange) {
+    if (!_chartData || !_chartData.chart) return;
+    const xr = explicitRange
+        || (chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis.range)
+        || (chartDiv.layout && chartDiv.layout.xaxis && chartDiv.layout.xaxis.range);
+    if (!xr) return;
+    const yr = _computeVisibleYRanges(_chartData.chart, xr[0], xr[1], _currentConvert());
+    // 가격축(yaxis)만 가시 구간에 맞춰 재스케일. MACD(yaxis2)는 초기값 유지 → 팬 중 수직 떨림 방지.
+    if (yr.price) {
+        // autorange:false 로 Plotly 가 다시 autoscale 로 덮어쓰지 못하게 함
+        Plotly.relayout(chartDiv, { 'yaxis.autorange': false, 'yaxis.range': yr.price });
+    }
+}
+
 function _buildChart(d, currencyMode) {
     const chart = d.chart;
     if (!chart || chart.length === 0) {
         document.getElementById('chartContainer').innerHTML = `<div class="loading">${L('chart_no_data')}</div>`;
         return;
     }
+    console.log('[chart] rows:', chart.length, 'first:', chart[0]?.date, 'last:', chart[chart.length-1]?.date, 'displayPeriod:', d.displayPeriod);
 
     const sym = d.symbol || '';
     const krw = isKRW(sym);
@@ -2214,6 +2517,15 @@ function _buildChart(d, currencyMode) {
     const t2 = convert(d.bb_u);
     const sl = entry * 0.96;
 
+    // 우측 여백 계산: 마지막 두 점의 시간차(=1 캔들 폭)의 1.5배만큼 x축 끝을 연장.
+    // hline(전략선) / RSI 기준선 / xaxis.range 모두 같은 값을 써서 일관성 유지.
+    const rightPadEnd = (() => {
+        if (dates.length < 2) return dates[dates.length - 1];
+        const last = new Date(dates[dates.length - 1]).getTime();
+        const gap = last - new Date(dates[dates.length - 2]).getTime();
+        return new Date(last + gap * 1.5).toISOString();
+    })();
+
     // ── 메인 차트 트레이스 (legendgroup으로 범례 정리) ──
     const candlestick = {
         x: dates, open: opens, high: highs, low: lows, close: closes,
@@ -2230,8 +2542,9 @@ function _buildChart(d, currencyMode) {
     const bbLTrace = { x: dates, y: bbLs, type: 'scatter', mode: 'lines', name: L('bb_lower_trace'), line: { color: 'gray', width: 1, dash: 'dot' }, fill: 'tonexty', fillcolor: 'rgba(128,128,128,0.08)', legendgroup: 'bb' };
 
     // ── 전략 라인 (라인만 표시, 우측 annotation으로 가격 레이블) ──
+    // x 종점은 rightPadEnd → 마지막 캔들 이후의 여백 영역까지 수평선 연장
     const hline = (y, color, name) => ({
-        x: [dates[0], dates[dates.length-1]], y: [y, y],
+        x: [dates[0], rightPadEnd], y: [y, y],
         type: 'scatter', mode: 'lines', name: name,
         line: { color: color, width: 1.2, dash: 'dash' },
         legendgroup: 'strategy', showlegend: false,
@@ -2258,31 +2571,57 @@ function _buildChart(d, currencyMode) {
 
     // ── RSI 서브차트 ──
     const rsiTrace = { x: dates, y: rsis, type: 'scatter', mode: 'lines', name: 'RSI', line: { color: 'purple', width: 1.5 }, yaxis: 'y3', legendgroup: 'rsi' };
-    const rsi70Trace = { x: [dates[0], dates[dates.length-1]], y: [70, 70], type: 'scatter', mode: 'lines', name: L('overbought_70'), line: { color: '#FF4444', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
-    const rsi30Trace = { x: [dates[0], dates[dates.length-1]], y: [30, 30], type: 'scatter', mode: 'lines', name: L('oversold_30'), line: { color: '#00C851', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
+    const rsi70Trace = { x: [dates[0], rightPadEnd], y: [70, 70], type: 'scatter', mode: 'lines', name: L('overbought_70'), line: { color: '#FF4444', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
+    const rsi30Trace = { x: [dates[0], rightPadEnd], y: [30, 30], type: 'scatter', mode: 'lines', name: L('oversold_30'), line: { color: '#00C851', width: 1, dash: 'dot' }, yaxis: 'y3', legendgroup: 'rsi', showlegend: true };
 
     const cc = chartColors();
+
+    // 초기 표시 범위
+    //  - 일봉(D): 선택한 기간(예: 6mo)
+    //  - 주/월/년: 해당 인터벌에서 읽기 좋은 캔들 개수(Toss 스타일)
+    const lastDate = dates[dates.length - 1];
+    const interval = d.displayInterval || 'D';
+    let firstDate;
+    if (interval === 'D') {
+        firstDate = _periodStartDate(lastDate, d.displayPeriod || '6mo', dates[0]);
+    } else {
+        const n = { W: 52, M: 36, Y: 15 }[interval] || 60;
+        firstDate = dates[Math.max(0, dates.length - n)];
+    }
+
+    // 초기 화면의 Y 범위를 미리 계산 (double-click reset 도 이 범위로 복귀)
+    // Y 계산은 lastDate 까지만 — rightPadEnd 까지 확장해도 그 구간엔 캔들이 없어 Y 에 영향 없음
+    const initYRanges = _computeVisibleYRanges(chart, firstDate, lastDate, convert);
+
     const layout = {
         height: 850,
         template: cc.template,
         paper_bgcolor: cc.bg,
         plot_bgcolor: cc.plot,
         font: { color: cc.text, family: 'Pretendard, sans-serif' },
-        showlegend: true,
-        legend: {
-            orientation: 'h',
-            x: 0.5, xanchor: 'center',
-            y: 1.0, yanchor: 'bottom',
-            font: { size: 11 },
-            itemclick: 'toggle', itemdoubleclick: 'toggleothers',
-            bgcolor: 'rgba(0,0,0,0)',
-            tracegroupgap: 4,
+        // Plotly 내장 legend 는 끔 → 차트 위 커스텀 HTML legend(chart-legend) 로 대체
+        showlegend: false,
+        // legend 공간이 사라졌으므로 top margin 대폭 축소
+        margin: { l: 55, r: 115, t: 30, b: 30 },
+        // 드래그 = 좌우 이동(팬), 마우스 휠 = 줌 (토스/TradingView 스타일)
+        dragmode: 'pan',
+        // x 축: 초기 범위는 데이터 구간, 사용자 팬/줌 허용 (autorange 제거 → 제약 없음)
+        xaxis: {
+            rangeslider: { visible: false },
+            domain: [0, 1],
+            gridcolor: cc.grid,
+            type: 'date',
+            range: [firstDate, rightPadEnd],
+            tickformat: '%Y-%m-%d',
+            hoverformat: '%Y-%m-%d',
         },
-        margin: { l: 55, r: 115, t: 130, b: 30 },
-        xaxis: { rangeslider: { visible: false }, domain: [0, 1], gridcolor: cc.grid },
-        yaxis:  { domain: [0.42, 1],    title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true },
-        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid, anchor: 'x' },
-        yaxis3: { domain: [0, 0.20],    title: { text: 'RSI',  font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100], anchor: 'x' },
+        // fixedrange: true → 드래그·휠이 y축을 건드리지 못함 (수평 pan 전용).
+        // range 는 우리가 가시 구간을 보고 프로그램적으로 갱신 (fixedrange 는 인터랙티브만 막고 API 변경은 허용).
+        yaxis:  { domain: [0.42, 1],    title: { text: prefix, standoff: 5 }, gridcolor: cc.grid, tickprefix: prefix, separatethousands: true,
+                  range: initYRanges.price, fixedrange: true },
+        yaxis2: { domain: [0.22, 0.40], title: { text: 'MACD', font: { size: 11 } }, gridcolor: cc.grid, anchor: 'x',
+                  range: initYRanges.macd, fixedrange: true },
+        yaxis3: { domain: [0, 0.20],    title: { text: 'RSI',  font: { size: 11 } }, gridcolor: cc.grid, range: [0, 100], anchor: 'x', fixedrange: true },
         annotations: strategyAnnotations,
         shapes: [
             // RSI 30-70 밴드
@@ -2297,7 +2636,122 @@ function _buildChart(d, currencyMode) {
         rsiTrace, rsi70Trace, rsi30Trace,
     ];
 
-    Plotly.newPlot('chartContainer', traces, layout, { responsive: true, displayModeBar: true });
+    const chartDiv = document.getElementById('chartContainer');
+    Plotly.newPlot(chartDiv, traces, layout, {
+        responsive: true,
+        displayModeBar: true,
+        scrollZoom: true,       // 마우스 휠로 줌 인/아웃
+        doubleClick: 'reset',   // 더블클릭 = 초기 범위로 복귀
+    });
+
+    // DOM 리스너는 1회만, plotly_relayout 은 매 빌드마다 재바인딩
+    // (인터벌 전환/통화 토글/재분석 시 Plotly.newPlot 이 리스너를 잃어도 복구됨)
+    _setupChartDomListeners(chartDiv);
+    _bindPlotlyRelayout(chartDiv);
+
+    // 사용자가 legend 로 숨긴 trace 들을 인터벌/통화 전환 후에도 유지
+    _applyHiddenTraces(chartDiv);
+}
+
+
+// ═══════════════════════════════════════════════
+// 차트 인터랙션: 수평 pan + 가시 구간 기반 Y축 자동 조정
+// ───────────────────────────────────────────────
+// DOM 리스너(마우스/키보드)는 chartDiv 에 1회만 바인딩.
+// Plotly 이벤트(`plotly_relayout`) 는 Plotly.newPlot 이 내부 emitter 상태를
+// 건드릴 가능성이 있으므로 매 빌드마다 재바인딩 → 인터벌 전환 후에도 보장.
+// 상태(rightDrag, pendingX, rafId) 는 chartDiv 프로퍼티로 공유.
+// ═══════════════════════════════════════════════
+function _setupChartDomListeners(chartDiv) {
+    if (chartDiv._chartDomBound) return;
+    chartDiv._chartDomBound = true;
+    chartDiv._chartState = { rightDrag: null, pendingX: null, rafId: null };
+    const S = chartDiv._chartState;
+
+    const flushDragFrame = () => {
+        S.rafId = null;
+        if (!S.pendingX) return;
+        const xRange = S.pendingX;
+        S.pendingX = null;
+        const update = { 'xaxis.range': xRange };
+        if (_chartData && _chartData.chart) {
+            const yr = _computeVisibleYRanges(_chartData.chart, xRange[0], xRange[1], _currentConvert());
+            if (yr.price) {
+                update['yaxis.autorange'] = false;
+                update['yaxis.range'] = yr.price;
+            }
+        }
+        Plotly.relayout(chartDiv, update);
+    };
+
+    chartDiv.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    chartDiv.addEventListener('mousedown', (e) => {
+        if (e.button !== 2) return;
+        const fullRange = chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis.range;
+        const layoutRange = chartDiv.layout && chartDiv.layout.xaxis && chartDiv.layout.xaxis.range;
+        const range = fullRange || layoutRange;
+        if (!range) return;
+        e.preventDefault();
+        S.rightDrag = {
+            startX: e.clientX,
+            startMs: new Date(range[0]).getTime(),
+            endMs: new Date(range[1]).getTime(),
+        };
+    });
+
+    chartDiv.addEventListener('mousemove', (e) => {
+        if (!S.rightDrag) return;
+        e.preventDefault();
+
+        const plotWidth = (chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis._length)
+            || (chartDiv.offsetWidth - 170);
+        if (plotWidth <= 0) return;
+
+        const dx = e.clientX - S.rightDrag.startX;
+        const rangeMs = S.rightDrag.endMs - S.rightDrag.startMs;
+        if (!Number.isFinite(rangeMs) || rangeMs <= 0) return;
+        const shiftMs = -(dx / plotWidth) * rangeMs;
+
+        S.pendingX = [
+            new Date(S.rightDrag.startMs + shiftMs).toISOString(),
+            new Date(S.rightDrag.endMs + shiftMs).toISOString(),
+        ];
+        if (S.rafId == null) S.rafId = requestAnimationFrame(flushDragFrame);
+    });
+
+    const endRightDrag = () => {
+        S.rightDrag = null;
+        if (S.rafId != null) { cancelAnimationFrame(S.rafId); S.rafId = null; }
+        if (S.pendingX) flushDragFrame();
+    };
+    chartDiv.addEventListener('mouseup', (e) => { if (e.button === 2) endRightDrag(); });
+    chartDiv.addEventListener('mouseleave', endRightDrag);
+}
+
+function _bindPlotlyRelayout(chartDiv) {
+    const S = chartDiv._chartState;
+    if (!S) return;
+    // 기존 리스너 제거 후 재바인딩 (Plotly.newPlot 이 내부 emitter 를 초기화했을 경우에도 안전)
+    if (typeof chartDiv.removeAllListeners === 'function') {
+        chartDiv.removeAllListeners('plotly_relayout');
+    }
+    chartDiv.on('plotly_relayout', (ev) => {
+        if (!ev) return;
+        if (S.rightDrag) return;  // 우클릭 드래그 중: flushDragFrame 이 X+Y 를 이미 batch
+        let xRange = null;
+        if (Array.isArray(ev['xaxis.range'])) {
+            xRange = ev['xaxis.range'];
+        } else if (ev['xaxis.range[0]'] != null && ev['xaxis.range[1]'] != null) {
+            xRange = [ev['xaxis.range[0]'], ev['xaxis.range[1]']];
+        } else if (ev['xaxis.autorange']) {
+            const fr = chartDiv._fullLayout && chartDiv._fullLayout.xaxis && chartDiv._fullLayout.xaxis.range;
+            if (fr) xRange = fr;
+        }
+        if (!xRange) return;
+        console.log('[chart] zoom/pan → new x:', xRange);
+        _autoScaleYAxes(chartDiv, xRange);
+    });
 }
 
 // ═══════════════════════════════════════════════
