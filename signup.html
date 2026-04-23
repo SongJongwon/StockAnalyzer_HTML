@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 — Nexus Alpha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <main class="auth-shell">
+        <div class="auth-card">
+            <header class="auth-card__header">
+                <h1>Nexus Alpha</h1>
+                <p>새 계정을 만드세요</p>
+            </header>
+
+            <form id="signupForm" class="auth-form" novalidate>
+                <label class="auth-field">
+                    <span>이메일</span>
+                    <input type="email" name="email" required autocomplete="email" placeholder="name@example.com">
+                </label>
+
+                <label class="auth-field">
+                    <span>이름</span>
+                    <input type="text" name="name" required minlength="1" maxlength="100" autocomplete="name" placeholder="홍길동">
+                </label>
+
+                <label class="auth-field">
+                    <span>비밀번호</span>
+                    <input type="password" name="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="최소 8자, 문자+숫자 포함">
+                </label>
+
+                <label class="auth-field">
+                    <span>비밀번호 확인</span>
+                    <input type="password" name="password2" required minlength="8" maxlength="128" autocomplete="new-password">
+                </label>
+
+                <label class="auth-field">
+                    <span>휴대폰 (선택)</span>
+                    <input type="tel" name="phone" maxlength="20" autocomplete="tel" placeholder="010-1234-5678">
+                </label>
+
+                <div id="signupError" class="auth-error" hidden></div>
+
+                <button type="submit" class="auth-btn auth-btn--primary">가입하기</button>
+            </form>
+
+            <footer class="auth-card__footer">
+                <p>이미 계정이 있으신가요? <a href="login.html">로그인</a></p>
+                <p><a href="index.html" class="auth-link-muted">← 메인으로 돌아가기</a></p>
+            </footer>
+        </div>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // 이미 로그인된 상태면 메인으로
+        if (NexusAuth.getAccessToken()) {
+            window.location.replace('index.html');
+        }
+        NexusAuth.installDevBannerIfNeeded();
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const err = document.getElementById('signupError');
+            err.hidden = true;
+            err.textContent = '';
+
+            const fd = new FormData(e.target);
+            const pw1 = fd.get('password');
+            const pw2 = fd.get('password2');
+            if (pw1 !== pw2) {
+                err.textContent = '비밀번호 확인이 일치하지 않습니다.';
+                err.hidden = false;
+                return;
+            }
+
+            const payload = {
+                email: fd.get('email').trim(),
+                password: pw1,
+                name: fd.get('name').trim(),
+            };
+            const phone = (fd.get('phone') || '').toString().trim();
+            if (phone) payload.phone = phone;
+
+            try {
+                await NexusAuth.signup(payload);
+                window.location.replace('index.html');
+            } catch (e2) {
+                err.textContent = e2.message || '회원가입 실패';
+                err.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>
