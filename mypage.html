@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 · Nexus Alpha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+    <div class="account-shell">
+        <div class="account-header">
+            <div>
+                <h1>마이페이지</h1>
+                <div class="sub" id="subLine">로그인 정보를 불러오는 중…</div>
+            </div>
+            <div class="header-actions">
+                <a class="btn-link" href="index.html">← 홈으로</a>
+                <a class="btn-link" href="pricing.html">요금제</a>
+                <button class="btn-link" id="logoutBtn">로그아웃</button>
+            </div>
+        </div>
+
+        <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+        <div class="account-grid">
+            <div class="account-card">
+                <h3>구독 현황</h3>
+                <div id="subscriptionBox">불러오는 중…</div>
+            </div>
+
+            <div class="account-card">
+                <h3>이번 달 사용량</h3>
+                <div id="usageBox">불러오는 중…</div>
+            </div>
+
+            <div class="account-card">
+                <h3>AI API 키 (BYOK)</h3>
+                <p class="notice">본인 API 키를 등록하면 서버 쿼터와 무관하게 AI 분석을 무제한 호출할 수 있습니다. 현재는 홈 화면 상단의 <strong>AI 키 설정</strong> 버튼으로 브라우저에 저장됩니다.<br><br>(Phase 4 에서 서버 측 암호화 저장으로 업그레이드 예정)</p>
+            </div>
+
+            <div class="account-card">
+                <h3>결제 내역</h3>
+                <p class="notice">Phase 3 결제 연동 후 이 영역에 실제 결제 내역이 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }) : '—';
+        const showError = (msg) => {
+            const b = document.getElementById('errorBanner');
+            b.textContent = msg;
+            b.style.display = '';
+        };
+
+        async function gateOrRedirect() {
+            const s = await NexusAuth.getDevStatus();
+            if (s.dev_mode) return s.fake_user;
+            if (!NexusAuth.getAccessToken()) {
+                location.replace('login.html?next=mypage.html');
+                throw new Error('no auth');
+            }
+            return NexusAuth.getUser();
+        }
+
+        function renderSubscription(sub, user) {
+            const box = document.getElementById('subscriptionBox');
+            const master = sub.is_master ? ' <span style="color:#facc15;">👑 마스터</span>' : '';
+            box.innerHTML = `
+                <div class="kv-row"><span class="k">이메일</span><span class="v">${user.email || '—'}</span></div>
+                <div class="kv-row"><span class="k">현재 플랜</span><span class="v">${sub.label || sub.plan}${master}</span></div>
+                <div class="kv-row"><span class="k">상태</span><span class="v">${sub.status || '—'}</span></div>
+                <div class="kv-row"><span class="k">결제 주기</span><span class="v">${sub.billing_cycle || '—'}</span></div>
+                <div class="kv-row"><span class="k">시작일</span><span class="v">${fmt(sub.started_at)}</span></div>
+                <div class="kv-row"><span class="k">만료일</span><span class="v">${fmt(sub.expires_at)}</span></div>
+                <div style="margin-top:16px;">
+                    <a class="btn-primary" href="pricing.html">플랜 변경</a>
+                </div>
+            `;
+        }
+
+        function renderUsage(u) {
+            const box = document.getElementById('usageBox');
+            const bar = (used, limit) => {
+                if (limit === -1) {
+                    return `<div class="usage-bar"><div class="fill unlimited" style="width:100%;"></div></div>`;
+                }
+                if (limit === 0) {
+                    return `<div class="usage-bar"><div class="fill over" style="width:100%;"></div></div>`;
+                }
+                const pct = Math.min(100, Math.round((used / limit) * 100));
+                const over = used >= limit;
+                return `<div class="usage-bar"><div class="fill ${over ? 'over' : ''}" style="width:${pct}%;"></div></div>`;
+            };
+            const label = (used, limit) => {
+                if (limit === -1) return '무제한';
+                if (limit === 0) return '이용 불가 (업그레이드 필요)';
+                return `${used} / ${limit}`;
+            };
+
+            box.innerHTML = `
+                <div class="usage-row">
+                    <div class="usage-label"><span class="k">AI 분석</span><span class="v">${label(u.ai_analysis.used, u.ai_analysis.limit)}</span></div>
+                    ${bar(u.ai_analysis.used, u.ai_analysis.limit)}
+                </div>
+                <div class="usage-row">
+                    <div class="usage-label"><span class="k">투자자 패널 토론</span><span class="v">${label(u.panel_discuss.used, u.panel_discuss.limit)}</span></div>
+                    ${bar(u.panel_discuss.used, u.panel_discuss.limit)}
+                </div>
+                <p class="notice" style="margin-top:16px;">쿼터는 매월 1일 UTC 기준으로 초기화됩니다. 본인 API 키(BYOK)로 호출한 AI 분석은 서버 쿼터에서 차감되지 않습니다.</p>
+            `;
+        }
+
+        (async function () {
+            try {
+                const user = await gateOrRedirect();
+                document.getElementById('subLine').textContent = user.email || '';
+
+                const [sub, usage] = await Promise.all([
+                    NexusAuth.apiFetch('/api/subscription/me', { auth: true }),
+                    NexusAuth.apiFetch('/api/subscription/usage', { auth: true }),
+                ]);
+                renderSubscription(sub, user);
+                renderUsage(usage);
+            } catch (e) {
+                if (e.message !== 'no auth') {
+                    showError('정보를 불러오지 못했습니다: ' + e.message);
+                }
+            }
+        })();
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await NexusAuth.logout();
+            location.replace('login.html');
+        });
+    </script>
+</body>
+</html>

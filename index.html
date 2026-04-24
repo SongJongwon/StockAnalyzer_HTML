@@ -269,7 +269,76 @@
         </div>
     </div>
 
+    <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
     <script src="js/panel.js"></script>
+
+    <!-- Phase 2 — 플로팅 사용자 메뉴 (layout.css 에 영향 없음, fixed positioning) -->
+    <script>
+    (function () {
+        if (!window.NexusAuth) return;
+
+        const mount = document.createElement('div');
+        mount.id = 'nexusUserMenu';
+        // ⋮ 기존 상단 메뉴(.top-menu: right=0.75rem, width≈2rem)와 겹치지 않게 왼쪽으로 비켜 배치
+        Object.assign(mount.style, {
+            position: 'fixed', top: '10px', right: '56px', zIndex: '998',
+            display: 'flex', gap: '6px', alignItems: 'center',
+            fontSize: '12px', fontFamily: 'Pretendard, sans-serif',
+        });
+        document.body.appendChild(mount);
+
+        function makeBtn(label, href, onClick) {
+            const a = document.createElement('a');
+            a.href = href;
+            a.textContent = label;
+            Object.assign(a.style, {
+                padding: '6px 12px', borderRadius: '6px',
+                background: 'rgba(30,41,59,0.85)',
+                border: '1px solid rgba(148,163,184,0.3)',
+                color: '#e2e8f0', textDecoration: 'none', fontWeight: '500',
+                cursor: 'pointer', backdropFilter: 'blur(4px)',
+            });
+            if (onClick) a.addEventListener('click', onClick);
+            return a;
+        }
+        function makeInfo(text) {
+            const s = document.createElement('span');
+            s.textContent = text;
+            Object.assign(s.style, {
+                padding: '6px 10px', color: '#94a3b8',
+                background: 'rgba(15,23,42,0.6)', borderRadius: '6px',
+                border: '1px solid rgba(148,163,184,0.15)',
+            });
+            return s;
+        }
+
+        async function render() {
+            mount.innerHTML = '';
+            const dev = await NexusAuth.getDevStatus();
+            const token = NexusAuth.getAccessToken();
+            const user = NexusAuth.getUser();
+
+            if (!token && !dev.dev_mode) {
+                mount.appendChild(makeBtn('요금제', 'pricing.html'));
+                mount.appendChild(makeBtn('로그인', 'login.html'));
+                return;
+            }
+
+            const display = (user && user.email) || (dev.fake_user && dev.fake_user.email) || '';
+            const plan = ((user && user.plan) || (dev.fake_user && dev.fake_user.plan) || '').toUpperCase();
+            if (display) mount.appendChild(makeInfo(display + (plan ? ' · ' + plan : '')));
+            mount.appendChild(makeBtn('요금제', 'pricing.html'));
+            mount.appendChild(makeBtn('마이페이지', 'mypage.html'));
+            mount.appendChild(makeBtn('로그아웃', '#', async (e) => {
+                e.preventDefault();
+                await NexusAuth.logout();
+                location.reload();
+            }));
+        }
+
+        render();
+    })();
+    </script>
 </body>
 </html>
