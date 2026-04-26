@@ -22,22 +22,61 @@ async function loadPanel() {
 
 
 // ──────────────────────────────────────────
+// 페르소나 로드 실패 시 친절한 안내 + CTA 버튼 HTML
+// ──────────────────────────────────────────
+function _renderPersonaErrorState(status) {
+    // status: HTTP 상태 코드. 0 = 네트워크 실패, -1 = JSON 파싱 실패, 그 외 = 서버 응답 코드
+    if (status === 401) {
+        return `
+            <div class="panel-error">
+                <p style="margin:0 0 12px;">🔒 투자자 패널을 이용하려면 <strong>로그인</strong>이 필요합니다.</p>
+                <a href="login.html?next=index.html" class="btn-analyze" style="display:inline-block; width:auto; padding:0.4rem 1.2rem; text-decoration:none;">로그인하기</a>
+            </div>`;
+    }
+    if (status === 403) {
+        return `
+            <div class="panel-error">
+                <p style="margin:0 0 12px;">💎 투자자 패널은 <strong>Basic 이상 플랜</strong>에서 이용 가능합니다.</p>
+                <a href="pricing.html" class="btn-analyze" style="display:inline-block; width:auto; padding:0.4rem 1.2rem; text-decoration:none;">요금제 보기</a>
+            </div>`;
+    }
+    return `
+        <div class="panel-error">
+            <p style="margin:0;">페르소나 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+        </div>`;
+}
+
+
+// ──────────────────────────────────────────
 // 페르소나 목록 로드 + 잠금/해제 렌더
 // ──────────────────────────────────────────
 async function loadPanelPersonas() {
     const listEl = document.getElementById('panelPersonaList');
     if (!listEl) return;
 
+    let res;
     try {
         // /api/panel/personas 는 Phase 2 부터 인증 필요 (등급 잠금 정보 포함 응답)
-        const res = await fetch(`${API}/api/panel/personas`, { headers: _authHeaders() });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        res = await fetch(`${API}/api/panel/personas`, { headers: _authHeaders() });
+    } catch (networkErr) {
+        // 네트워크 단절 / DNS 실패 / CORS 등 — 응답 자체를 못 받은 케이스
+        listEl.innerHTML = _renderPersonaErrorState(0);
+        return;
+    }
+
+    if (!res.ok) {
+        // 상태 코드별 친절한 안내 + CTA 버튼
+        listEl.innerHTML = _renderPersonaErrorState(res.status);
+        return;
+    }
+
+    try {
         const data = await res.json();
         _panelPersonas = data.personas || [];
         _panelUserPlan = (data.user_plan || 'free').toLowerCase();
         _panelIsMaster = !!data.is_master;
-    } catch (e) {
-        listEl.innerHTML = `<div class="caption muted">페르소나 목록 로드 실패: ${e.message}</div>`;
+    } catch (parseErr) {
+        listEl.innerHTML = _renderPersonaErrorState(-1);
         return;
     }
 
