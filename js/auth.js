@@ -104,10 +104,21 @@
     async function checkAndRedirectIfDev() {
         const overlay = document.getElementById('devLoadingOverlay');
         const s = await getDevStatus();
-        if (!s.dev_mode) return false;
+        if (!s.dev_mode) {
+            // 🛡️ 안전장치 — env / 다른 어떤 값과도 무관하게 dev_mode=false 면 오버레이 강제 숨김
+            // (정적 HTML 의 <div hidden> 이 CSS author rule 에 의해 무력화되는 케이스 방어)
+            if (overlay) {
+                overlay.hidden = true;
+                overlay.style.display = 'none';
+            }
+            return false;
+        }
 
         // 로딩 오버레이 표시 후 짧게 대기 → 메인 진입
-        if (overlay) overlay.hidden = false;
+        if (overlay) {
+            overlay.hidden = false;
+            overlay.style.display = '';  // CSS 의 display:flex 다시 활성
+        }
         console.warn('%c🔓 DEV MODE', 'background:#facc15;color:#000;padding:2px 8px;border-radius:3px;font-weight:bold;',
             'localhost/사설망에서 자동 로그인됨. Fake user:', s.fake_user);
         // DEV 모드에서는 가짜 토큰 대신 "dev 세션" 표시 — 백엔드가 모든 요청을 IP 기반 바이패스 처리

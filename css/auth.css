@@ -19,6 +19,14 @@
 
 * { box-sizing: border-box; }
 
+/* ⚠️ HTML `hidden` 속성 우선순위 강제.
+ * .auth-dev-overlay / .auth-shell 등이 author CSS 의 `display: flex` 를 가지면
+ * user-agent stylesheet 의 `[hidden] { display: none }` 을 cascade 에서 이겨
+ * `<div hidden class="...">` 인데도 표시되는 버그가 발생.
+ * (증상: dev_mode=false 응답 도착 전부터 노란 "🔓 DEV MODE" 오버레이가 항상 떠서
+ *  로그인 폼이 보이지 않음) */
+[hidden] { display: none !important; }
+
 html, body {
     margin: 0;
     padding: 0;
