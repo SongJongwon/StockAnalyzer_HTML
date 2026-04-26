@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객지원 · Nexus Alpha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/account.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <button class="theme-toggle" type="button"></button>
+    <div class="account-shell">
+        <div class="account-header">
+            <div>
+                <h1>고객지원</h1>
+                <div class="sub">자주 묻는 질문 · 문의 안내 · 응답 시간을 한 곳에서 확인하세요.</div>
+            </div>
+            <div class="header-actions">
+                <a class="btn-link" href="index.html">← 홈으로</a>
+                <a class="btn-link" href="pricing.html">요금제</a>
+                <a class="btn-link" href="terms.html">이용약관</a>
+                <a class="btn-link" href="refund.html">환불 정책</a>
+            </div>
+        </div>
+
+        <!-- 1. 문의 채널 -->
+        <div class="account-grid" style="margin-bottom: 24px;">
+            <div class="account-card">
+                <h3>📧 이메일 문의</h3>
+                <p style="color: var(--acct-text-soft); margin: 0 0 12px;">
+                    아래 주소로 문의 사항을 보내주세요. 영업일 기준 1~2일 이내 답변드립니다.
+                </p>
+                <p style="font-size: 16px; font-weight: 600; color: var(--acct-accent-soft); margin: 0;">
+                    <span class="legal-todo">support@nexus-alpha.io</span>
+                </p>
+                <p style="font-size: 12px; color: var(--acct-muted); margin: 8px 0 0;">
+                    ⏸️ 정식 도메인 확정 후 갱신 예정.
+                </p>
+            </div>
+
+            <div class="account-card">
+                <h3>🕐 운영 시간</h3>
+                <div class="kv-row"><span class="k">상담 가능 시간</span><span class="v">평일 10:00 ~ 18:00 (KST)</span></div>
+                <div class="kv-row"><span class="k">점심 시간</span><span class="v">12:30 ~ 13:30</span></div>
+                <div class="kv-row"><span class="k">주말·공휴일</span><span class="v">휴무 (이메일 접수 가능)</span></div>
+                <div class="kv-row"><span class="k">긴급 장애 대응</span><span class="v">24/7 모니터링</span></div>
+            </div>
+
+            <div class="account-card">
+                <h3>⏱️ 응답 시간 약속 (SLA)</h3>
+                <div class="kv-row"><span class="k">결제·환불 문의</span><span class="v">영업일 1일 이내</span></div>
+                <div class="kv-row"><span class="k">기능·사용법 문의</span><span class="v">영업일 2일 이내</span></div>
+                <div class="kv-row"><span class="k">서비스 장애 보고</span><span class="v">즉시 ~ 4시간 이내</span></div>
+                <div class="kv-row"><span class="k">제안·피드백</span><span class="v">영업일 5일 이내</span></div>
+            </div>
+        </div>
+
+        <!-- 2. FAQ -->
+        <div class="account-card legal-doc">
+            <h2 style="margin-top: 0;">❓ 자주 묻는 질문 (FAQ)</h2>
+
+            <h3>Q. 무료 플랜으로도 모든 기능을 쓸 수 있나요?</h3>
+            <p>차트·기술적 지표·관심 종목 등 기본 기능은 무료 플랜에서도 모두 이용 가능합니다.
+                AI 분석과 투자자 패널 토론은 유료 플랜부터 제공되며, 페르소나 수와 월 호출 한도는 등급별로 다릅니다 (요금제 페이지 참고).</p>
+
+            <h3>Q. BYOK (Bring Your Own Key) 가 무엇인가요?</h3>
+            <p>본인의 AI 제공자 (Gemini / OpenAI / Anthropic / Groq) API 키를 등록하면 회사 서버 쿼터와 무관하게 무제한으로 AI 분석을 호출할 수 있습니다.
+                현재는 브라우저에 저장되며, Phase 4 에서 서버 측 암호화 저장으로 업그레이드 예정입니다.</p>
+
+            <h3>Q. AI 분석이나 투자자 패널 토론의 결과를 그대로 매매에 사용해도 되나요?</h3>
+            <p><strong>안 됩니다.</strong> 본 서비스가 제공하는 모든 분석은 참고용이며, 투자 결정과 그에 따른 책임은 회원 본인에게 있습니다 (이용약관 제11조).</p>
+
+            <h3>Q. 결제 후 환불받을 수 있나요?</h3>
+            <p>결제 후 7일 이내이며 유료 기능을 1회도 사용하지 않은 경우 전액 환불됩니다.
+                자세한 조건과 절차는 <a href="refund.html">환불 정책</a> 페이지를 참고하세요.</p>
+
+            <h3>Q. 비밀번호를 변경하려면 어떻게 하나요?</h3>
+            <p>마이페이지 → 🔒 비밀번호 변경 카드에서 현재 비밀번호 확인 후 새 비밀번호로 변경할 수 있습니다.</p>
+
+            <h3>Q. 라이트/다크 모드를 바꾸려면?</h3>
+            <p>메인 페이지 우상단 ⋮ 메뉴에서 시스템·라이트·다크 중 선택할 수 있고, 마이페이지·요금제·관리자 등 다른 페이지의 우상단 토글 버튼으로도 전환 가능합니다.
+                선택한 테마는 모든 페이지에서 동기화됩니다.</p>
+
+            <h3>Q. 계정을 탈퇴하면 데이터는 어떻게 되나요?</h3>
+            <p class="legal-todo">⏸️ Phase 3 완료 후 탈퇴 절차 명문화 예정. 현재는 고객지원 이메일로 요청.</p>
+
+            <h3>Q. 마스터 계정 / 관리자 권한은 어떻게 받나요?</h3>
+            <p>마스터 권한은 운영자 1명에게만 부여되며, 일반 회원에게는 발급되지 않습니다.
+                관리자 대시보드는 운영진 전용이며, 회원 차단·플랜 변경 등 운영 작업에 사용됩니다.</p>
+
+            <h3>Q. 서비스에 장애가 발생했을 때 어디서 확인할 수 있나요?</h3>
+            <p class="legal-todo">⏸️ Phase 5 (운영 모니터링) 에서 status 페이지 추가 예정. 현재는 이메일 또는 GitHub Issues 로 보고.</p>
+        </div>
+
+        <!-- 3. 추가 리소스 -->
+        <div class="account-card" style="margin-top: 24px;">
+            <h3>📚 추가 리소스</h3>
+            <ul style="margin: 8px 0; padding-left: 22px; color: var(--acct-text); font-size: 14px;">
+                <li><a href="terms.html" style="color: var(--acct-accent-soft);">이용약관</a> — 서비스 이용 조건과 회원·회사의 권리·의무</li>
+                <li><a href="refund.html" style="color: var(--acct-accent-soft);">환불 정책</a> — 결제 후 환불 가능 조건 / 처리 절차</li>
+                <li><span class="legal-todo">개인정보 처리방침 (privacy.html — 추후 추가)</span></li>
+                <li><span class="legal-todo">서비스 상태 페이지 (status.html — 추후 추가)</span></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
