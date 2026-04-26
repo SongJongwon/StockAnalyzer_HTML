@@ -82,7 +82,7 @@
             background: rgba(15, 23, 42, 0.7);
             color: #94a3b8;
             font-weight: 600;
-            text-align: left;
+            text-align: center;             /* 기본 center, 첫 컬럼만 아래에서 left 로 override */
             padding: 10px 12px;
             border-bottom: 1px solid #334155;
             font-size: 11px;
@@ -95,6 +95,12 @@
             border-bottom: 1px solid #1f2937;
             color: #e2e8f0;
             vertical-align: middle;
+            text-align: center;             /* 기본 center */
+        }
+        /* 첫 컬럼 (이메일/이름) 만 좌측 정렬 — 나머지(플랜/가입일/마지막 로그인/액션)는 center */
+        .users-table thead th:first-child,
+        .users-table tbody td:first-child {
+            text-align: left;
         }
         .users-table tbody tr:hover { background: rgba(99, 102, 241, 0.04); }
         .users-table tbody tr.blocked { background: rgba(239, 68, 68, 0.06); }
@@ -248,6 +254,42 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // 플랜 배지 — inline style 로 외부 CSS 우선순위 충돌·캐시 영향 회피
+        // 마스터 계정은 plan 과 무관하게 별도 골드 그라데이션 배지 표시
+        function renderPlanBadge(plan, isMaster) {
+            if (isMaster) {
+                return `<span style="
+                    display:inline-block;
+                    min-width:52px;
+                    text-align:center;
+                    padding:3px 12px;
+                    border-radius:20px;
+                    border:1px solid #d69e2e;
+                    font-size:11px;
+                    font-weight:700;
+                    letter-spacing:1px;
+                    background: linear-gradient(135deg, #744210, #92400e);
+                    color:#f6e05e;
+                ">👑 MASTER</span>`;
+            }
+            const map = {
+                free:  { label: 'FREE',  color: '#718096', bg: '#2d3748' },
+                basic: { label: 'BASIC', color: '#63b3ed', bg: '#1a365d' },
+                pro:   { label: 'PRO',   color: '#b794f4', bg: '#44337a' },
+                vip:   { label: 'VIP',   color: '#f6c90e', bg: '#744210' },
+            };
+            const p = map[(plan || 'free').toLowerCase()] || map.free;
+            return `<span style="
+                display:inline-block;
+                padding:2px 10px;
+                border-radius:12px;
+                font-size:11px;
+                font-weight:700;
+                background:${p.bg};
+                color:${p.color};
+            ">${p.label}</span>`;
+        }
+
         function showError(msg) {
             const el = document.getElementById('errorBanner');
             el.textContent = msg;
@@ -275,6 +317,21 @@
         // ──────────────────────────────────────────
         // 데이터 로드
         // ──────────────────────────────────────────
+        // 사용자 목록 정렬 우선순위:
+        //   1순위: 마스터 → 맨 위
+        //   2순위: 플랜 높은 순 (vip → pro → basic → free)
+        //   3순위: 같은 플랜 내에서는 가입일 오래된 순
+        const PLAN_ORDER = { vip: 4, pro: 3, basic: 2, free: 1 };
+        function _sortUsers(users) {
+            return users.sort((a, b) => {
+                if (a.is_master !== b.is_master) return a.is_master ? -1 : 1;
+                const pa = PLAN_ORDER[(a.plan || 'free').toLowerCase()] || 1;
+                const pb = PLAN_ORDER[(b.plan || 'free').toLowerCase()] || 1;
+                if (pa !== pb) return pb - pa;
+                return new Date(a.created_at) - new Date(b.created_at);
+            });
+        }
+
         async function loadAll() {
             try {
                 const [summary, users] = await Promise.all([
@@ -282,7 +339,7 @@
                     NexusAuth.apiFetch('/api/admin/users', { auth: true }),
                 ]);
                 renderSummary(summary);
-                _allUsers = users.users || [];
+                _allUsers = _sortUsers(users.users || []);  // 정렬 후 저장 → 필터링·재렌더 모두 정렬 순서 유지
                 renderUsers(_allUsers);
             } catch (e) {
                 showError('데이터 로드 실패: ' + (e.message || e));
@@ -324,7 +381,9 @@
                     u.is_blocked ? '<span class="tag tag-blocked">⛔ BLOCKED</span>' : '',
                 ].join('');
 
-                const plan = (u.plan || 'free').toLowerCase();
+                // backend 가 'plan' 키로 응답하지만, 환경별 (옛 v_user_summary 등)
+                // 'current_plan' 으로 응답하는 경우도 있어 양쪽 모두 fallback
+                const plan = (u.plan || u.current_plan || 'free').toLowerCase();
                 const planUp = plan.toUpperCase();
 
                 // 마스터 계정은 액션 비활성 (자기 자신 보호 + 마스터끼리 간섭 방지)
@@ -355,7 +414,7 @@
                             </div>
                             <div class="caption muted" style="font-size:11px;margin-top:2px;">${escapeHtml(u.name || '(이름 없음)')}</div>
                         </td>
-                        <td><span class="plan-badge" data-plan="${plan}">${planUp}</span></td>
+                        <td>${renderPlanBadge(u.plan || u.current_plan, u.is_master)}</td>
                         <td class="meta-time">${fmtDate(u.created_at)}</td>
                         <td class="meta-time">${fmtDateTime(u.last_login_at)}</td>
                         <td>${actionsHtml}</td>
@@ -380,7 +439,7 @@
                 );
             }
             if (plan) {
-                filtered = filtered.filter(u => (u.plan || 'free').toLowerCase() === plan);
+                filtered = filtered.filter(u => (u.plan || u.current_plan || 'free').toLowerCase() === plan);
             }
             if (flag === 'blocked')      filtered = filtered.filter(u => u.is_blocked);
             else if (flag === 'test')    filtered = filtered.filter(u => u.is_test);
