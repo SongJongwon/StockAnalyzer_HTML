@@ -516,7 +516,82 @@ html, body {
     color: var(--acct-error-text);
 }
 
+/* ─── Legal / 정책 문서 페이지 (terms / refund / support) ──── */
+.legal-doc {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 36px;
+    line-height: 1.7;
+}
+
+.legal-doc .legal-meta {
+    color: var(--acct-muted);
+    font-size: 12px;
+    margin: 0 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--acct-card-divider);
+}
+
+.legal-doc h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--acct-text-strong);
+    margin: 32px 0 12px;
+    letter-spacing: -0.2px;
+}
+.legal-doc h2:first-of-type { margin-top: 8px; }
+
+.legal-doc h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--acct-text-strong);
+    margin: 20px 0 8px;
+}
+
+.legal-doc p {
+    margin: 8px 0 12px;
+    color: var(--acct-text);
+    font-size: 14px;
+}
+
+.legal-doc ul,
+.legal-doc ol {
+    margin: 8px 0 16px;
+    padding-left: 22px;
+    color: var(--acct-text);
+    font-size: 14px;
+}
+
+.legal-doc li {
+    margin: 4px 0;
+}
+
+.legal-doc .legal-todo {
+    /* "추후 보강 필요" 같은 placeholder 자리 */
+    color: var(--acct-muted);
+    font-style: italic;
+    font-size: 13px;
+}
+
+.legal-toc {
+    margin: 8px 0 24px;
+    padding: 14px 16px 14px 36px;
+    background: var(--acct-notice-bg);
+    border: 1px solid var(--acct-notice-border);
+    border-radius: 8px;
+}
+.legal-toc li {
+    color: var(--acct-notice-text);
+    font-size: 13px;
+}
+.legal-toc a {
+    color: var(--acct-notice-text);
+    text-decoration: none;
+}
+.legal-toc a:hover { text-decoration: underline; }
+
 @media (max-width: 640px) {
     .account-shell { padding: 24px 16px 60px; }
     .account-header h1 { font-size: 22px; }
+    .legal-doc { padding: 20px 18px; }
 }
