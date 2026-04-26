@@ -468,3 +468,119 @@
 [data-theme="dark"] .panel-parse-raw pre {
     background: rgba(255,255,255,0.04);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Phase 2 재설계 — 페르소나 잠금 UI + rank 카드 + 등급 배지
+   ══════════════════════════════════════════════════════════════ */
+
+/* 잠긴 페르소나 행 */
+.panel-persona-item.panel-persona-locked {
+    cursor: pointer;
+    opacity: 0.75;
+    position: relative;
+    background: rgba(100, 116, 139, 0.05);
+}
+
+.panel-persona-item.panel-persona-locked:hover {
+    background: rgba(99, 102, 241, 0.08);
+    opacity: 0.9;
+}
+
+.panel-persona-lock {
+    font-size: 18px;
+    color: #94a3b8;
+    margin-right: 4px;
+}
+
+/* 등급 배지 (free/basic/pro/vip) */
+.panel-persona-plan {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+}
+
+.panel-persona-plan[data-plan="free"]  { background: rgba(34,197,94,0.15);  color: #22c55e; }
+.panel-persona-plan[data-plan="basic"] { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.panel-persona-plan[data-plan="pro"]   { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.panel-persona-plan[data-plan="vip"]   { background: rgba(250,204,21,0.18); color: #eab308; }
+
+/* 새 rank 카드 (agreed / persuaded / solo — disputed 는 기존 재사용) */
+.panel-rec-agreed    { border-left: 3px solid #facc15; }   /* 🥇 gold */
+.panel-rec-persuaded { border-left: 3px solid #60a5fa; }   /* 🥈 blue */
+.panel-rec-solo      { border-left: 3px solid #94a3b8; }   /* 🔹 gray */
+
+/* ══════════════════════════════════════════════════════════════
+   Streaming 진행 상황 UI (2026-04)
+   ══════════════════════════════════════════════════════════════ */
+
+.panel-progress {
+    padding: 16px 18px;
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+.panel-progress-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #c7d2fe;
+}
+
+.panel-progress-head .ms {
+    font-size: 20px;
+    color: #818cf8;
+}
+
+.panel-progress-head .ms.spin {
+    animation: panel-progress-spin 1.4s linear infinite;
+}
+
+@keyframes panel-progress-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.panel-progress-bar {
+    height: 6px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.panel-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 999px;
+    transition: width 0.35s ease-out;
+}
+
+.panel-progress-log {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 12px;
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-progress-log li {
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.12);
+}
+
+.panel-progress-log li:last-child {
+    color: #cbd5e1;
+    border-bottom: none;
+}

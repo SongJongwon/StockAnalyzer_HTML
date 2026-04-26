@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>요금제 · Nexus Alpha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+    <div class="account-shell">
+        <div class="account-header">
+            <div>
+                <h1>요금제</h1>
+                <div class="sub">취미 투자부터 전업 트레이더까지, 4단계 플랜으로 필요에 맞게 선택하세요.</div>
+            </div>
+            <div class="header-actions">
+                <a class="btn-link" href="index.html">← 홈으로</a>
+                <a class="btn-link" href="mypage.html" id="mypageLink" style="display:none;">마이페이지</a>
+                <a class="btn-primary" href="login.html" id="loginLink">로그인</a>
+            </div>
+        </div>
+
+        <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+        <div id="plansGrid" class="plans-grid">
+            <div class="plan-card"><p>요금제 불러오는 중…</p></div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const CURRENCY = (n) => n === 0 ? '무료' : '₩' + n.toLocaleString();
+
+        async function loadPlans() {
+            const banner = document.getElementById('errorBanner');
+            const grid = document.getElementById('plansGrid');
+            const user = NexusAuth.getUser();
+            let currentPlan = null;
+
+            // 로그인 여부에 따른 헤더 갱신
+            if (user || NexusAuth.getAccessToken()) {
+                document.getElementById('loginLink').style.display = 'none';
+                document.getElementById('mypageLink').style.display = '';
+            }
+
+            // 현재 구독 조회 (로그인된 경우만)
+            if (NexusAuth.getAccessToken() || user) {
+                try {
+                    const me = await NexusAuth.apiFetch('/api/subscription/me', { auth: true });
+                    currentPlan = me.plan;
+                } catch (e) {
+                    // 미로그인/DEV 등은 무시
+                }
+            }
+
+            let data;
+            try {
+                data = await NexusAuth.apiFetch('/api/subscription/plans');
+            } catch (e) {
+                banner.textContent = '요금제 정보를 불러오지 못했습니다: ' + e.message;
+                banner.style.display = '';
+                grid.innerHTML = '';
+                return;
+            }
+
+            const plans = data.plans || [];
+            grid.innerHTML = plans.map((p) => {
+                const isCurrent = currentPlan === p.plan;
+                const highlight = p.plan === 'pro';
+                const badge = isCurrent
+                    ? '<span class="plan-badge current">현재 플랜</span>'
+                    : (highlight ? '<span class="plan-badge">추천</span>' : '');
+                const price = CURRENCY(p.price_monthly);
+                const yearly = p.price_yearly
+                    ? `연 결제 <strong>${CURRENCY(p.price_yearly)}</strong> <span style="opacity:.7;">(약 2개월 무료)</span>`
+                    : '';
+                const features = (p.highlights || []).map(h => `<li>${h}</li>`).join('');
+                const ctaLabel = isCurrent
+                    ? '이용 중'
+                    : (p.plan === 'free' ? '무료 시작' : '업그레이드');
+                const ctaDisabled = isCurrent;
+
+                return `
+                    <div class="plan-card ${highlight ? 'highlighted' : ''} ${isCurrent ? 'current' : ''}">
+                        ${badge}
+                        <h3 class="plan-label">${p.label}</h3>
+                        <p class="plan-target">${p.target}</p>
+                        <div class="plan-price">
+                            <span class="amount">${price}</span>
+                            ${p.price_monthly > 0 ? '<span class="period">/월</span>' : ''}
+                        </div>
+                        ${yearly ? `<div class="plan-yearly">${yearly}</div>` : ''}
+                        <ul class="plan-features">${features}</ul>
+                        <button class="plan-cta btn-primary" data-plan="${p.plan}" ${ctaDisabled ? 'disabled' : ''}>${ctaLabel}</button>
+                    </div>
+                `;
+            }).join('');
+
+            // 업그레이드 버튼 동작
+            grid.querySelectorAll('.plan-cta').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const plan = btn.dataset.plan;
+                    if (!NexusAuth.getAccessToken() && !(await NexusAuth.getDevStatus()).dev_mode) {
+                        location.href = 'login.html?next=pricing.html';
+                        return;
+                    }
+                    if (plan === 'free') {
+                        alert('Free 플랜은 회원가입 즉시 적용됩니다.');
+                        return;
+                    }
+                    // Phase 3 PG 연동 전까지는 안내
+                    try {
+                        const r = await NexusAuth.apiFetch('/api/subscription/change', {
+                            method: 'POST',
+                            auth: true,
+                            body: { plan, billing_cycle: 'monthly' },
+                        });
+                        alert(r.message || '플랜이 변경되었습니다.');
+                        location.reload();
+                    } catch (e) {
+                        alert('결제 연동이 아직 준비 중입니다. Phase 3 릴리스를 기다려 주세요.');
+                    }
+                });
+            });
+        }
+
+        loadPlans();
+    </script>
+</body>
+</html>

@@ -8,6 +8,24 @@ const API = (location.hostname === 'localhost' || location.hostname === '127.0.0
     ? location.origin
     : "https://stockanalyzer-backend.onrender.com";
 
+// ═══ Phase 2 — 인증 필요 엔드포인트 공용 헬퍼 ═══
+function _authHeaders() {
+    const h = { 'Content-Type': 'application/json' };
+    const t = (window.NexusAuth && NexusAuth.getAccessToken) ? NexusAuth.getAccessToken() : null;
+    if (t) h['Authorization'] = 'Bearer ' + t;
+    return h;
+}
+
+async function _authErrorMessage(res) {
+    let err = null;
+    try { err = await res.json(); } catch { /* body 없음 */ }
+    const detail = err && (err.detail || err.message);
+    if (res.status === 401) return '로그인이 필요합니다. 상단 우측 "로그인" 버튼을 눌러 주세요.';
+    if (res.status === 403) return (detail || '이 기능은 현재 등급에서 이용할 수 없습니다.') + ' (요금제 페이지에서 업그레이드 가능)';
+    if (res.status === 429) return detail || '이번 달 사용 한도를 모두 소진했습니다. 다음 달에 초기화됩니다.';
+    return detail || ('HTTP ' + res.status);
+}
+
 // ══════════════════════════════════════════════════════
 // Language / i18n
 // ══════════════════════════════════════════════════════
@@ -1039,19 +1057,55 @@ const AI_PROVIDERS = [
     },
 ];
 
-function getApiKey(providerId) {
+// ─── API 키 enabled 상태 (명시적 ON/OFF 토글) ─────────────────────
+// 키가 있어도 사용자가 일시적으로 OFF 할 수 있도록. 기본값은 true (키 등록 시 자동 ON).
+function _enabledStorageKey(providerId) { return `sa_key_${providerId}_enabled`; }
+
+function isApiKeyEnabled(providerId) {
+    const v = localStorage.getItem(_enabledStorageKey(providerId));
+    // 저장값이 없으면(최초) true 간주 — 기존 사용자의 호환성 유지
+    return v === null ? true : v === 'true';
+}
+
+function setApiKeyEnabled(providerId, enabled) {
+    localStorage.setItem(_enabledStorageKey(providerId), enabled ? 'true' : 'false');
+}
+
+/** 실제 저장된 원시 키 (enabled 상태 무시). 마스킹·수정 UI 전용. */
+function getRawApiKey(providerId) {
     const p = AI_PROVIDERS.find(p => p.id === providerId);
     return p ? (localStorage.getItem(p.storageKey) || '') : '';
 }
 
+/** 호출 시 사용할 키. OFF 토글이면 빈 문자열을 반환해서 폴백 체인에서 자동 제외됨. */
+function getApiKey(providerId) {
+    if (!isApiKeyEnabled(providerId)) return '';
+    return getRawApiKey(providerId);
+}
+
 function setApiKey(providerId, key) {
     const p = AI_PROVIDERS.find(p => p.id === providerId);
-    if (p) localStorage.setItem(p.storageKey, key.trim());
+    if (p) {
+        localStorage.setItem(p.storageKey, key.trim());
+        // 새로 등록하면 기본 ON
+        setApiKeyEnabled(providerId, true);
+    }
 }
 
 function removeApiKey(providerId) {
     const p = AI_PROVIDERS.find(p => p.id === providerId);
-    if (p) localStorage.removeItem(p.storageKey);
+    if (p) {
+        localStorage.removeItem(p.storageKey);
+        localStorage.removeItem(_enabledStorageKey(providerId));
+    }
+}
+
+function toggleApiKey(providerId) {
+    // 키가 없는 경우 토글 의미 없음
+    if (!getRawApiKey(providerId)) return;
+    setApiKeyEnabled(providerId, !isApiKeyEnabled(providerId));
+    renderApiKeyModal();
+    updateApiStatusMini();
 }
 
 function getAiPriority() {
@@ -1118,9 +1172,17 @@ function renderApiKeyModal() {
     let html = '';
 
     AI_PROVIDERS.forEach(p => {
-        const key = getApiKey(p.id);
-        const hasKey = !!key;
-        const masked = hasKey ? (key.substring(0, 12) + '••••••••••••' + key.slice(-4)) : '';
+        const rawKey = getRawApiKey(p.id);
+        const hasKey = !!rawKey;
+        const enabled = hasKey && isApiKeyEnabled(p.id);
+        const masked = hasKey ? (rawKey.substring(0, 12) + '••••••••••••' + rawKey.slice(-4)) : '';
+
+        // 키 있음: 클릭 가능한 토글 배지 / 키 없음: 단순 OFF 표시
+        const badgeHtml = hasKey
+            ? `<button type="button" class="api-status-badge ${enabled ? 'on' : 'off'}" id="kbadge-${p.id}"
+                       onclick="toggleApiKey('${p.id}')" title="클릭하여 ${enabled ? '비활성화' : '활성화'}"
+                       style="cursor:pointer;border:none;">${enabled ? 'ON' : 'OFF'}</button>`
+            : `<span class="api-status-badge off" id="kbadge-${p.id}">OFF</span>`;
 
         html += `
         <div class="api-provider-row" id="apr-${p.id}">
@@ -1144,7 +1206,7 @@ function renderApiKeyModal() {
                 </div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-                <span class="api-status-badge ${hasKey ? 'on' : 'off'}" id="kbadge-${p.id}">${hasKey ? 'ON' : 'OFF'}</span>
+                ${badgeHtml}
                 <div style="display:flex;gap:6px;">
                     ${hasKey
                         ? `<button class="api-key-btn danger" onclick="deleteApiKey('${p.id}')"><span class="ms">delete</span> ${L('api_delete')}</button>`
@@ -3104,6 +3166,7 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
     const userAnthropicKey = getApiKey('anthropic');
     const userOpenaiKey    = getApiKey('openai');
     const userGeminiKey    = getApiKey('gemini');
+    const userGroqKey      = getApiKey('groq');
     const activeKey = getActiveApiKeyInfo();
 
     // 등록된 키가 없으면 박스 숨김
@@ -3118,7 +3181,9 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
     try {
         const res = await fetch(`${API}/api/market/ai-analysis`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: _authHeaders(),
+            // ai_provider 는 보내지 않음 — 서버 폴백 체인(auto: gemini→openai→anthropic→groq)에 위임.
+            // OFF 토글된 제공자는 user_xxx_key 가 빈 문자열이라 체인에서 자동 제외됨.
             body: JSON.stringify({
                 ticker:            sym,
                 name:              name,
@@ -3142,9 +3207,16 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
                 user_anthropic_key: userAnthropicKey,
                 user_openai_key:    userOpenaiKey,
                 user_gemini_key:    userGeminiKey,
-                ai_provider:       getAiPriority(),
+                user_groq_key:      userGroqKey,
             }),
         });
+
+        if (!res.ok) {
+            const msg = await _authErrorMessage(res);
+            bodyEl.innerHTML = `<p style="color:var(--muted);font-size:0.85em;">${msg}</p>`;
+            return;
+        }
+
         const data = await res.json();
         const text = data.analysis || '';
 
@@ -3608,15 +3680,16 @@ async function _loadThemeAI(sid, r) {
     }
 
     // 활성 키 확인 (로컬 저장 키 우선, 없으면 서버 환경변수)
-    const activeKey = getActiveApiKeyInfo();
     const userAnthropicKey = getApiKey('anthropic');
     const userOpenaiKey    = getApiKey('openai');
-    const aiProvider = activeKey ? activeKey.provider : 'auto';
+    const userGeminiKey    = getApiKey('gemini');
+    const userGroqKey      = getApiKey('groq');
 
     try {
         const res = await fetch(`${API}/api/market/ai-analysis`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: _authHeaders(),
+            // ai_provider 는 보내지 않음 — 서버 폴백 체인(auto: gemini→openai→anthropic→groq)에 위임.
             body: JSON.stringify({
                 ticker:            r.ticker,
                 name:              r.name,
@@ -3639,9 +3712,17 @@ async function _loadThemeAI(sid, r) {
                 reason:            r.reason || '',
                 user_anthropic_key: userAnthropicKey,
                 user_openai_key:    userOpenaiKey,
-                ai_provider:        aiProvider,
+                user_gemini_key:    userGeminiKey,
+                user_groq_key:      userGroqKey,
             }),
         });
+
+        if (!res.ok) {
+            const msg = await _authErrorMessage(res);
+            if (bodyEl) bodyEl.innerHTML = `<p style="color:var(--muted);">${msg}</p>`;
+            return;
+        }
+
         const data = await res.json();
         const text = data.analysis || L('ai_no_result');
 
