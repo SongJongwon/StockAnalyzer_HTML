@@ -40,6 +40,30 @@
     }
 
     // ─── API 호출 래퍼 ──────────────────────────────────
+    // 백엔드 에러 detail 을 사람이 읽을 수 있는 문자열로 변환.
+    // FastAPI 422 (pydantic) 는 detail = [{loc, msg, type}, ...] 배열을 반환하는데,
+    // 그대로 new Error(detail) 하면 Error.message 가 "[object Object]" 가 됨.
+    function _formatErrorDetail(detail) {
+        if (detail == null) return null;
+        if (typeof detail === 'string') return detail;
+        if (Array.isArray(detail)) {
+            return detail.map(item => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object') {
+                    // pydantic validation error 항목
+                    const loc = Array.isArray(item.loc) ? item.loc.join('.') : '';
+                    const msg = item.msg || item.message || '';
+                    return loc && msg ? `${loc}: ${msg}` : (msg || JSON.stringify(item));
+                }
+                return String(item);
+            }).join('; ');
+        }
+        if (typeof detail === 'object') {
+            return detail.msg || detail.message || JSON.stringify(detail);
+        }
+        return String(detail);
+    }
+
     async function apiFetch(path, { method = 'GET', body = null, auth = false } = {}) {
         const headers = { 'Content-Type': 'application/json' };
         if (auth) {
@@ -55,7 +79,10 @@
         let data = null;
         try { data = await resp.json(); } catch { /* 응답 body 없을 수 있음 */ }
         if (!resp.ok) {
-            const msg = (data && (data.detail || data.message)) || ('HTTP ' + resp.status);
+            const msg =
+                _formatErrorDetail(data && data.detail) ||
+                _formatErrorDetail(data && data.message) ||
+                ('HTTP ' + resp.status);
             throw new Error(msg);
         }
         return data;
