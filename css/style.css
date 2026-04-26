@@ -1886,6 +1886,84 @@ main {
 [data-theme="dark"] .pdf-btn { background: transparent; border-color: var(--border); color: var(--text); }
 [data-theme="dark"] .pdf-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ═══════════════════════════════════════════════
+   Light Mode — 사이드바(네비) 가독성 보강
+   :root 기본값이 #f0f2f6 회색 위에 #808495 회색 텍스트라 명도 차이가 부족.
+   사용자 지정 값으로 텍스트 톤 ↑ + 버튼 식별성 ↑ + 우측 그림자 추가.
+   ═══════════════════════════════════════════════ */
+
+[data-theme="light"] .sidebar {
+    background: #f8f9fa;
+    border-right: 1px solid #e0e2e8;
+    color: #1a202c;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .sidebar-section h3,
+[data-theme="light"] .sidebar-section h4 {
+    color: #1a202c;
+}
+
+[data-theme="light"] .sidebar-collapse-btn,
+[data-theme="light"] .sidebar-expand-btn {
+    color: #4a5568;
+}
+[data-theme="light"] .sidebar-collapse-btn:hover,
+[data-theme="light"] .sidebar-expand-btn:hover {
+    color: var(--accent);
+    background: rgba(0, 0, 0, 0.05);
+}
+[data-theme="light"] .sidebar-expand-btn {
+    background: #f8f9fa;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .lang-toggle-btn {
+    background: #ffffff;
+    border-color: #cbd5e0;
+    color: #1a202c;
+}
+[data-theme="light"] .lang-toggle-btn:hover {
+    background: #ffffff;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+[data-theme="light"] .sidebar-toggle-btn {
+    background: #ffffff;
+    border-color: #cbd5e0;
+    color: #1a202c;
+}
+[data-theme="light"] .sidebar-toggle-btn:hover {
+    background: #ffffff;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+[data-theme="light"] .btn-secondary,
+[data-theme="light"] .sidebar-refresh-btn {
+    background: #ffffff;
+    border-color: #cbd5e0;
+    color: #1a202c;
+}
+[data-theme="light"] .btn-secondary:hover,
+[data-theme="light"] .sidebar-refresh-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: #fef2f2;
+}
+
+[data-theme="light"] .sidebar-news-item .pub {
+    color: #4a5568;
+}
+
+/* 라이트 모드 — 우상단 플로팅 유저 정보 칩 (이메일 · 플랜 · 👑)
+ * makeInfo() 가 inline color: #94a3b8 으로 그려서 라이트에서 잘 안 보임.
+ * 같이 옆에 있는 버튼(요금제/마이페이지) 의 inline color: #e2e8f0 과 동일하게 맞춤. */
+[data-theme="light"] #nexusUserMenu > span {
+    color: #e2e8f0 !important;
+}
+
 /* ── API Key Modal ── */
 .modal-overlay {
     position: fixed;

@@ -1,15 +1,124 @@
 /*
- * Nexus Alpha — Phase 2 계정 관련 페이지(pricing.html / mypage.html) 공용 스타일.
- * layout.css 는 건드리지 않음. auth.css 의 변수 체계를 재사용.
+ * Nexus Alpha — Phase 2 계정 관련 페이지(pricing.html / mypage.html / pricing) 공용 스타일.
+ * layout.css 는 건드리지 않음. auth.css 와는 토큰 네임스페이스 분리 (--acct-*).
+ *
+ * 다크가 기본값. theme.js 가 <html data-theme="light"> 를 설정하면 라이트 분기 적용.
  */
+
+/* ─── 토큰: 다크 (기본) ──────────────────────────────────── */
+:root {
+    /* surfaces & borders */
+    --acct-bg-1: #0f172a;
+    --acct-bg-2: #1e293b;
+    --acct-card: #172033;
+    --acct-card-divider: #1f2937;
+    --acct-input-bg: #0f172a;
+    --acct-border: #334155;
+    --acct-border-hover: #475569;
+
+    /* text */
+    --acct-text: #e2e8f0;
+    --acct-text-strong: #f1f5f9;
+    --acct-text-soft: #cbd5e1;
+    --acct-muted: #94a3b8;
+    --acct-placeholder: #475569;
+
+    /* brand accent */
+    --acct-accent: #6366f1;
+    --acct-accent-hover: #4f46e5;
+    --acct-accent-soft: #a5b4fc;
+    --acct-accent-shadow: rgba(99, 102, 241, 0.35);
+    --acct-accent-focus: rgba(99, 102, 241, 0.25);
+
+    /* success */
+    --acct-success: #22c55e;
+    --acct-success-shadow: rgba(34, 197, 94, 0.35);
+
+    /* notice */
+    --acct-notice-bg: rgba(99, 102, 241, 0.08);
+    --acct-notice-border: rgba(99, 102, 241, 0.25);
+    --acct-notice-text: #c7d2fe;
+
+    /* error */
+    --acct-error-bg: rgba(239, 68, 68, 0.10);
+    --acct-error-border: rgba(239, 68, 68, 0.35);
+    --acct-error-text: #fecaca;
+
+    /* password message ok */
+    --acct-msg-ok-bg: rgba(34, 197, 94, 0.10);
+    --acct-msg-ok-border: rgba(34, 197, 94, 0.35);
+    --acct-msg-ok-text: #bbf7d0;
+
+    /* misc */
+    --acct-toggle-hover-bg: rgba(148, 163, 184, 0.1);
+
+    /* usage bar */
+    --acct-bar-track: #0f172a;
+    --acct-bar-fill-from: #6366f1;
+    --acct-bar-fill-to: #8b5cf6;
+    --acct-bar-over-from: #ef4444;
+    --acct-bar-over-to: #dc2626;
+    --acct-bar-unlimited-from: #22c55e;
+    --acct-bar-unlimited-to: #16a34a;
+    --acct-feature-check: #22c55e;
+}
+
+/* ─── 토큰: 라이트 분기 ─────────────────────────────────── */
+[data-theme="light"] {
+    --acct-bg-1: #f8fafc;
+    --acct-bg-2: #e2e8f0;
+    --acct-card: #ffffff;
+    --acct-card-divider: #e5e7eb;
+    --acct-input-bg: #f9fafb;
+    --acct-border: #d1d5db;
+    --acct-border-hover: #9ca3af;
+
+    --acct-text: #1f2937;
+    --acct-text-strong: #0f172a;
+    --acct-text-soft: #374151;
+    --acct-muted: #6b7280;
+    --acct-placeholder: #9ca3af;
+
+    --acct-accent: #6366f1;
+    --acct-accent-hover: #4f46e5;
+    --acct-accent-soft: #4f46e5;
+    --acct-accent-shadow: rgba(99, 102, 241, 0.25);
+    --acct-accent-focus: rgba(99, 102, 241, 0.20);
+
+    --acct-success: #16a34a;
+    --acct-success-shadow: rgba(22, 163, 74, 0.25);
+
+    --acct-notice-bg: rgba(99, 102, 241, 0.08);
+    --acct-notice-border: rgba(99, 102, 241, 0.30);
+    --acct-notice-text: #4338ca;
+
+    --acct-error-bg: rgba(239, 68, 68, 0.08);
+    --acct-error-border: rgba(239, 68, 68, 0.40);
+    --acct-error-text: #991b1b;
+
+    --acct-msg-ok-bg: rgba(34, 197, 94, 0.10);
+    --acct-msg-ok-border: rgba(34, 197, 94, 0.40);
+    --acct-msg-ok-text: #15803d;
+
+    --acct-toggle-hover-bg: rgba(0, 0, 0, 0.05);
+
+    --acct-bar-track: #e5e7eb;
+    --acct-bar-fill-from: #6366f1;
+    --acct-bar-fill-to: #8b5cf6;
+    --acct-bar-over-from: #ef4444;
+    --acct-bar-over-to: #dc2626;
+    --acct-bar-unlimited-from: #22c55e;
+    --acct-bar-unlimited-to: #16a34a;
+    --acct-feature-check: #16a34a;
+}
 
 html, body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: var(--auth-text, #e2e8f0);
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: var(--acct-text);
+    background: linear-gradient(135deg, var(--acct-bg-1) 0%, var(--acct-bg-2) 100%);
 }
 
 /* HTML hidden 속성 우선 보장 (.btn-primary 등 author CSS 가 display 속성을 덮어쓰지 못하게) */
@@ -34,12 +143,12 @@ html, body {
     font-size: 28px;
     font-weight: 800;
     margin: 0;
-    color: #f1f5f9;
+    color: var(--acct-text-strong);
     letter-spacing: -0.5px;
 }
 
 .account-header .sub {
-    color: #94a3b8;
+    color: var(--acct-muted);
     font-size: 14px;
     margin-top: 4px;
 }
@@ -52,8 +161,8 @@ html, body {
 
 .btn-link {
     background: transparent;
-    border: 1px solid #334155;
-    color: #e2e8f0;
+    border: 1px solid var(--acct-border);
+    color: var(--acct-text);
     padding: 9px 16px;
     border-radius: 8px;
     text-decoration: none;
@@ -64,13 +173,13 @@ html, body {
 }
 
 .btn-link:hover {
-    border-color: #6366f1;
-    color: #a5b4fc;
+    border-color: var(--acct-accent);
+    color: var(--acct-accent-soft);
 }
 
 .btn-primary {
-    background: #6366f1;
-    border: 1px solid #6366f1;
+    background: var(--acct-accent);
+    border: 1px solid var(--acct-accent);
     color: #fff;
     padding: 9px 16px;
     border-radius: 8px;
@@ -82,8 +191,8 @@ html, body {
 }
 
 .btn-primary:hover {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: var(--acct-accent-hover);
+    border-color: var(--acct-accent-hover);
 }
 
 .btn-primary[disabled] {
@@ -99,8 +208,8 @@ html, body {
 }
 
 .plan-card {
-    background: #172033;
-    border: 1px solid #334155;
+    background: var(--acct-card);
+    border: 1px solid var(--acct-border);
     border-radius: 14px;
     padding: 24px;
     display: flex;
@@ -112,24 +221,24 @@ html, body {
 
 .plan-card:hover {
     transform: translateY(-2px);
-    border-color: #475569;
+    border-color: var(--acct-border-hover);
 }
 
 .plan-card.highlighted {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
+    border-color: var(--acct-accent);
+    box-shadow: 0 0 0 1px var(--acct-accent-shadow);
 }
 
 .plan-card.current {
-    border-color: #22c55e;
-    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+    border-color: var(--acct-success);
+    box-shadow: 0 0 0 1px var(--acct-success-shadow);
 }
 
 .plan-badge {
     position: absolute;
     top: -11px;
     right: 16px;
-    background: #6366f1;
+    background: var(--acct-accent);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -139,19 +248,19 @@ html, body {
 }
 
 .plan-badge.current {
-    background: #22c55e;
+    background: var(--acct-success);
 }
 
 .plan-label {
     font-size: 18px;
     font-weight: 700;
-    color: #f1f5f9;
+    color: var(--acct-text-strong);
     margin: 0;
 }
 
 .plan-target {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--acct-muted);
     margin: -4px 0 0 0;
 }
 
@@ -164,22 +273,22 @@ html, body {
 .plan-price .amount {
     font-size: 28px;
     font-weight: 800;
-    color: #f1f5f9;
+    color: var(--acct-text-strong);
 }
 
 .plan-price .period {
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--acct-muted);
 }
 
 .plan-yearly {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--acct-muted);
     margin-top: -8px;
 }
 
 .plan-yearly strong {
-    color: #c7d2fe;
+    color: var(--acct-accent-soft);
 }
 
 .plan-features {
@@ -194,7 +303,7 @@ html, body {
 
 .plan-features li {
     font-size: 13px;
-    color: #cbd5e1;
+    color: var(--acct-text-soft);
     padding-left: 22px;
     position: relative;
     line-height: 1.45;
@@ -204,7 +313,7 @@ html, body {
     content: "✓";
     position: absolute;
     left: 0;
-    color: #22c55e;
+    color: var(--acct-feature-check);
     font-weight: 700;
 }
 
@@ -221,8 +330,8 @@ html, body {
 }
 
 .account-card {
-    background: #172033;
-    border: 1px solid #334155;
+    background: var(--acct-card);
+    border: 1px solid var(--acct-border);
     border-radius: 14px;
     padding: 24px;
 }
@@ -231,7 +340,7 @@ html, body {
     margin: 0 0 16px 0;
     font-size: 16px;
     font-weight: 700;
-    color: #f1f5f9;
+    color: var(--acct-text-strong);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -242,7 +351,7 @@ html, body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid #1f2937;
+    border-bottom: 1px solid var(--acct-card-divider);
     font-size: 13px;
 }
 
@@ -251,11 +360,11 @@ html, body {
 }
 
 .kv-row .k {
-    color: #94a3b8;
+    color: var(--acct-muted);
 }
 
 .kv-row .v {
-    color: #e2e8f0;
+    color: var(--acct-text);
     font-weight: 500;
 }
 
@@ -275,49 +384,49 @@ html, body {
 }
 
 .usage-row .usage-label .k {
-    color: #cbd5e1;
+    color: var(--acct-text-soft);
 }
 
 .usage-row .usage-label .v {
-    color: #94a3b8;
+    color: var(--acct-muted);
     font-variant-numeric: tabular-nums;
 }
 
 .usage-bar {
     height: 8px;
-    background: #0f172a;
+    background: var(--acct-bar-track);
     border-radius: 4px;
     overflow: hidden;
 }
 
 .usage-bar .fill {
     height: 100%;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    background: linear-gradient(90deg, var(--acct-bar-fill-from), var(--acct-bar-fill-to));
     transition: width 0.3s;
 }
 
 .usage-bar .fill.over {
-    background: linear-gradient(90deg, #ef4444, #dc2626);
+    background: linear-gradient(90deg, var(--acct-bar-over-from), var(--acct-bar-over-to));
 }
 
 .usage-bar .fill.unlimited {
-    background: linear-gradient(90deg, #22c55e, #16a34a);
+    background: linear-gradient(90deg, var(--acct-bar-unlimited-from), var(--acct-bar-unlimited-to));
 }
 
 .notice {
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: var(--acct-notice-bg);
+    border: 1px solid var(--acct-notice-border);
     border-radius: 8px;
     padding: 12px 14px;
     font-size: 13px;
-    color: #c7d2fe;
+    color: var(--acct-notice-text);
     line-height: 1.5;
 }
 
 .error-banner {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    color: #fecaca;
+    background: var(--acct-error-bg);
+    border: 1px solid var(--acct-error-border);
+    color: var(--acct-error-text);
     padding: 12px 14px;
     border-radius: 8px;
     font-size: 13px;
@@ -333,7 +442,7 @@ html, body {
     display: block;
     font-size: 12px;
     font-weight: 500;
-    color: #94a3b8;
+    color: var(--acct-muted);
     margin-bottom: 6px;
 }
 
@@ -346,11 +455,11 @@ html, body {
 .pw-input-wrap input {
     flex: 1;
     width: 100%;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: var(--acct-input-bg);
+    border: 1px solid var(--acct-border);
     border-radius: 8px;
     padding: 10px 44px 10px 12px;
-    color: #e2e8f0;
+    color: var(--acct-text);
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -358,12 +467,12 @@ html, body {
 
 .pw-input-wrap input:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    border-color: var(--acct-accent);
+    box-shadow: 0 0 0 2px var(--acct-accent-focus);
 }
 
 .pw-input-wrap input::placeholder {
-    color: #475569;
+    color: var(--acct-placeholder);
 }
 
 .pw-toggle {
@@ -373,7 +482,7 @@ html, body {
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--acct-muted);
     font-size: 16px;
     line-height: 1;
     padding: 6px 8px;
@@ -383,8 +492,8 @@ html, body {
 }
 
 .pw-toggle:hover {
-    background: rgba(148, 163, 184, 0.1);
-    color: #e2e8f0;
+    background: var(--acct-toggle-hover-bg);
+    color: var(--acct-text);
 }
 
 .pw-message {
@@ -396,15 +505,15 @@ html, body {
 }
 
 .pw-message.ok {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.35);
-    color: #bbf7d0;
+    background: var(--acct-msg-ok-bg);
+    border: 1px solid var(--acct-msg-ok-border);
+    color: var(--acct-msg-ok-text);
 }
 
 .pw-message.err {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    color: #fecaca;
+    background: var(--acct-error-bg);
+    border: 1px solid var(--acct-error-border);
+    color: var(--acct-error-text);
 }
 
 @media (max-width: 640px) {
