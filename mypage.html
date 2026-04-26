@@ -37,6 +37,35 @@
             </div>
 
             <div class="account-card">
+                <h3>🔒 비밀번호 변경</h3>
+                <form id="pwChangeForm" autocomplete="off" novalidate>
+                    <div class="pw-field">
+                        <label for="pwCurrent">현재 비밀번호</label>
+                        <div class="pw-input-wrap">
+                            <input type="password" id="pwCurrent" name="pw_current_x7k" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                            <button type="button" class="pw-toggle" data-target="pwCurrent" aria-label="표시/숨김">👁</button>
+                        </div>
+                    </div>
+                    <div class="pw-field">
+                        <label for="pwNew">새 비밀번호 (8자+, 영문+숫자)</label>
+                        <div class="pw-input-wrap">
+                            <input type="password" id="pwNew" name="pw_new_x7k" required minlength="8" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                            <button type="button" class="pw-toggle" data-target="pwNew" aria-label="표시/숨김">👁</button>
+                        </div>
+                    </div>
+                    <div class="pw-field">
+                        <label for="pwNewConfirm">새 비밀번호 확인</label>
+                        <div class="pw-input-wrap">
+                            <input type="password" id="pwNewConfirm" name="pw_confirm_x7k" required minlength="8" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                            <button type="button" class="pw-toggle" data-target="pwNewConfirm" aria-label="표시/숨김">👁</button>
+                        </div>
+                    </div>
+                    <div id="pwMessage" class="pw-message" hidden></div>
+                    <button type="submit" class="btn-primary" id="pwSubmitBtn" style="width:100%;">비밀번호 변경</button>
+                </form>
+            </div>
+
+            <div class="account-card">
                 <h3>AI API 키 (BYOK)</h3>
                 <p class="notice">본인 API 키를 등록하면 서버 쿼터와 무관하게 AI 분석을 무제한 호출할 수 있습니다. 현재는 홈 화면 상단의 <strong>AI 키 설정</strong> 버튼으로 브라우저에 저장됩니다.<br><br>(Phase 4 에서 서버 측 암호화 저장으로 업그레이드 예정)</p>
             </div>
@@ -171,6 +200,77 @@
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await NexusAuth.logout();
             location.replace('login.html');
+        });
+
+        // ──────────────────────────────────────────
+        // 비밀번호 변경 (셀프 서비스)
+        // ──────────────────────────────────────────
+        // 토글 (👁 / 🙈) 바인딩 — 3개 input 공용
+        document.querySelectorAll('.pw-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.getElementById(btn.dataset.target);
+                if (!target) return;
+                if (target.type === 'password') {
+                    target.type = 'text';
+                    btn.textContent = '🙈';
+                } else {
+                    target.type = 'password';
+                    btn.textContent = '👁';
+                }
+            });
+        });
+
+        function _showPwMessage(text, kind) {
+            const el = document.getElementById('pwMessage');
+            el.textContent = text;
+            el.className = 'pw-message ' + (kind || '');
+            el.hidden = false;
+        }
+
+        document.getElementById('pwChangeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cur = document.getElementById('pwCurrent').value;
+            const nw  = document.getElementById('pwNew').value;
+            const conf= document.getElementById('pwNewConfirm').value;
+            const submitBtn = document.getElementById('pwSubmitBtn');
+
+            // 클라이언트 측 1차 검증
+            if (!cur || !nw || !conf) {
+                _showPwMessage('모든 항목을 입력하세요.', 'err');
+                return;
+            }
+            if (nw !== conf) {
+                _showPwMessage('새 비밀번호 두 입력이 다릅니다.', 'err');
+                return;
+            }
+            if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(nw)) {
+                _showPwMessage('새 비밀번호는 최소 8자 + 영문 + 숫자를 포함해야 합니다.', 'err');
+                return;
+            }
+            if (cur === nw) {
+                _showPwMessage('새 비밀번호가 현재 비밀번호와 같습니다.', 'err');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '변경 중…';
+            try {
+                const r = await NexusAuth.apiFetch('/api/auth/password', {
+                    method: 'POST',
+                    auth: true,
+                    body: { current_password: cur, new_password: nw },
+                });
+                _showPwMessage('✅ ' + (r.message || '비밀번호가 변경되었습니다.'), 'ok');
+                // 폼 초기화 (보안)
+                document.getElementById('pwChangeForm').reset();
+                document.querySelectorAll('.pw-toggle').forEach(b => b.textContent = '👁');
+                document.querySelectorAll('.pw-input-wrap input').forEach(i => i.type = 'password');
+            } catch (err) {
+                _showPwMessage('❌ ' + (err.message || '변경 실패'), 'err');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '비밀번호 변경';
+            }
         });
     </script>
 </body>
