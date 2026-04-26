@@ -51,8 +51,8 @@
 
 .panel-persona-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
 }
 
 .panel-persona-item {
@@ -583,4 +583,193 @@
 .panel-progress-log li:last-child {
     color: #cbd5e1;
     border-bottom: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Persona 선택 카드 (Phase 7 — 가독성 개선, 2026-04-26)
+   세로 레이아웃: emoji(상단) / 이름(KR/EN) / 직책(하단) / 우상단 등급 배지
+   .panel-persona-list 의 grid 안에서 카드 개별 렌더
+   ══════════════════════════════════════════════════════════════ */
+
+.persona-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 14px 14px;
+    border: 1.5px solid var(--border, #334155);
+    border-radius: 12px;
+    cursor: pointer;
+    background: var(--card, #172033);
+    transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    /* button 인 경우(locked) 의 기본 스타일 리셋 */
+    font: inherit;
+    color: inherit;
+}
+
+.persona-card:hover {
+    border-color: var(--accent, #6366f1);
+    background: var(--card-hover, #1e2940);
+    transform: translateY(-1px);
+}
+
+/* 활성(체크) 상태 — 모던 브라우저는 :has() 지원 */
+.persona-card:has(input.panel-persona-check:checked) {
+    border-color: #818cf8;
+    background: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4) inset;
+}
+
+/* 체크박스 — 좌상단 작게 */
+.persona-card input[type="checkbox"].panel-persona-check {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #6366f1;
+    cursor: pointer;
+}
+
+/* 이모지 — 큰 글씨 상단 */
+.persona-card-emoji {
+    font-size: 40px;
+    line-height: 1;
+    margin: 4px 0 10px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+/* 한국어 이름 — 굵게 */
+.persona-card-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text, #f1f5f9);
+    margin-bottom: 2px;
+    letter-spacing: -0.2px;
+}
+
+/* 영문 이름 — 작게, 약간 흐림 */
+.persona-card-name-en {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+}
+
+/* 직책 — 작은 글씨, 줄바꿈 허용 */
+.persona-card-title {
+    font-size: 11px;
+    line-height: 1.45;
+    color: #94a3b8;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+/* 등급 배지 — 우상단 corner */
+.persona-card-plan-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.persona-card-plan-badge[data-plan="free"]  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+.persona-card-plan-badge[data-plan="basic"] { background: rgba(59,130,246,0.20); color: #60a5fa; }
+.persona-card-plan-badge[data-plan="pro"]   { background: rgba(139,92,246,0.22); color: #a78bfa; }
+.persona-card-plan-badge[data-plan="vip"]   { background: rgba(250,204,21,0.22); color: #fbbf24; }
+
+/* ── 잠긴 카드 ─────────────────────────────────────────── */
+
+.persona-card.persona-card-locked {
+    border-style: dashed;
+    border-color: rgba(148, 163, 184, 0.3);
+    background: rgba(100, 116, 139, 0.04);
+    cursor: pointer;
+}
+
+/* 잠긴 카드 내용은 흐리게 (배지·오버레이 제외) */
+.persona-card.persona-card-locked > .persona-card-emoji,
+.persona-card.persona-card-locked > .persona-card-name,
+.persona-card.persona-card-locked > .persona-card-name-en,
+.persona-card.persona-card-locked > .persona-card-title {
+    opacity: 0.35;
+    filter: blur(0.4px);
+}
+
+.persona-card.persona-card-locked:hover {
+    border-color: #f59e0b;
+    border-style: solid;
+    background: rgba(245, 158, 11, 0.06);
+    transform: translateY(-1px);
+}
+
+.persona-card.persona-card-locked:hover > .persona-card-emoji,
+.persona-card.persona-card-locked:hover > .persona-card-name,
+.persona-card.persona-card-locked:hover > .persona-card-name-en,
+.persona-card.persona-card-locked:hover > .persona-card-title {
+    opacity: 0.5;
+}
+
+/* 잠금 오버레이 — 카드 중앙에 자물쇠 + 등급 안내 */
+.persona-card-lock-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(15, 23, 42, 0) 0%,
+        rgba(15, 23, 42, 0.55) 60%,
+        rgba(15, 23, 42, 0.7) 100%
+    );
+}
+
+.persona-card-lock-icon {
+    font-size: 32px !important;
+    color: #f59e0b;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
+}
+
+.persona-card-lock-text {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* 모바일에서 한 줄당 항목 수 강제 (auto-fill 보완) */
+@media (max-width: 480px) {
+    .panel-persona-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .persona-card {
+        padding: 14px 8px 10px;
+    }
+    .persona-card-emoji { font-size: 32px; }
+    .persona-card-name { font-size: 13px; }
 }
