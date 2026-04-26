@@ -17,7 +17,8 @@
             <div class="header-actions">
                 <a class="btn-link" href="index.html">← 홈으로</a>
                 <a class="btn-link" href="pricing.html">요금제</a>
-                <a class="btn-primary" href="admin.html" id="adminLink" style="display:none;">👑 관리자 대시보드</a>
+                <!-- 마스터 판정 후 JS 가 hidden 속성을 제거 (auth.css 의 [hidden]{display:none !important} 적용) -->
+                <a class="btn-primary" href="admin.html" id="adminLink" hidden>👑 관리자 대시보드</a>
                 <button class="btn-link" id="logoutBtn">로그아웃</button>
             </div>
         </div>
@@ -151,9 +152,14 @@
                     'sub.is_master':  sub  && sub.is_master,
                     final: isMaster,
                 });
-                if (isMaster) {
-                    const adminBtn = document.getElementById('adminLink');
-                    if (adminBtn) adminBtn.style.display = '';
+                const adminBtn = document.getElementById('adminLink');
+                if (adminBtn) {
+                    if (isMaster) {
+                        adminBtn.removeAttribute('hidden');
+                        adminBtn.style.removeProperty('display');  // 옛 inline display:none 잔재 제거
+                    } else {
+                        adminBtn.setAttribute('hidden', '');
+                    }
                 }
             } catch (e) {
                 if (e.message !== 'no auth') {
