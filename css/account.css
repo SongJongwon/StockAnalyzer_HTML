@@ -12,6 +12,9 @@ html, body {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
+/* HTML hidden 속성 우선 보장 (.btn-primary 등 author CSS 가 display 속성을 덮어쓰지 못하게) */
+[hidden] { display: none !important; }
+
 .account-shell {
     max-width: 1200px;
     margin: 0 auto;

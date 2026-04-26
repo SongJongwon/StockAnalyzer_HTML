@@ -24,9 +24,37 @@
     // ─── 토큰 관리 ──────────────────────────────────────
     function getAccessToken() { return localStorage.getItem(STORAGE.ACCESS); }
     function getRefreshToken() { return localStorage.getItem(STORAGE.REFRESH); }
+
+    // JWT payload 디코드 (signature 검증 X — 클라이언트 표시용)
+    function _decodeJwtPayload(token) {
+        try {
+            const parts = (token || '').split('.');
+            if (parts.length < 2) return null;
+            const b64 = parts[1] + '='.repeat((4 - parts[1].length % 4) % 4);
+            const raw = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+            // UTF-8 multi-byte 안전 디코드
+            const txt = decodeURIComponent(Array.from(raw, c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            return JSON.parse(txt);
+        } catch { return null; }
+    }
+
     function getUser() {
-        try { return JSON.parse(localStorage.getItem(STORAGE.USER) || 'null'); }
-        catch { return null; }
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem(STORAGE.USER) || 'null'); }
+        catch { stored = null; }
+
+        // 🆕 access token 이 있으면 JWT payload 의 is_master / plan 으로 보강
+        // (localStorage 의 user 가 Phase 1 초기 토큰이라 is_master 누락된 경우 대비)
+        const token = getAccessToken();
+        const jwt = token ? _decodeJwtPayload(token) : null;
+        if (jwt) {
+            stored = stored || {};
+            if (typeof jwt.is_master === 'boolean') stored.is_master = jwt.is_master;
+            if (jwt.plan && !stored.plan) stored.plan = jwt.plan;
+            if (jwt.email && !stored.email) stored.email = jwt.email;
+        }
+        return stored;
     }
     function saveTokens(access, refresh, user) {
         if (access)  localStorage.setItem(STORAGE.ACCESS, access);

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 · Nexus Alpha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/account.css">
+    <style>
+        /* admin 전용 스타일 (account.css 보완) */
+        .admin-shell { max-width: 1400px; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            background: #172033;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+        .summary-card .label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #f1f5f9;
+            font-variant-numeric: tabular-nums;
+        }
+        .summary-card[data-plan="free"]   .value { color: #4ade80; }
+        .summary-card[data-plan="basic"]  .value { color: #60a5fa; }
+        .summary-card[data-plan="pro"]    .value { color: #a78bfa; }
+        .summary-card[data-plan="vip"]    .value { color: #fbbf24; }
+        .summary-card[data-warn="true"]   .value { color: #ef4444; }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar input[type="search"] {
+            flex: 1;
+            min-width: 220px;
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+        .filter-bar select {
+            padding: 8px 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+
+        .users-table-wrap {
+            background: #172033;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .users-table thead th {
+            background: rgba(15, 23, 42, 0.7);
+            color: #94a3b8;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #334155;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .users-table tbody td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #1f2937;
+            color: #e2e8f0;
+            vertical-align: middle;
+        }
+        .users-table tbody tr:hover { background: rgba(99, 102, 241, 0.04); }
+        .users-table tbody tr.blocked { background: rgba(239, 68, 68, 0.06); }
+        .users-table tbody tr.is-test { background: rgba(245, 158, 11, 0.04); }
+        .users-table tbody tr.is-master { background: rgba(250, 204, 21, 0.06); }
+
+        .plan-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 999px;
+        }
+        .plan-badge[data-plan="free"]  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+        .plan-badge[data-plan="basic"] { background: rgba(59,130,246,0.20); color: #60a5fa; }
+        .plan-badge[data-plan="pro"]   { background: rgba(139,92,246,0.22); color: #a78bfa; }
+        .plan-badge[data-plan="vip"]   { background: rgba(250,204,21,0.22); color: #fbbf24; }
+
+        .tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            margin-left: 6px;
+            letter-spacing: 0.4px;
+        }
+        .tag-master  { background: rgba(250,204,21,0.18); color: #fbbf24; }
+        .tag-test    { background: rgba(245,158,11,0.16); color: #f59e0b; }
+        .tag-blocked { background: rgba(239,68,68,0.16);  color: #f87171; }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+        .row-actions select {
+            padding: 4px 6px;
+            font-size: 11px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+        }
+        .row-actions button {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .btn-block   { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.4);  color: #fca5a5; }
+        .btn-block:hover { background: rgba(239,68,68,0.25); }
+        .btn-unblock { background: rgba(34,197,94,0.15);  border-color: rgba(34,197,94,0.4);  color: #86efac; }
+        .btn-unblock:hover { background: rgba(34,197,94,0.25); }
+
+        .meta-time {
+            color: #94a3b8;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="account-shell admin-shell">
+        <div class="account-header">
+            <div>
+                <h1>👑 관리자 대시보드</h1>
+                <div class="sub" id="subLine">마스터 권한 확인 중…</div>
+            </div>
+            <div class="header-actions">
+                <a class="btn-link" href="index.html">← 홈</a>
+                <a class="btn-link" href="mypage.html">마이페이지</a>
+                <button class="btn-link" id="reloadBtn" type="button">🔄 새로고침</button>
+            </div>
+        </div>
+
+        <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+        <!-- 등급별 요약 -->
+        <h3 class="account-card-title" style="color:#cbd5e1;font-size:14px;margin:8px 0 12px;">
+            구독 현황
+        </h3>
+        <div class="summary-grid" id="summaryGrid">
+            <div class="summary-card"><div class="label">로딩 중…</div><div class="value">—</div></div>
+        </div>
+
+        <!-- 필터 -->
+        <h3 class="account-card-title" style="color:#cbd5e1;font-size:14px;margin:24px 0 12px;">
+            전체 사용자
+        </h3>
+        <div class="filter-bar">
+            <input type="search" id="searchInput" placeholder="🔍 이메일·이름 검색…">
+            <select id="planFilter">
+                <option value="">모든 플랜</option>
+                <option value="free">Free</option>
+                <option value="basic">Basic</option>
+                <option value="pro">Pro</option>
+                <option value="vip">VIP</option>
+            </select>
+            <select id="flagFilter">
+                <option value="">모든 상태</option>
+                <option value="blocked">차단됨</option>
+                <option value="test">테스트 계정</option>
+                <option value="master">마스터</option>
+            </select>
+        </div>
+
+        <!-- 사용자 테이블 -->
+        <div class="users-table-wrap">
+            <table class="users-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">이메일 / 이름</th>
+                        <th style="width:10%;">플랜</th>
+                        <th style="width:14%;">가입일</th>
+                        <th style="width:14%;">마지막 로그인</th>
+                        <th style="width:32%;">액션</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTbody">
+                    <tr><td colspan="5" class="caption muted" style="padding:20px;text-align:center;">로딩 중…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // ──────────────────────────────────────────
+        // 상태 + 헬퍼
+        // ──────────────────────────────────────────
+        let _allUsers = [];
+
+        const fmtDate = (iso) => iso
+            ? new Date(iso).toLocaleDateString('ko-KR', { year:'2-digit', month:'2-digit', day:'2-digit' })
+            : '—';
+        const fmtDateTime = (iso) => iso
+            ? new Date(iso).toLocaleString('ko-KR', { year:'2-digit', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
+            : '—';
+
+        function escapeHtml(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorBanner');
+            el.textContent = msg;
+            el.style.display = '';
+        }
+
+        // ──────────────────────────────────────────
+        // 인증 게이트 — 마스터만 통과
+        // ──────────────────────────────────────────
+        async function requireMaster() {
+            const dev = await NexusAuth.getDevStatus();
+            const user = NexusAuth.getUser();
+            // DEV_MODE 의 fake_user 가 plan=master 면 통과 (개발용)
+            if (dev.dev_mode && dev.fake_user && (dev.fake_user.is_master || dev.fake_user.plan === 'master')) {
+                return dev.fake_user;
+            }
+            if (!NexusAuth.getAccessToken() || !user || !user.is_master) {
+                alert('관리자 권한이 필요합니다. 마스터 계정으로 로그인하세요.');
+                location.replace('login.html?next=admin.html');
+                throw new Error('not_master');
+            }
+            return user;
+        }
+
+        // ──────────────────────────────────────────
+        // 데이터 로드
+        // ──────────────────────────────────────────
+        async function loadAll() {
+            try {
+                const [summary, users] = await Promise.all([
+                    NexusAuth.apiFetch('/api/admin/summary', { auth: true }),
+                    NexusAuth.apiFetch('/api/admin/users', { auth: true }),
+                ]);
+                renderSummary(summary);
+                _allUsers = users.users || [];
+                renderUsers(_allUsers);
+            } catch (e) {
+                showError('데이터 로드 실패: ' + (e.message || e));
+            }
+        }
+
+        function renderSummary(s) {
+            const grid = document.getElementById('summaryGrid');
+            const by = s.by_plan || {};
+            grid.innerHTML = `
+                <div class="summary-card"><div class="label">전체 사용자</div><div class="value">${s.total_users || 0}</div></div>
+                <div class="summary-card" data-plan="free"><div class="label">Free</div><div class="value">${by.free || 0}</div></div>
+                <div class="summary-card" data-plan="basic"><div class="label">Basic</div><div class="value">${by.basic || 0}</div></div>
+                <div class="summary-card" data-plan="pro"><div class="label">Pro</div><div class="value">${by.pro || 0}</div></div>
+                <div class="summary-card" data-plan="vip"><div class="label">VIP</div><div class="value">${by.vip || 0}</div></div>
+                <div class="summary-card" data-warn="${(s.blocked||0) > 0}"><div class="label">차단됨</div><div class="value">${s.blocked || 0}</div></div>
+                <div class="summary-card"><div class="label">마스터</div><div class="value">${s.masters || 0}</div></div>
+                <div class="summary-card"><div class="label">테스트</div><div class="value">${s.test_accounts || 0}</div></div>
+            `;
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTbody');
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="caption muted" style="padding:20px;text-align:center;">조건에 맞는 사용자 없음</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const rowCls = [
+                    u.is_blocked ? 'blocked' : '',
+                    u.is_master ? 'is-master' : '',
+                    u.is_test && !u.is_master ? 'is-test' : '',
+                ].filter(Boolean).join(' ');
+
+                const tags = [
+                    u.is_master  ? '<span class="tag tag-master">👑 MASTER</span>' : '',
+                    u.is_test    ? '<span class="tag tag-test">🧪 TEST</span>' : '',
+                    u.is_blocked ? '<span class="tag tag-blocked">⛔ BLOCKED</span>' : '',
+                ].join('');
+
+                const plan = (u.plan || 'free').toLowerCase();
+                const planUp = plan.toUpperCase();
+
+                // 마스터 계정은 액션 비활성 (자기 자신 보호 + 마스터끼리 간섭 방지)
+                const actionsHtml = u.is_master ? `
+                    <span class="caption muted" style="font-size:11px;">변경 불가 (마스터)</span>
+                ` : `
+                    <div class="row-actions">
+                        <select onchange="changeUserPlan('${u.id}', this.value, this)" title="플랜 강제 변경">
+                            <option value="">플랜 변경…</option>
+                            <option value="free"  ${plan === 'free'  ? 'disabled' : ''}>→ Free</option>
+                            <option value="basic" ${plan === 'basic' ? 'disabled' : ''}>→ Basic</option>
+                            <option value="pro"   ${plan === 'pro'   ? 'disabled' : ''}>→ Pro</option>
+                            <option value="vip"   ${plan === 'vip'   ? 'disabled' : ''}>→ VIP</option>
+                        </select>
+                        ${u.is_blocked
+                            ? `<button class="btn-unblock" onclick="unblockUser('${u.id}', this)">차단 해제</button>`
+                            : `<button class="btn-block" onclick="blockUser('${u.id}', this)">차단</button>`
+                        }
+                    </div>
+                `;
+
+                return `
+                    <tr class="${rowCls}">
+                        <td>
+                            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+                                <strong>${escapeHtml(u.email)}</strong>
+                                ${tags}
+                            </div>
+                            <div class="caption muted" style="font-size:11px;margin-top:2px;">${escapeHtml(u.name || '(이름 없음)')}</div>
+                        </td>
+                        <td><span class="plan-badge" data-plan="${plan}">${planUp}</span></td>
+                        <td class="meta-time">${fmtDate(u.created_at)}</td>
+                        <td class="meta-time">${fmtDateTime(u.last_login_at)}</td>
+                        <td>${actionsHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ──────────────────────────────────────────
+        // 필터링
+        // ──────────────────────────────────────────
+        function applyFilters() {
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+            const plan = document.getElementById('planFilter').value;
+            const flag = document.getElementById('flagFilter').value;
+
+            let filtered = _allUsers;
+            if (q) {
+                filtered = filtered.filter(u =>
+                    (u.email || '').toLowerCase().includes(q) ||
+                    (u.name || '').toLowerCase().includes(q)
+                );
+            }
+            if (plan) {
+                filtered = filtered.filter(u => (u.plan || 'free').toLowerCase() === plan);
+            }
+            if (flag === 'blocked')      filtered = filtered.filter(u => u.is_blocked);
+            else if (flag === 'test')    filtered = filtered.filter(u => u.is_test);
+            else if (flag === 'master')  filtered = filtered.filter(u => u.is_master);
+
+            renderUsers(filtered);
+        }
+
+        // ──────────────────────────────────────────
+        // 액션 (block / unblock / plan change)
+        // ──────────────────────────────────────────
+        async function blockUser(userId, btn) {
+            const reason = prompt('차단 사유 (선택):') || '';
+            if (!confirm('정말 이 사용자를 차단하시겠습니까?')) return;
+            btn.disabled = true;
+            try {
+                await NexusAuth.apiFetch(`/api/admin/users/${userId}/block`, {
+                    method: 'POST', auth: true, body: { reason },
+                });
+                await loadAll();
+            } catch (e) {
+                alert('차단 실패: ' + (e.message || e));
+                btn.disabled = false;
+            }
+        }
+
+        async function unblockUser(userId, btn) {
+            if (!confirm('차단을 해제하시겠습니까?')) return;
+            btn.disabled = true;
+            try {
+                await NexusAuth.apiFetch(`/api/admin/users/${userId}/unblock`, {
+                    method: 'POST', auth: true,
+                });
+                await loadAll();
+            } catch (e) {
+                alert('차단 해제 실패: ' + (e.message || e));
+                btn.disabled = false;
+            }
+        }
+
+        async function changeUserPlan(userId, plan, selectEl) {
+            if (!plan) return;
+            if (!confirm(`이 사용자의 플랜을 ${plan.toUpperCase()} 로 변경하시겠습니까?\n(다음 로그인 시 JWT에 반영)`)) {
+                selectEl.value = '';
+                return;
+            }
+            selectEl.disabled = true;
+            try {
+                const r = await NexusAuth.apiFetch(`/api/admin/users/${userId}/plan`, {
+                    method: 'POST', auth: true,
+                    body: { plan, billing_cycle: 'monthly' },
+                });
+                alert(`✅ ${r.email} → ${plan.toUpperCase()} 변경 완료\n(${r.note || ''})`);
+                await loadAll();
+            } catch (e) {
+                alert('플랜 변경 실패: ' + (e.message || e));
+                selectEl.disabled = false;
+                selectEl.value = '';
+            }
+        }
+
+        // ──────────────────────────────────────────
+        // 부트스트랩
+        // ──────────────────────────────────────────
+        (async function () {
+            try {
+                const me = await requireMaster();
+                document.getElementById('subLine').textContent =
+                    `로그인: ${me.email || ''} ${me.is_master ? '· 마스터 권한 확인됨' : ''}`;
+                await loadAll();
+            } catch (e) { /* requireMaster 가 redirect 했음 */ }
+        })();
+
+        document.getElementById('reloadBtn').addEventListener('click', loadAll);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('planFilter').addEventListener('change', applyFilters);
+        document.getElementById('flagFilter').addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>

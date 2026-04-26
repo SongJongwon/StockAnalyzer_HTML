@@ -17,6 +17,8 @@
             <div class="header-actions">
                 <a class="btn-link" href="index.html">← 홈으로</a>
                 <a class="btn-link" href="pricing.html">요금제</a>
+                <!-- 마스터 판정 후 JS 가 hidden 속성을 제거 (auth.css 의 [hidden]{display:none !important} 적용) -->
+                <a class="btn-primary" href="admin.html" id="adminLink" hidden>👑 관리자 대시보드</a>
                 <button class="btn-link" id="logoutBtn">로그아웃</button>
             </div>
         </div>
@@ -115,7 +117,24 @@
 
         (async function () {
             try {
-                const user = await gateOrRedirect();
+                let user = await gateOrRedirect();
+
+                // 🆕 localStorage 의 옛 user 객체에 is_master 필드가 누락됐을 수 있어
+                //    서버의 fresh /api/auth/me 응답으로 동기화 (DEV_MODE 가 아닐 때만)
+                try {
+                    const dev = await NexusAuth.getDevStatus();
+                    if (!dev.dev_mode && NexusAuth.getAccessToken()) {
+                        const fresh = await NexusAuth.apiFetch('/api/auth/me', { auth: true });
+                        if (fresh && typeof fresh === 'object') {
+                            user = fresh;
+                            // localStorage 갱신 (access/refresh 는 그대로, user 만 업데이트)
+                            NexusAuth.saveTokens(null, null, fresh);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[mypage] /api/auth/me 동기화 실패 — localStorage user 사용:', e.message);
+                }
+
                 document.getElementById('subLine').textContent = user.email || '';
 
                 const [sub, usage] = await Promise.all([
@@ -124,6 +143,24 @@
                 ]);
                 renderSubscription(sub, user);
                 renderUsage(usage);
+
+                // 마스터 계정이면 관리자 대시보드 버튼 노출
+                // (DEV_MODE fake_user.is_master / 실제 user.is_master / sub.is_master 중 하나라도 true)
+                const isMaster = !!(user && user.is_master) || !!(sub && sub.is_master);
+                console.log('[mypage] 마스터 판정:', {
+                    'user.is_master': user && user.is_master,
+                    'sub.is_master':  sub  && sub.is_master,
+                    final: isMaster,
+                });
+                const adminBtn = document.getElementById('adminLink');
+                if (adminBtn) {
+                    if (isMaster) {
+                        adminBtn.removeAttribute('hidden');
+                        adminBtn.style.removeProperty('display');  // 옛 inline display:none 잔재 제거
+                    } else {
+                        adminBtn.setAttribute('hidden', '');
+                    }
+                }
             } catch (e) {
                 if (e.message !== 'no auth') {
                     showError('정보를 불러오지 못했습니다: ' + e.message);
