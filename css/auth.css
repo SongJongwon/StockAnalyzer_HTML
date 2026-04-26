@@ -3,6 +3,7 @@
  * ⚠️ layout.css 는 절대 건드리지 않음. 본 파일은 독립 스타일.
  */
 
+/* 다크 = 기본값 (data-theme 미지정 시 그대로 적용) */
 :root {
     --auth-bg-1: #0f172a;
     --auth-bg-2: #1e293b;
@@ -15,6 +16,25 @@
     --auth-error-bg: #7f1d1d;
     --auth-error-text: #fecaca;
     --auth-input-bg: #0f172a;
+    --auth-placeholder: #475569;
+    --auth-toggle-hover-bg: rgba(255, 255, 255, 0.04);
+}
+
+/* 라이트 분기 — theme.js 가 <html data-theme="light"> 로 토글 */
+[data-theme="light"] {
+    --auth-bg-1: #f8fafc;
+    --auth-bg-2: #e2e8f0;
+    --auth-card: #ffffff;
+    --auth-border: #d1d5db;
+    --auth-text: #1f2937;
+    --auth-muted: #6b7280;
+    --auth-accent: #6366f1;
+    --auth-accent-hover: #4f46e5;
+    --auth-error-bg: #fee2e2;
+    --auth-error-text: #991b1b;
+    --auth-input-bg: #f9fafb;
+    --auth-placeholder: #9ca3af;
+    --auth-toggle-hover-bg: rgba(0, 0, 0, 0.05);
 }
 
 * { box-sizing: border-box; }
@@ -103,7 +123,7 @@ html, body {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 .auth-field input::placeholder {
-    color: #475569;
+    color: var(--auth-placeholder);
 }
 
 .auth-error {
@@ -184,7 +204,7 @@ html, body {
 
 .auth-password-toggle:hover {
     color: var(--auth-text);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--auth-toggle-hover-bg);
 }
 
 .auth-password-toggle:focus-visible {

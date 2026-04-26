@@ -1,0 +1,77 @@
+/*
+ * theme.css — 라이트/다크 토글 버튼 공용 스타일 (index 외 페이지용)
+ *
+ * 의도:
+ *   1. 위치: 우상단 fixed (헤더 구조에 영향 없음)
+ *   2. 색상: 토큰화 없이 양쪽 테마에 자체 분기 — 다른 CSS 변수 의존도 최소
+ *   3. 모바일 대응: 작아진 화면에서도 헤더 영역 침범 최소
+ *
+ * 페이지에서 사용:
+ *   <button class="theme-toggle"></button>
+ *   (theme.js 가 자동으로 textContent 와 aria-label 채움)
+ */
+
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+
+    /* 다크 (기본) */
+    background: rgba(23, 32, 51, 0.85);
+    border: 1px solid #334155;
+    color: #e2e8f0;
+
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 0;
+
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+    background: rgba(99, 102, 241, 0.9);
+    border-color: #6366f1;
+    transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+    transform: translateY(0);
+}
+
+/* 라이트 테마 */
+[data-theme="light"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #d1d5db;
+    color: #1f2937;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+    background: rgba(99, 102, 241, 0.9);
+    border-color: #6366f1;
+    color: #fff;
+}
+
+@media (max-width: 480px) {
+    .theme-toggle {
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+}
