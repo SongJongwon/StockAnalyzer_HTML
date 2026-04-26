@@ -46,27 +46,39 @@ async function loadPanelPersonas() {
         return;
     }
 
+    // 카드 그리드 형태 — 세로 레이아웃 (emoji 큰 글씨 위 / 이름 / 영문이름 / 직책 / 우상단 등급 배지)
     listEl.innerHTML = _panelPersonas.map(p => {
-        const planBadge = `<span class="panel-persona-plan" data-plan="${p.min_plan}">${p.min_plan.toUpperCase()}</span>`;
+        const planUp = (p.min_plan || 'free').toUpperCase();
+        const badge = `<span class="persona-card-plan-badge" data-plan="${p.min_plan}">${planUp}</span>`;
+        const emoji = `<div class="persona-card-emoji">${p.emoji || '👤'}</div>`;
+        const nameKo = `<div class="persona-card-name">${escapeHtml(p.name_ko || p.id)}</div>`;
+        const nameEn = p.name_en ? `<div class="persona-card-name-en">${escapeHtml(p.name_en)}</div>` : '';
+        const title = p.title ? `<div class="persona-card-title">${escapeHtml(p.title)}</div>` : '';
+
         if (p.locked) {
             return `
-                <label class="panel-persona-item panel-persona-locked"
-                       onclick="showPersonaUpgradeModal('${p.id}')"
-                       title="${p.min_plan.toUpperCase()} 등급 이상부터 이용 가능">
-                    <span class="ms panel-persona-lock">lock</span>
-                    <span class="panel-persona-emoji" style="opacity:.55;">${p.emoji || ''}</span>
-                    <span class="panel-persona-name" style="opacity:.65;">${p.name_ko}</span>
-                    <span class="panel-persona-title caption muted">${p.title || ''}</span>
-                    ${planBadge}
-                </label>`;
+                <button type="button" class="persona-card persona-card-locked"
+                        onclick="showPersonaUpgradeModal('${p.id}')"
+                        aria-label="${escapeHtml(p.name_ko)} — ${planUp} 등급 이상 필요">
+                    ${badge}
+                    <div class="persona-card-lock-overlay">
+                        <span class="ms persona-card-lock-icon">lock</span>
+                        <span class="persona-card-lock-text">${planUp} 이상 필요</span>
+                    </div>
+                    ${emoji}
+                    ${nameKo}
+                    ${nameEn}
+                    ${title}
+                </button>`;
         }
         return `
-            <label class="panel-persona-item">
+            <label class="persona-card">
                 <input type="checkbox" class="panel-persona-check" value="${p.id}" checked>
-                <span class="panel-persona-emoji">${p.emoji || ''}</span>
-                <span class="panel-persona-name">${p.name_ko}</span>
-                <span class="panel-persona-title caption muted">${p.title || ''}</span>
-                ${planBadge}
+                ${badge}
+                ${emoji}
+                ${nameKo}
+                ${nameEn}
+                ${title}
             </label>`;
     }).join('');
 }
