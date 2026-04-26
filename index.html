@@ -327,9 +327,21 @@
 
             const display = (user && user.email) || (dev.fake_user && dev.fake_user.email) || '';
             const plan = ((user && user.plan) || (dev.fake_user && dev.fake_user.plan) || '').toUpperCase();
-            if (display) mount.appendChild(makeInfo(display + (plan ? ' · ' + plan : '')));
+            const isMaster = !!(user && user.is_master) || !!(dev.fake_user && dev.fake_user.is_master);
+            if (display) {
+                const masterTag = isMaster ? ' 👑' : '';
+                mount.appendChild(makeInfo(display + (plan ? ' · ' + plan : '') + masterTag));
+            }
             mount.appendChild(makeBtn('요금제', 'pricing.html'));
             mount.appendChild(makeBtn('마이페이지', 'mypage.html'));
+            // 🆕 마스터 계정 — 어떤 페이지에서든 admin 진입 가능 (캐시 영향 받지 않음)
+            if (isMaster) {
+                const adminBtn = makeBtn('👑 관리자', 'admin.html');
+                adminBtn.style.background = 'rgba(250,204,21,0.2)';
+                adminBtn.style.borderColor = 'rgba(250,204,21,0.5)';
+                adminBtn.style.color = '#fbbf24';
+                mount.appendChild(adminBtn);
+            }
             mount.appendChild(makeBtn('로그아웃', '#', async (e) => {
                 e.preventDefault();
                 await NexusAuth.logout();
