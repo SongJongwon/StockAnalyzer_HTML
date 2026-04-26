@@ -63,6 +63,16 @@
 
     // ─── DEV 상태 확인 + 자동 리다이렉트 ────────────────
     let _devStatusCache = null;
+
+    // localStorage 에 남은 DEV fake_user 흔적인지 판정 (id=000...0 또는 dev_mode 플래그)
+    function _isStaleDevUser(u) {
+        if (!u || typeof u !== 'object') return false;
+        if (u.dev_mode === true) return true;
+        if (typeof u.id === 'string' && u.id.startsWith('00000000-0000-0000-0000-')) return true;
+        if (u.email === 'dev@nexus.local') return true;
+        return false;
+    }
+
     async function getDevStatus() {
         if (_devStatusCache) return _devStatusCache;
         try {
@@ -70,6 +80,24 @@
         } catch {
             _devStatusCache = { dev_mode: false, env: 'unknown' };
         }
+
+        // 디버그 로그 — 사용자/개발자가 DevTools 콘솔에서 즉시 확인 가능
+        try {
+            console.log('[NexusAuth] dev-status:', _devStatusCache, '· API_BASE:', API_BASE);
+        } catch { /* ignore */ }
+
+        // 🧹 prod 환경에서 token 없는데 stale DEV fake_user 가 localStorage 에 남아있으면 자동 정리.
+        //    원인: 이전에 로컬 DEV_MODE 로 접속했을 때 fake_user 가 저장되었거나,
+        //          *.github.io 도메인에서 임시로 dev_mode 응답을 받았던 경우.
+        //    이대로 두면 비로그인 분기 대신 "dev@nexus.local · VIP" 가 표시되어 DEV 화면처럼 보임.
+        if (!_devStatusCache.dev_mode) {
+            const u = getUser();
+            if (_isStaleDevUser(u) && !getAccessToken()) {
+                console.warn('[NexusAuth] prod 환경에서 stale DEV fake_user 감지 → localStorage 정리:', u && u.email);
+                clearTokens();
+            }
+        }
+
         return _devStatusCache;
     }
 
