@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개인정보 처리방침 · Nexus Alpha</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="css/account.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <button class="theme-toggle" type="button"></button>
+    <div class="account-shell">
+        <div class="account-header">
+            <div>
+                <h1>개인정보 처리방침</h1>
+                <div class="sub">「개인정보 보호법」 등 관련 법령에 따라 회원의 개인정보를 어떻게 수집·이용·보관하는지 안내합니다.</div>
+            </div>
+            <div class="header-actions">
+                <a class="btn-link" href="index.html">← 홈으로</a>
+                <a class="btn-link" href="terms.html">이용약관</a>
+                <a class="btn-link" href="refund.html">환불 정책</a>
+                <a class="btn-link" href="support.html">고객지원</a>
+            </div>
+        </div>
+
+        <div class="account-card legal-doc">
+            <div class="legal-meta">
+                <strong>시행일</strong>: <span class="legal-todo">YYYY-MM-DD (Phase 3 결제 연동 정식 출시일에 확정)</span><br>
+                <strong>최종 개정일</strong>: <span class="legal-todo">YYYY-MM-DD</span><br>
+                <strong>개인정보 보호책임자</strong>: <span class="legal-todo">성명 / 직책 / 이메일 (사업자 등록 후 기재)</span>
+            </div>
+
+            <p class="notice" style="margin: 0 0 24px;">
+                ⚠️ 본 문서는 <strong>골격 초안</strong>입니다. 정식 시행 전 「개인정보 보호법」 및 관련 가이드라인에
+                따라 법무 검토를 거쳐 수집 항목·보유 기간·위탁 처리자 등을 확정해야 합니다.
+                Phase 3 결제 연동 시점에 PG사 위탁 정보·이메일 수신 시스템 등을 함께 명문화합니다.
+            </p>
+
+            <ul class="legal-toc">
+                <li><a href="#s1">1. 수집하는 개인정보 항목</a></li>
+                <li><a href="#s2">2. 수집·이용 목적</a></li>
+                <li><a href="#s3">3. 보유·이용 기간</a></li>
+                <li><a href="#s4">4. 제3자 제공</a></li>
+                <li><a href="#s5">5. 처리 위탁</a></li>
+                <li><a href="#s6">6. 정보주체의 권리·행사 방법</a></li>
+                <li><a href="#s7">7. 개인정보의 안전성 확보 조치</a></li>
+                <li><a href="#s8">8. 자동 수집 도구 (쿠키 / localStorage)</a></li>
+                <li><a href="#s9">9. 개인정보 보호책임자 및 문의</a></li>
+                <li><a href="#bu">부칙 (시행일 / 변경 이력)</a></li>
+            </ul>
+
+            <h2 id="s1">1. 수집하는 개인정보 항목</h2>
+            <ol>
+                <li><strong>회원가입 시 (필수)</strong>
+                    <ul>
+                        <li>이메일 주소</li>
+                        <li>비밀번호 (bcrypt 해시로 저장 — 평문 미보관)</li>
+                        <li>표시 이름</li>
+                        <li>휴대폰 번호 (선택, 입력 시)</li>
+                    </ul>
+                </li>
+                <li><strong>유료 결제 시 (필수)</strong>
+                    <ul>
+                        <li>결제 수단 정보 — PG사가 직접 수집·보관하며 회사는 거래 식별자만 저장 (자세한 항목은 PG사 약관 참고)</li>
+                        <li>결제 내역 (금액·플랜·일시)</li>
+                    </ul>
+                </li>
+                <li><strong>서비스 이용 중 자동 수집</strong>
+                    <ul>
+                        <li>접속 IP, 접속 일시, 브라우저·기기 정보 (보안 로그)</li>
+                        <li>AI 분석·투자자 패널 호출 로그 (쿼터 관리 + 운영 통계)</li>
+                        <li>로그인 실패 카운터 (잠금 정책)</li>
+                    </ul>
+                </li>
+                <li><strong>BYOK 등록 시 (선택)</strong>
+                    <ul>
+                        <li>본인 AI 제공자의 API 키 — 현재 브라우저에 한해 저장, Phase 4 에서 서버 측 AES-256 암호화 저장으로 전환 예정</li>
+                    </ul>
+                </li>
+                <li><strong>고객 문의 시 (선택)</strong>
+                    <ul>
+                        <li>이메일 주소, 문의 내용</li>
+                    </ul>
+                </li>
+            </ol>
+            <p class="legal-todo">⏸️ 마케팅 수신 동의 항목·이벤트 응모 항목 등은 추후 도입 시 본 항에 추가합니다.</p>
+
+            <h2 id="s2">2. 수집·이용 목적</h2>
+            <ol>
+                <li><strong>회원 식별·본인 확인</strong> — 로그인, 비밀번호 재설정, 부정 가입 방지</li>
+                <li><strong>서비스 제공</strong> — 차트·기술적 분석·AI 분석·투자자 패널 토론 등 핵심 기능 운영</li>
+                <li><strong>유료 서비스 이용 관리</strong> — 결제, 환불, 구독 갱신·해지, 쿼터 관리</li>
+                <li><strong>고객 지원</strong> — 문의 응답, 장애 안내, 공지 사항 발송</li>
+                <li><strong>운영 통계·서비스 개선</strong> — 사용량 통계, 페이지 사용 분석, 보안 모니터링 (개인 식별 불가 형태로 가공)</li>
+                <li><strong>법령상 의무 이행</strong> — 「전자상거래법」, 「전자금융거래법」 등에 따른 거래 기록 보관</li>
+            </ol>
+
+            <h2 id="s3">3. 보유·이용 기간</h2>
+            <p>회사는 수집한 개인정보를 회원이 서비스를 이용하는 기간 동안 보관하며, 회원 탈퇴 또는 보유 목적 달성 시 지체 없이 파기합니다. 단, 관련 법령에 따라 다음의 정보는 명시된 기간 동안 별도 보관합니다.</p>
+            <ul>
+                <li><strong>계약·청약철회 기록</strong>: 5년 (전자상거래법 제6조 제3항)</li>
+                <li><strong>대금 결제·재화 공급 기록</strong>: 5년 (전자상거래법)</li>
+                <li><strong>소비자 불만·분쟁 처리 기록</strong>: 3년 (전자상거래법)</li>
+                <li><strong>웹사이트 방문 기록 (접속 로그·IP)</strong>: 3개월 (통신비밀보호법)</li>
+                <li><strong>부정 이용 기록</strong>: 1년 (회사 자체 정책 — 관련 법령 우선)</li>
+            </ul>
+
+            <h2 id="s4">4. 제3자 제공</h2>
+            <p>회사는 회원의 개인정보를 본 방침에 명시한 목적과 다른 용도로 사용하거나 제3자에게 제공하지 않습니다. 다만 다음 각 호에 해당하는 경우 예외로 합니다.</p>
+            <ol>
+                <li>회원이 사전에 동의한 경우</li>
+                <li>법령에 의해 요구되거나 수사 기관의 영장 등 적법 절차에 의한 요청이 있는 경우</li>
+                <li>통계 작성, 학술 연구 또는 시장 조사를 위해 개인 식별 불가 형태로 가공하여 제공하는 경우</li>
+            </ol>
+
+            <h2 id="s5">5. 처리 위탁</h2>
+            <p>회사는 원활한 서비스 제공을 위해 다음 업무를 외부에 위탁하고 있습니다. 위탁 시 「개인정보 보호법」 제26조에 따라 위탁 계약서에 개인정보 보호 의무·책임을 명시합니다.</p>
+            <table style="width:100%; border-collapse:collapse; margin:12px 0; font-size:14px;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:8px 6px; border-bottom:1px solid var(--acct-border);">위탁 대상</th>
+                        <th style="text-align:left; padding:8px 6px; border-bottom:1px solid var(--acct-border);">위탁 업무 내용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">Supabase Inc.</td>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">데이터베이스 호스팅 (회원 정보·로그 저장)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">Render</td>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">백엔드 애플리케이션 호스팅</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">GitHub Pages</td>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">프론트엔드 정적 호스팅</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">Google · OpenAI · Anthropic · Groq</td>
+                        <td style="padding:8px 6px; border-bottom:1px solid var(--acct-border);">AI 분석·투자자 패널 토론 처리 (질문 텍스트 전달)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:8px 6px;"><span class="legal-todo">PG사 (예: 토스페이먼츠)</span></td>
+                        <td style="padding:8px 6px;"><span class="legal-todo">결제 처리·정산·환불 — Phase 3 시점에 확정</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="s6">6. 정보주체의 권리·행사 방법</h2>
+            <p>회원은 언제든지 다음의 권리를 행사할 수 있습니다.</p>
+            <ol>
+                <li><strong>개인정보 열람·정정·삭제 요청</strong> — 마이페이지에서 일부 항목 직접 수정 가능, 그 외에는 고객지원으로 요청</li>
+                <li><strong>처리 정지 요청</strong> — 서비스 이용에 필수적이지 않은 항목에 한해</li>
+                <li><strong>회원 탈퇴 (개인정보 삭제)</strong> — <span class="legal-todo">Phase 3 완료 후 마이페이지 셀프 탈퇴 도입 예정. 현재는 고객지원 이메일 요청.</span></li>
+                <li><strong>동의 철회</strong> — 선택 항목에 대해 언제든 동의 철회 가능</li>
+            </ol>
+            <p>법정대리인이 만 14세 미만 아동의 개인정보에 관한 권리를 행사하는 경우, 회사는 별도의 본인 확인 절차를 거칩니다.</p>
+
+            <h2 id="s7">7. 개인정보의 안전성 확보 조치</h2>
+            <p>회사는 「개인정보 보호법」 제29조 및 같은 법 시행령 제30조에 따라 다음의 조치를 시행합니다.</p>
+            <ol>
+                <li><strong>관리적 조치</strong> — 운영자 1인 단독 관리, 마스터 계정 2FA(TOTP) 적용</li>
+                <li><strong>기술적 조치</strong>
+                    <ul>
+                        <li>비밀번호 bcrypt cost 12 해싱 (평문 미보관)</li>
+                        <li>JWT 기반 인증 + Refresh Token 분리</li>
+                        <li>HTTPS 전 구간 적용</li>
+                        <li>로그인 실패 횟수 기반 자동 잠금</li>
+                        <li>BYOK API 키 서버 측 AES-256 암호화 — <span class="legal-todo">Phase 4 도입 예정</span></li>
+                    </ul>
+                </li>
+                <li><strong>물리적 조치</strong> — Supabase·Render 등 위탁 처리자의 데이터센터 보안 정책 준수</li>
+                <li><strong>접근 통제</strong> — 마스터 권한 외 운영자 추가 시 IP 화이트리스트 적용 예정 (<span class="legal-todo">Phase 6</span>)</li>
+            </ol>
+
+            <h2 id="s8">8. 자동 수집 도구 (쿠키·localStorage)</h2>
+            <ol>
+                <li><strong>사용 도구</strong>
+                    <ul>
+                        <li><code>localStorage</code> — 로그인 토큰(access·refresh), 테마 설정(<code>sa_theme</code>), BYOK API 키 (Phase 4 전환 전까지)</li>
+                        <li>HTTP 헤더의 <code>Authorization</code> Bearer 토큰</li>
+                        <li>현재 광고·마케팅 추적 쿠키는 사용하지 않습니다.</li>
+                    </ul>
+                </li>
+                <li><strong>관리 방법</strong> — 브라우저의 개발자 도구 또는 설정에서 localStorage·쿠키를 직접 삭제할 수 있으며, 삭제 시 자동 로그아웃됩니다.</li>
+                <li><strong>거부 영향</strong> — localStorage 사용을 거부할 경우 로그인 상태 유지·테마 설정 등 일부 기능이 제한됩니다.</li>
+            </ol>
+
+            <h2 id="s9">9. 개인정보 보호책임자 및 문의</h2>
+            <p>회사는 개인정보 처리에 관한 업무를 총괄하고, 개인정보 처리와 관련한 회원의 불만 처리·피해 구제를 담당하는 개인정보 보호책임자를 다음과 같이 지정합니다.</p>
+            <div class="legal-meta" style="margin: 8px 0;">
+                <strong>책임자</strong>: <span class="legal-todo">성명 / 직책 (사업자 등록 후 기재)</span><br>
+                <strong>연락처</strong>: <span class="legal-todo">support@nexus-alpha.io (정식 도메인 확정 후 갱신)</span><br>
+                <strong>고객지원 페이지</strong>: <a href="support.html">support.html</a>
+            </div>
+            <p>개인정보 침해에 따른 신고·상담은 다음 기관으로도 문의할 수 있습니다.</p>
+            <ul>
+                <li>개인정보분쟁조정위원회 — 1833-6972 (privacy.kisa.or.kr)</li>
+                <li>한국인터넷진흥원 개인정보침해신고센터 — 118 (privacy.go.kr)</li>
+                <li>대검찰청 사이버수사과 — 1301 (spo.go.kr)</li>
+                <li>경찰청 사이버안전국 — 182 (cyberbureau.police.go.kr)</li>
+            </ul>
+
+            <h2 id="bu">부칙 (시행일 / 변경 이력)</h2>
+            <p>본 처리방침은 <span class="legal-todo">YYYY-MM-DD</span>부터 시행됩니다.</p>
+            <p>변경 시 시행일 7일 전(중요한 변경의 경우 30일 전)에 홈페이지 공지 또는 회원 이메일을 통해 안내합니다.</p>
+        </div>
+    </div>
+</body>
+</html>
