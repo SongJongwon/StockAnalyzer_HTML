@@ -386,6 +386,104 @@
             color: var(--acct-text-soft);
             word-break: break-all;
         }
+
+        /* ── 활동 로그 metadata 시각화 (provider 배지 / 페르소나 칩 / 종료 사유 등) ── */
+        .meta-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 6px;
+            align-items: center;
+        }
+        .persona-chip {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--acct-input-bg);
+            color: var(--acct-text);
+            border: 1px solid var(--acct-border);
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        .meta-pill {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--acct-input-bg);
+            color: var(--acct-text-soft);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .meta-pill code {
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 10px;
+        }
+        .provider-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+        /* 다크 모드 — provider 별 브랜드 색상 약화 */
+        .provider-badge[data-provider="gemini"]    { background: rgba(66,133,244,0.22);  color: #93bbfd; }
+        .provider-badge[data-provider="openai"]    { background: rgba(16,163,127,0.22);  color: #6ee7b7; }
+        .provider-badge[data-provider="anthropic"] { background: rgba(204,120,92,0.24);  color: #fbbf80; }
+        .provider-badge[data-provider="groq"]      { background: rgba(249,115,22,0.22);  color: #fdba74; }
+        [data-theme="light"] .provider-badge[data-provider="gemini"]    { background: rgba(66,133,244,0.15);  color: #1e40af; }
+        [data-theme="light"] .provider-badge[data-provider="openai"]    { background: rgba(16,163,127,0.15);  color: #047857; }
+        [data-theme="light"] .provider-badge[data-provider="anthropic"] { background: rgba(204,120,92,0.18);  color: #b34a31; }
+        [data-theme="light"] .provider-badge[data-provider="groq"]      { background: rgba(249,115,22,0.18);  color: #c2410c; }
+
+        .byok-pill {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(245,158,11,0.22);
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        [data-theme="light"] .byok-pill { background: rgba(245,158,11,0.18); color: #b45309; }
+
+        /* 사용자 컬럼 (활동 로그) — email + name 2단 표시 */
+        .user-cell strong {
+            font-size: 12px;
+            color: var(--acct-text);
+        }
+        .user-cell .uname {
+            font-size: 10px;
+            color: var(--acct-muted);
+            display: block;
+            margin-top: 2px;
+        }
+        .user-cell .uflag {
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        /* placeholder 카드 (토큰/비용 — 추후 도입) */
+        .placeholder-card {
+            background: var(--acct-card);
+            border: 1px dashed var(--acct-border);
+            border-radius: 12px;
+            padding: 28px 24px;
+            margin-bottom: 16px;
+            opacity: 0.85;
+        }
+        .placeholder-card code {
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 11px;
+            background: var(--acct-input-bg);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--acct-text);
+        }
     </style>
 </head>
 <body>
@@ -481,15 +579,16 @@
             <table class="users-table" id="activityTable">
                 <thead>
                     <tr>
-                        <th style="width:18%;">시간</th>
-                        <th style="width:16%;">유형</th>
-                        <th style="width:24%;">대상 (target)</th>
-                        <th style="width:14%;">IP</th>
-                        <th style="width:28%;">메타</th>
+                        <th style="width:14%;">시간</th>
+                        <th style="width:18%;">사용자</th>
+                        <th style="width:13%;">유형</th>
+                        <th style="width:18%;">대상 (target)</th>
+                        <th style="width:11%;">IP</th>
+                        <th style="width:26%;">메타</th>
                     </tr>
                 </thead>
                 <tbody id="activityTbody">
-                    <tr><td colspan="5" class="empty-row">로딩 중…</td></tr>
+                    <tr><td colspan="6" class="empty-row">로딩 중…</td></tr>
                 </tbody>
             </table>
         </div>
@@ -513,6 +612,30 @@
                     <tr><td colspan="5" class="empty-row">로딩 중…</td></tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- ── Phase 6: 토큰 사용량 + API 비용 (placeholder) ── -->
+        <h3 class="account-card-title" style="color:var(--acct-text-soft);font-size:14px;margin:32px 0 12px;">
+            💰 토큰 사용량 + API 비용
+        </h3>
+        <div class="placeholder-card">
+            <div style="font-size:32px;text-align:center;margin-bottom:12px;">📊</div>
+            <p style="text-align:center;font-weight:600;color:var(--acct-text-strong);margin:0 0 8px;font-size:15px;">
+                다음 세션 별도 브랜치에서 도입 예정
+            </p>
+            <p style="text-align:center;font-size:13px;color:var(--acct-muted);margin:0 0 18px;line-height:1.6;">
+                <code>ai_token_usage</code> 테이블은 schema v1.2 에 정의돼 있으나
+                <strong>채우는 코드가 없어 비어 있는 상태</strong>입니다.<br>
+                현재 <code>user_activities.metadata</code> 에는 토큰·비용 정보가 저장되지 않습니다.
+            </p>
+            <ul style="font-size:12px;color:var(--acct-text-soft);max-width:640px;margin:0 auto;padding-left:20px;line-height:1.8;">
+                <li><strong>backend:</strong> <code>record_token_usage()</code> 헬퍼 추가 + <code>market.py</code> / <code>panel/routes.py</code> 호출 + provider별 단가 매핑 (Gemini 무료 / Groq 무료 / Claude $3·$15 / OpenAI $5·$20)</li>
+                <li><strong>새 endpoint:</strong> <code>GET /api/admin/tokens/recent</code> + <code>GET /api/admin/tokens/summary</code> (provider별 / 일별 비용 집계)</li>
+                <li><strong>frontend:</strong> provider별 토큰 막대 차트 + 일별 누적 비용 line chart + USD/KRW 변환</li>
+            </ul>
+            <p style="text-align:center;font-size:11px;color:var(--acct-muted);margin:18px 0 0;">
+                브랜치 후보: <code>feature/admin-token-cost</code>
+            </p>
         </div>
     </div>
 
@@ -719,31 +842,96 @@
             });
         }
 
+        // user_id → users 캐시 매핑 (loadAll 의 _allUsers 활용)
+        function _userById(uid) {
+            if (!uid || !_allUsers.length) return null;
+            return _allUsers.find(u => u.id === uid) || null;
+        }
+        function _userCellHtml(uid) {
+            const u = _userById(uid);
+            if (!u) {
+                // user 가 _allUsers 에 없으면 (탈퇴 등) UUID 첫 8자만 짧게 표시
+                const short = uid ? String(uid).slice(0, 8) : '—';
+                return `<div class="user-cell"><strong style="color:var(--acct-muted);font-family:ui-monospace,monospace;">${escapeHtml(short)}</strong><span class="uname">(unknown)</span></div>`;
+            }
+            const flag = u.is_master ? '<span class="uflag">👑</span>'
+                        : u.is_blocked ? '<span class="uflag">⛔</span>'
+                        : u.is_test ? '<span class="uflag">🧪</span>' : '';
+            return `<div class="user-cell"><strong>${escapeHtml(u.email)}</strong>${flag}<span class="uname">${escapeHtml(u.name || '(이름 없음)')}</span></div>`;
+        }
+
+        // metadata 시각화 — activity_type 별 분기. 매칭 안 되면 JSON 압축 fallback.
+        const TERMINATED_KO = {
+            convergence: '🎯 수렴 합의',
+            max_rounds: '⏱️ 최대 라운드',
+            max_rounds_reached: '⏱️ 최대 라운드',
+            error: '⚠️ 오류 종료',
+        };
+
+        function renderActivityMeta(activityType, metadata) {
+            if (!metadata || typeof metadata !== 'object') {
+                return '<span class="caption muted">—</span>';
+            }
+            const parts = [];
+
+            if (activityType === 'panel_discuss') {
+                (metadata.personas || []).forEach(p =>
+                    parts.push(`<span class="persona-chip">${escapeHtml(p)}</span>`)
+                );
+                if (metadata.provider) {
+                    parts.push(`<span class="provider-badge" data-provider="${escapeHtml(metadata.provider)}">${escapeHtml(metadata.provider)}</span>`);
+                }
+                if (metadata.rounds != null) {
+                    parts.push(`<span class="meta-pill">${parseInt(metadata.rounds, 10) || metadata.rounds}라운드</span>`);
+                }
+                if (metadata.terminated_by) {
+                    parts.push(`<span class="meta-pill">${TERMINATED_KO[metadata.terminated_by] || escapeHtml(metadata.terminated_by)}</span>`);
+                }
+            } else if (activityType === 'ai_analysis') {
+                if (metadata.provider) {
+                    parts.push(`<span class="provider-badge" data-provider="${escapeHtml(metadata.provider)}">${escapeHtml(metadata.provider)}</span>`);
+                }
+                if (metadata.model) {
+                    parts.push(`<span class="meta-pill"><code>${escapeHtml(metadata.model)}</code></span>`);
+                }
+                if (metadata.byok) {
+                    parts.push(`<span class="byok-pill">🔑 BYOK</span>`);
+                }
+            }
+
+            if (parts.length) {
+                return `<div class="meta-stack">${parts.join('')}</div>`;
+            }
+            // Fallback — JSON 압축
+            const json = JSON.stringify(metadata);
+            const short = json.length > 80 ? json.slice(0, 80) + '…' : json;
+            return `<span class="code-snippet">${escapeHtml(short)}</span>`;
+        }
+
         async function loadRecentActivity() {
             const tbody = document.getElementById('activityTbody');
             try {
                 const r = await NexusAuth.apiFetch('/api/admin/usage/recent?limit=30', { auth: true });
                 const items = r.items || [];
                 if (!items.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-row">활동 기록 없음</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-row">활동 기록 없음</td></tr>`;
                     return;
                 }
                 tbody.innerHTML = items.map(a => {
-                    const meta = a.metadata ? JSON.stringify(a.metadata) : '';
-                    const metaShort = meta.length > 80 ? meta.slice(0, 80) + '…' : meta;
                     const atype = a.activity_type || 'unknown';
                     return `
                         <tr>
                             <td class="meta-time" style="text-align:left;">${fmtDateTime(a.created_at)}</td>
+                            <td style="text-align:left;">${_userCellHtml(a.user_id)}</td>
                             <td><span class="atype-badge" data-type="${escapeHtml(atype)}">${escapeHtml(atype)}</span></td>
                             <td style="text-align:left;">${escapeHtml(a.target || '—')}</td>
                             <td class="meta-time" style="text-align:left;">${escapeHtml(a.ip_address || '—')}</td>
-                            <td class="code-snippet" style="text-align:left;">${escapeHtml(metaShort || '—')}</td>
+                            <td style="text-align:left;">${renderActivityMeta(atype, a.metadata)}</td>
                         </tr>
                     `;
                 }).join('');
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-row">로드 실패: ${escapeHtml(e.message || String(e))}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-row">로드 실패: ${escapeHtml(e.message || String(e))}</td></tr>`;
             }
         }
 
