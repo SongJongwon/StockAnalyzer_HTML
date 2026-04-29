@@ -474,37 +474,81 @@ function renderPanelRecommendations(s) {
     };
     const safeAttr = (s) => String(s || '').replace(/['"\\]/g, '');
 
-    const renderHeader = (ticker, name) => `
+    // Ticker 실존 검증 (야후 파이낸스) 결과를 카드에 반영하는 헬퍼.
+    // verified=false → 카드 modifier class + 헤더에 ⚠️ 배지 + 카드 풋에 경고 블록 + 야후 검색 기반 비슷한 실존 종목 제안.
+    // verified=true / null → 표시 변화 없음 (정상 카드).
+    const cardModifier = (item) => item && item.verified === false ? ' panel-rec-card--unverified' : '';
+
+    const renderHeader = (item) => {
+        const t = item.ticker || '';
+        const n = item.name || '';
+        const warningBadge = item.verified === false
+            ? `<span class="panel-rec-warning-badge" title="야후 파이낸스에서 실존 확인 안 됨">⚠️</span>`
+            : '';
+        return `
         <div class="panel-rec-header">
-            <span class="panel-rec-ticker">${escapeHtml(ticker)}</span>
-            <span class="panel-rec-name">${escapeHtml(name || '')}</span>
+            <span class="panel-rec-ticker">${escapeHtml(t)}</span>
+            ${warningBadge}
+            <span class="panel-rec-name">${escapeHtml(n)}</span>
             <button class="btn-secondary panel-rec-analyze"
-                    onclick="analyzeFromPanel('${safeAttr(ticker)}', '${safeAttr(name)}')">
+                    onclick="analyzeFromPanel('${safeAttr(t)}', '${safeAttr(n)}')">
                 <span class="ms">bar_chart</span> 종목 분석
             </button>
         </div>`;
+    };
+
+    const renderWarningBlock = (item) => {
+        if (!item || item.verified !== false) return '';
+        const sugg = item.suggestions || [];
+        const suggBtns = sugg.map(s => {
+            const sym = s.symbol || '';
+            const nm  = s.name || '';
+            const ex  = s.exchange || '';
+            return `<button class="panel-rec-suggestion-btn"
+                            onclick="analyzeFromPanel('${safeAttr(sym)}', '${safeAttr(nm)}')">
+                        <strong>${escapeHtml(sym)}</strong>
+                        <span>${escapeHtml(nm)}</span>
+                        ${ex ? `<span class="caption muted">${escapeHtml(ex)}</span>` : ''}
+                    </button>`;
+        }).join('');
+        const suggBlock = sugg.length ? `
+            <div class="panel-rec-suggestions">
+                <span class="caption">💡 비슷한 실존 종목:</span>
+                <div class="panel-rec-suggestion-list">${suggBtns}</div>
+            </div>` : '';
+        return `
+        <div class="panel-rec-warning-block">
+            <span class="panel-rec-warning-text">
+                <strong>AI가 잘못된 티커를 생성했을 수 있습니다.</strong>
+                야후 파이낸스에서 이 티커의 실존 확인이 안 됐습니다.
+            </span>
+            ${suggBlock}
+        </div>`;
+    };
 
     // Rank 1 — agreed
     const agreedCards = agreed.length === 0 ? `<div class="caption muted">없음</div>` :
         agreed.map(c => `
-            <div class="panel-rec-card panel-rec-agreed">
-                ${renderHeader(c.ticker, c.name)}
+            <div class="panel-rec-card panel-rec-agreed${cardModifier(c)}">
+                ${renderHeader(c)}
                 <div class="panel-rec-summary">${escapeHtml(joinReasons(c.reasons))}</div>
                 <div class="panel-rec-foot caption muted">
                     지지: ${(c.supporters || []).map(personaLabel).map(escapeHtml).join(' · ')}
                 </div>
+                ${renderWarningBlock(c)}
             </div>`).join('');
 
     // Rank 2 — persuaded
     const persuadedCards = persuaded.length === 0 ? `<div class="caption muted">없음</div>` :
         persuaded.map(p => `
-            <div class="panel-rec-card panel-rec-persuaded">
-                ${renderHeader(p.ticker, p.name)}
+            <div class="panel-rec-card panel-rec-persuaded${cardModifier(p)}">
+                ${renderHeader(p)}
                 <div class="panel-rec-summary">
                     <strong>최초 추천:</strong> ${escapeHtml(personaLabel(p.originally_by))}
                     → <strong>현재 지지:</strong> ${(p.now_supported_by || []).map(personaLabel).map(escapeHtml).join(' · ')}
                 </div>
                 ${p.turning_point ? `<div class="panel-rec-foot caption muted">💡 설득 지점: ${escapeHtml(p.turning_point)}</div>` : ''}
+                ${renderWarningBlock(p)}
             </div>`).join('');
 
     // Rank 3+ — disputed
@@ -513,21 +557,23 @@ function renderPanelRecommendations(s) {
             const forLine = `👍 찬성 (${(d.for_side || []).map(personaLabel).join(', ')}) ${joinReasons(d.for_reasons)}`;
             const againstLine = `👎 반대 (${(d.against_side || []).map(personaLabel).join(', ')}) ${joinReasons(d.against_reasons)}`;
             return `
-                <div class="panel-rec-card panel-rec-disputed">
-                    ${renderHeader(d.ticker, d.name)}
+                <div class="panel-rec-card panel-rec-disputed${cardModifier(d)}">
+                    ${renderHeader(d)}
                     <div class="panel-rec-summary panel-rec-for-line">${escapeHtml(forLine)}</div>
                     <div class="panel-rec-summary panel-rec-against-line">${escapeHtml(againstLine)}</div>
                     ${d.next_question ? `<div class="panel-rec-foot caption muted">추가 논의: ${escapeHtml(d.next_question)}</div>` : ''}
+                    ${renderWarningBlock(d)}
                 </div>`;
         }).join('');
 
     // Solo
     const soloCards = solo.length === 0 ? `<div class="caption muted">없음</div>` :
         solo.map(o => `
-            <div class="panel-rec-card panel-rec-solo">
-                ${renderHeader(o.ticker, o.name)}
+            <div class="panel-rec-card panel-rec-solo${cardModifier(o)}">
+                ${renderHeader(o)}
                 <div class="panel-rec-summary">${escapeHtml(o.reason || '(근거 미제공)')}</div>
                 <div class="panel-rec-foot caption muted">${escapeHtml(personaLabel(o.supporter))}</div>
+                ${renderWarningBlock(o)}
             </div>`).join('');
 
     return `
