@@ -768,10 +768,197 @@
     pointer-events: none;
 }
 
-.persona-card-plan-badge[data-plan="free"]  { background: rgba(34,197,94,0.18);  color: #4ade80; }
-.persona-card-plan-badge[data-plan="basic"] { background: rgba(59,130,246,0.20); color: #60a5fa; }
-.persona-card-plan-badge[data-plan="pro"]   { background: rgba(139,92,246,0.22); color: #a78bfa; }
-.persona-card-plan-badge[data-plan="vip"]   { background: rgba(250,204,21,0.22); color: #fbbf24; }
+.persona-card-plan-badge[data-plan="free"]   { background: rgba(34,197,94,0.18);   color: #4ade80; }
+.persona-card-plan-badge[data-plan="basic"]  { background: rgba(59,130,246,0.20);  color: #60a5fa; }
+.persona-card-plan-badge[data-plan="pro"]    { background: rgba(139,92,246,0.22);  color: #a78bfa; }
+.persona-card-plan-badge[data-plan="vip"]    { background: rgba(250,204,21,0.22);  color: #fbbf24; }
+.persona-card-plan-badge[data-plan="custom"] { background: rgba(236,72,153,0.22);  color: #f472b6; font-size: 9px; }
+
+/* ── Phase 7 — 커스텀 페르소나 카드 (좌상단 색띠 + 핑크 강조) ── */
+.persona-card.persona-card-custom {
+    border-color: rgba(236, 72, 153, 0.35);
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, transparent 60%);
+}
+.persona-card.persona-card-custom:hover {
+    border-color: rgba(236, 72, 153, 0.55);
+}
+
+/* 커스텀 만들기 + 잠금/슬롯 가득 카드 */
+.persona-card.persona-card-add {
+    border-style: dashed;
+    border-color: rgba(99, 102, 241, 0.35);
+    background: transparent;
+    cursor: pointer;
+}
+.persona-card.persona-card-add:hover {
+    border-color: rgba(99, 102, 241, 0.65);
+    background: rgba(99, 102, 241, 0.05);
+}
+.persona-card.persona-card-add.persona-card-add-locked {
+    border-color: rgba(148, 163, 184, 0.30);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.persona-card.persona-card-add .persona-card-emoji { opacity: 0.7; }
+
+/* ── Phase 7 — 커스텀 페르소나 모달 (cpm-*) ── */
+.cpm-help {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    background: rgba(99, 102, 241, 0.06);
+    border-radius: 8px;
+    border-left: 3px solid rgba(99, 102, 241, 0.45);
+}
+.cpm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.cpm-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+.cpm-required { color: #f87171; }
+.cpm-field input {
+    padding: 9px 12px;
+    font-size: 13px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 8px;
+    color: #e2e8f0;
+    transition: border-color 0.15s;
+}
+.cpm-field input:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.6);
+}
+.cpm-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+.cpm-btn {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: transparent;
+    color: #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.cpm-btn:hover:not(:disabled) {
+    background: rgba(148, 163, 184, 0.10);
+    color: #e2e8f0;
+}
+.cpm-btn-primary {
+    background: rgba(99, 102, 241, 0.18);
+    border-color: rgba(99, 102, 241, 0.45);
+    color: #a5b4fc;
+}
+.cpm-btn-primary:hover:not(:disabled) {
+    background: rgba(99, 102, 241, 0.28);
+    color: #c7d2fe;
+}
+.cpm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cpm-status {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #94a3b8;
+}
+.cpm-status.ok  { color: #4ade80; }
+.cpm-status.err { color: #f87171; }
+
+.cpm-preview {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.20);
+    border-radius: 10px;
+}
+.cpm-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+.cpm-preview-emoji { font-size: 36px; }
+.cpm-preview-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+.cpm-preview-name-en {
+    font-size: 12px;
+    font-weight: 400;
+    color: #94a3b8;
+}
+.cpm-preview-title {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+.cpm-preview-section { margin-bottom: 12px; }
+.cpm-preview-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.cpm-preview-text {
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+.cpm-preview-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.7;
+}
+.cpm-preview-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+/* 라이트 테마 */
+[data-theme="light"] .persona-card-plan-badge[data-plan="custom"] { color: #be185d; }
+[data-theme="light"] .persona-card.persona-card-custom {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, transparent 60%);
+}
+[data-theme="light"] .cpm-help { color: #475569; background: rgba(99, 102, 241, 0.10); }
+[data-theme="light"] .cpm-field label { color: #1e293b; }
+[data-theme="light"] .cpm-field input { background: #fff; color: #0f172a; border-color: #cbd5e1; }
+[data-theme="light"] .cpm-btn { color: #475569; border-color: #cbd5e1; }
+[data-theme="light"] .cpm-btn:hover:not(:disabled) { background: #f1f5f9; color: #0f172a; }
+[data-theme="light"] .cpm-btn-primary { color: #4338ca; background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.40); }
+[data-theme="light"] .cpm-btn-primary:hover:not(:disabled) { background: rgba(99, 102, 241, 0.20); }
+[data-theme="light"] .cpm-status { color: #475569; }
+[data-theme="light"] .cpm-status.ok { color: #15803d; }
+[data-theme="light"] .cpm-status.err { color: #b91c1c; }
+[data-theme="light"] .cpm-preview { background: #f8fafc; border-color: #cbd5e1; }
+[data-theme="light"] .cpm-preview-header { border-bottom-color: #e2e8f0; }
+[data-theme="light"] .cpm-preview-name { color: #0f172a; }
+[data-theme="light"] .cpm-preview-name-en,
+[data-theme="light"] .cpm-preview-title { color: #475569; }
+[data-theme="light"] .cpm-preview-label { color: #1e293b; }
+[data-theme="light"] .cpm-preview-text,
+[data-theme="light"] .cpm-preview-list { color: #334155; }
 
 /* ── 잠긴 카드 ─────────────────────────────────────────── */
 
