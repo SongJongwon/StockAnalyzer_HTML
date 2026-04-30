@@ -3214,6 +3214,7 @@ async function _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict) {
                 user_openai_key:    userOpenaiKey,
                 user_gemini_key:    userGeminiKey,
                 user_groq_key:      userGroqKey,
+                ai_provider:        getAiPriority(),
             }),
         });
 
@@ -3720,6 +3721,7 @@ async function _loadThemeAI(sid, r) {
                 user_openai_key:    userOpenaiKey,
                 user_gemini_key:    userGeminiKey,
                 user_groq_key:      userGroqKey,
+                ai_provider:        getAiPriority(),
             }),
         });
 
