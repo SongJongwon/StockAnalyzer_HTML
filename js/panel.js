@@ -70,11 +70,13 @@ async function loadPanelPersonas() {
         return;
     }
 
+    let customSlot = { used: 0, limit: 0 };
     try {
         const data = await res.json();
         _panelPersonas = data.personas || [];
         _panelUserPlan = (data.user_plan || 'free').toLowerCase();
         _panelIsMaster = !!data.is_master;
+        customSlot = data.custom_slot || { used: 0, limit: 0 };
     } catch (parseErr) {
         listEl.innerHTML = _renderPersonaErrorState(-1);
         return;
@@ -86,9 +88,11 @@ async function loadPanelPersonas() {
     }
 
     // 카드 그리드 형태 — 세로 레이아웃 (emoji 큰 글씨 위 / 이름 / 영문이름 / 직책 / 우상단 등급 배지)
-    listEl.innerHTML = _panelPersonas.map(p => {
-        const planUp = (p.min_plan || 'free').toUpperCase();
-        const badge = `<span class="persona-card-plan-badge" data-plan="${p.min_plan}">${planUp}</span>`;
+    const personaCardsHtml = _panelPersonas.map(p => {
+        const isCustom = p.source === 'custom';
+        const planUp = isCustom ? '내 페르소나' : (p.min_plan || 'free').toUpperCase();
+        const badgeAttr = isCustom ? 'custom' : p.min_plan;
+        const badge = `<span class="persona-card-plan-badge" data-plan="${badgeAttr}">${planUp}</span>`;
         const emoji = `<div class="persona-card-emoji">${p.emoji || '👤'}</div>`;
         const nameKo = `<div class="persona-card-name">${escapeHtml(p.name_ko || p.id)}</div>`;
         const nameEn = p.name_en ? `<div class="persona-card-name-en">${escapeHtml(p.name_en)}</div>` : '';
@@ -111,7 +115,7 @@ async function loadPanelPersonas() {
                 </button>`;
         }
         return `
-            <label class="persona-card">
+            <label class="persona-card${isCustom ? ' persona-card-custom' : ''}">
                 <input type="checkbox" class="panel-persona-check" value="${p.id}" checked>
                 ${badge}
                 ${emoji}
@@ -120,6 +124,45 @@ async function loadPanelPersonas() {
                 ${title}
             </label>`;
     }).join('');
+
+    // Phase 7 — 커스텀 만들기 버튼 (Pro 이상 + 슬롯 여유 + 마스터 전용 분기)
+    const slotLimit = customSlot.limit;
+    const slotUsed = customSlot.used;
+    const canCreate = _panelIsMaster || (slotLimit !== 0 && (slotLimit === -1 || slotUsed < slotLimit));
+    let createBtnHtml = '';
+    if (slotLimit === 0 && !_panelIsMaster) {
+        // Free / Basic — 안내만
+        createBtnHtml = `
+            <button type="button" class="persona-card persona-card-add persona-card-add-locked"
+                    onclick="alert('커스텀 페르소나는 Pro 등급 이상에서 이용 가능합니다.')"
+                    title="Pro 이상 필요">
+                <div class="persona-card-emoji">🔒</div>
+                <div class="persona-card-name">커스텀 만들기</div>
+                <div class="persona-card-name-en">Pro 이상 필요</div>
+            </button>`;
+    } else if (canCreate) {
+        const slotInfo = slotLimit === -1 ? '무제한' : `${slotUsed}/${slotLimit}`;
+        createBtnHtml = `
+            <button type="button" class="persona-card persona-card-add"
+                    onclick="openCustomPersonaModal()"
+                    title="새 커스텀 페르소나 만들기 — 슬롯 ${slotInfo}">
+                <div class="persona-card-emoji">➕</div>
+                <div class="persona-card-name">커스텀 만들기</div>
+                <div class="persona-card-name-en">${escapeHtml(slotInfo)}</div>
+            </button>`;
+    } else {
+        // 슬롯 가득
+        createBtnHtml = `
+            <button type="button" class="persona-card persona-card-add persona-card-add-locked"
+                    onclick="alert('커스텀 페르소나 슬롯이 가득 찼습니다 (${slotUsed}/${slotLimit}). 마이페이지에서 기존 항목을 삭제하거나 VIP 로 업그레이드하세요.')"
+                    title="슬롯 가득">
+                <div class="persona-card-emoji">🔒</div>
+                <div class="persona-card-name">커스텀 만들기</div>
+                <div class="persona-card-name-en">슬롯 가득 (${slotUsed}/${slotLimit})</div>
+            </button>`;
+    }
+
+    listEl.innerHTML = personaCardsHtml + createBtnHtml;
 }
 
 
@@ -739,4 +782,120 @@ function escapeHtml(s) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+
+// ──────────────────────────────────────────
+// Phase 7 — 커스텀 페르소나 생성 모달
+// ──────────────────────────────────────────
+function openCustomPersonaModal() {
+    const modal = document.getElementById('customPersonaModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    // 입력 초기화
+    document.getElementById('cpmNameEn').value = '';
+    document.getElementById('cpmNameKo').value = '';
+    document.getElementById('cpmHint').value = '';
+    document.getElementById('cpmStatus').textContent = '';
+    document.getElementById('cpmStatus').className = 'cpm-status';
+    document.getElementById('cpmPreview').style.display = 'none';
+    document.getElementById('cpmSubmitBtn').disabled = false;
+    document.getElementById('cpmSubmitBtn').textContent = '생성';
+    document.getElementById('cpmNameEn').focus();
+}
+
+function closeCustomPersonaModal() {
+    const modal = document.getElementById('customPersonaModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function _cpmHandleOverlayClick(e) {
+    if (e.target === document.getElementById('customPersonaModal')) {
+        closeCustomPersonaModal();
+    }
+}
+
+async function submitCustomPersonaForm() {
+    const nameEn = (document.getElementById('cpmNameEn').value || '').trim();
+    const nameKo = (document.getElementById('cpmNameKo').value || '').trim();
+    const hint   = (document.getElementById('cpmHint').value || '').trim();
+    const statusEl = document.getElementById('cpmStatus');
+    const previewEl = document.getElementById('cpmPreview');
+    const btn = document.getElementById('cpmSubmitBtn');
+
+    if (nameEn.length < 2) {
+        statusEl.className = 'cpm-status err';
+        statusEl.textContent = '영문 이름은 2자 이상이어야 합니다 (예: "Philip Fisher").';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '생성 중…';
+    statusEl.className = 'cpm-status';
+    statusEl.textContent = '🤖 LLM 이 페르소나를 생성하고 있습니다 (10~30초 소요)…';
+    previewEl.style.display = 'none';
+
+    // BYOK 키 + 우선순위 (앱.js getApiKey / getAiPriority 재사용)
+    const body = {
+        name_en: nameEn,
+        name_ko: nameKo,
+        hint: hint,
+        user_anthropic_key: (typeof getApiKey === 'function' ? getApiKey('anthropic') : '') || '',
+        user_openai_key:    (typeof getApiKey === 'function' ? getApiKey('openai') : '')    || '',
+        user_gemini_key:    (typeof getApiKey === 'function' ? getApiKey('gemini') : '')    || '',
+        user_groq_key:      (typeof getApiKey === 'function' ? getApiKey('groq') : '')      || '',
+        ai_provider:        (typeof getAiPriority === 'function' ? getAiPriority() : 'auto'),
+    };
+
+    try {
+        const res = await fetch(`${API}/api/panel/personas/custom`, {
+            method: 'POST',
+            headers: _authHeaders(),
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+            throw new Error(await _authErrorMessage(res));
+        }
+        const data = await res.json();
+        statusEl.className = 'cpm-status ok';
+        statusEl.textContent = `✅ "${data.name_ko}" 생성 완료 (${data.generation_model || ''})`;
+
+        // 미리보기 — 철학·원칙 5개·카치프레이즈 3개
+        const py = data.persona_yaml || {};
+        const principles = (py.principles || []).slice(0, 5).map(p => `<li>${escapeHtml(p)}</li>`).join('');
+        const catches = (py.catchphrases || []).slice(0, 3).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+        previewEl.innerHTML = `
+            <div class="cpm-preview-header">
+                <span class="cpm-preview-emoji">${escapeHtml(data.emoji || '🧑‍💼')}</span>
+                <div>
+                    <div class="cpm-preview-name">${escapeHtml(data.name_ko)} <span class="cpm-preview-name-en">(${escapeHtml(data.name_en)})</span></div>
+                    <div class="cpm-preview-title">${escapeHtml(data.title || '')}</div>
+                </div>
+            </div>
+            <div class="cpm-preview-section">
+                <div class="cpm-preview-label">투자 철학</div>
+                <div class="cpm-preview-text">${escapeHtml(py.philosophy || '')}</div>
+            </div>
+            <div class="cpm-preview-section">
+                <div class="cpm-preview-label">핵심 원칙</div>
+                <ul class="cpm-preview-list">${principles}</ul>
+            </div>
+            ${catches ? `<div class="cpm-preview-section">
+                <div class="cpm-preview-label">대표 어록</div>
+                <ul class="cpm-preview-list">${catches}</ul>
+            </div>` : ''}
+            <div class="cpm-preview-actions">
+                <button type="button" class="cpm-btn cpm-btn-primary" onclick="closeCustomPersonaModal(); _panelLoadedOnce=false; loadPanel();">패널에 추가</button>
+                <button type="button" class="cpm-btn" onclick="closeCustomPersonaModal()">닫기</button>
+            </div>
+        `;
+        previewEl.style.display = 'block';
+        btn.disabled = true;
+        btn.textContent = '생성 완료';
+    } catch (e) {
+        statusEl.className = 'cpm-status err';
+        statusEl.textContent = '❌ ' + (e.message || '생성 실패');
+        btn.disabled = false;
+        btn.textContent = '다시 시도';
+    }
 }

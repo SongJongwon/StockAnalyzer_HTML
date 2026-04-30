@@ -10,6 +10,38 @@
     <link rel="stylesheet" href="css/auth.css">
     <link rel="stylesheet" href="css/theme.css">
     <script src="js/theme.js"></script>
+    <style>
+        /* 비밀번호 입력창 눈 아이콘 토글 (auth-card 안 — 토큰 --auth-* 사용) */
+        .pw-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .pw-input-wrap input {
+            flex: 1;
+            width: 100%;
+            padding-right: 42px;   /* 우측 버튼 공간 */
+        }
+        .pw-toggle {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: 0;
+            color: var(--auth-muted, #94a3b8);
+            font-size: 16px;
+            line-height: 1;
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.15s, color 0.15s;
+        }
+        .pw-toggle:hover {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--auth-text, #e2e8f0);
+        }
+    </style>
 </head>
 <body>
     <button class="theme-toggle" type="button"></button>
@@ -20,7 +52,7 @@
                 <p>새 계정을 만드세요</p>
             </header>
 
-            <form id="signupForm" class="auth-form" novalidate>
+            <form id="signupForm" class="auth-form" novalidate autocomplete="off">
                 <label class="auth-field">
                     <span>이메일</span>
                     <input type="email" name="email" required autocomplete="email" placeholder="name@example.com">
@@ -33,12 +65,27 @@
 
                 <label class="auth-field">
                     <span>비밀번호</span>
-                    <input type="password" name="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="최소 8자, 문자+숫자 포함">
+                    <div class="pw-input-wrap">
+                        <!--
+                          크롬 비밀번호 자동완성·추천 팝업 억제 트릭 (mypage 비밀번호 변경창과 동일 패턴):
+                            1. autocomplete="off" — 크롬 "강력한 비밀번호 추천" 팝업까지 억제
+                                (autocomplete="new-password" 는 오히려 추천 팝업 유발)
+                            2. name 비표준화 (pw_signup_x7k) — 비밀번호 매니저 매칭 회피
+                            3. readonly + onfocus="removeAttribute" — 페이지 로드 시 비활성 → 포커스 시 활성화로 자동완성 트리거 회피
+                            4. data-1p-ignore / data-lpignore — 1Password / LastPass 등 매니저 무시 신호
+                            5. form autocomplete="off" 도 함께 적용 (위)
+                        -->
+                        <input type="password" id="signupPw" name="pw_signup_x7k" required minlength="8" maxlength="128" autocomplete="off" data-1p-ignore="true" data-lpignore="true" placeholder="최소 8자, 문자+숫자 포함" readonly onfocus="this.removeAttribute('readonly')">
+                        <button type="button" class="pw-toggle" data-target="signupPw" aria-label="비밀번호 표시/숨김" title="비밀번호 표시/숨김">👁</button>
+                    </div>
                 </label>
 
                 <label class="auth-field">
                     <span>비밀번호 확인</span>
-                    <input type="password" name="password2" required minlength="8" maxlength="128" autocomplete="new-password">
+                    <div class="pw-input-wrap">
+                        <input type="password" id="signupPw2" name="pw_signup_confirm_x7k" required minlength="8" maxlength="128" autocomplete="off" data-1p-ignore="true" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly')">
+                        <button type="button" class="pw-toggle" data-target="signupPw2" aria-label="비밀번호 표시/숨김" title="비밀번호 표시/숨김">👁</button>
+                    </div>
                 </label>
 
                 <label class="auth-field">
@@ -71,6 +118,21 @@
         }
         NexusAuth.installDevBannerIfNeeded();
 
+        // 비밀번호 표시/숨김 토글 (👁 / 🙈)
+        document.querySelectorAll('.pw-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.getElementById(btn.dataset.target);
+                if (!target) return;
+                if (target.type === 'password') {
+                    target.type = 'text';
+                    btn.textContent = '🙈';
+                } else {
+                    target.type = 'password';
+                    btn.textContent = '👁';
+                }
+            });
+        });
+
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const err = document.getElementById('signupError');
@@ -78,8 +140,9 @@
             err.textContent = '';
 
             const fd = new FormData(e.target);
-            const pw1 = fd.get('password');
-            const pw2 = fd.get('password2');
+            // 비밀번호는 비표준화된 name 으로 (자동완성 회피용) — id 로 직접 조회
+            const pw1 = document.getElementById('signupPw').value;
+            const pw2 = document.getElementById('signupPw2').value;
             if (pw1 !== pw2) {
                 err.textContent = '비밀번호 확인이 일치하지 않습니다.';
                 err.hidden = false;
