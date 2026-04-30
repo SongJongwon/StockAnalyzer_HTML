@@ -79,6 +79,53 @@
         _status.count = _cache.length;
     }
 
+    // ── 다중 탭/페이지 동기화 ──────────────────────────────
+    // BroadcastChannel: 같은 origin 의 모든 탭에 변경 통보 (Chrome 54+, FF 38+, Safari 15.4+).
+    // focus 이벤트: 탭 활성화 시 best-effort refresh (BroadcastChannel 미지원 폴백 + 안전망).
+    // storage 이벤트: localStorage 변경 → 폴백 (BroadcastChannel 가용 시 무시).
+    const _SYNC_CHANNEL_NAME = 'nexus-byok-sync';
+    const _SYNC_STORAGE_KEY  = 'sa_byok_sync_at';
+    let _syncChannel = null;
+
+    try {
+        if (typeof BroadcastChannel !== 'undefined') {
+            _syncChannel = new BroadcastChannel(_SYNC_CHANNEL_NAME);
+            _syncChannel.onmessage = (ev) => {
+                if (!ev || !ev.data || ev.data.type !== 'byok_changed') return;
+                // 자기 자신이 broadcast 한 메시지는 무시 (이미 캐시 갱신됨)
+                if (ev.data.origin === _instanceId) return;
+                refresh().catch(() => { /* 옵저버가 error 처리 */ });
+            };
+        }
+    } catch (e) { /* BroadcastChannel 미지원 또는 차단 — 무시 */ }
+
+    // 인스턴스 식별자 (같은 origin 내 탭 구분)
+    const _instanceId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    function _broadcastChange() {
+        try {
+            if (_syncChannel) {
+                _syncChannel.postMessage({ type: 'byok_changed', origin: _instanceId, ts: Date.now() });
+            } else {
+                // BroadcastChannel 미지원 → localStorage 의 sync 키 토글로 storage 이벤트 트리거
+                localStorage.setItem(_SYNC_STORAGE_KEY, String(Date.now()));
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    // storage 이벤트 (BroadcastChannel 폴백 + 안전망)
+    window.addEventListener('storage', (ev) => {
+        if (ev.key !== _SYNC_STORAGE_KEY) return;
+        refresh().catch(() => {});
+    });
+
+    // 탭 활성화 시 best-effort refresh — 사용자가 다른 탭에서 변경 후 돌아온 케이스
+    window.addEventListener('focus', () => {
+        if (_status.ready && !_status.error) {
+            refresh().catch(() => {});
+        }
+    });
+
     // ── 서버 호출 ──────────────────────────────────────────
     async function _serverList() {
         return await NexusAuth.apiFetch('/api/auth/api-keys', { auth: true });
@@ -246,6 +293,7 @@
         if (!plainKey || plainKey.trim().length < 8) throw new Error('키가 너무 짧습니다 (최소 8자).');
         await _serverSave(id, plainKey.trim());
         await refresh();
+        _broadcastChange();
     }
 
     async function remove(providerId) {
@@ -253,6 +301,7 @@
         if (!PROVIDER_IDS.includes(id)) throw new Error(`알 수 없는 provider: ${providerId}`);
         await _serverDelete(id);
         await refresh();
+        _broadcastChange();
     }
 
     async function setActive(providerId, isActiveBool) {
@@ -260,6 +309,7 @@
         if (!PROVIDER_IDS.includes(id)) throw new Error(`알 수 없는 provider: ${providerId}`);
         await _serverPatch(id, !!isActiveBool);
         await refresh();
+        _broadcastChange();
     }
 
     // ── 옵저버 ────────────────────────────────────────────
