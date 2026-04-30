@@ -52,7 +52,7 @@
                 <p>새 계정을 만드세요</p>
             </header>
 
-            <form id="signupForm" class="auth-form" novalidate>
+            <form id="signupForm" class="auth-form" novalidate autocomplete="off">
                 <label class="auth-field">
                     <span>이메일</span>
                     <input type="email" name="email" required autocomplete="email" placeholder="name@example.com">
@@ -68,11 +68,14 @@
                     <div class="pw-input-wrap">
                         <!--
                           크롬 비밀번호 자동완성·추천 팝업 억제 트릭 (mypage 비밀번호 변경창과 동일 패턴):
-                            1. autocomplete="new-password" — 신규 비밀번호 입력 (저장된 값 채우지 않음)
+                            1. autocomplete="off" — 크롬 "강력한 비밀번호 추천" 팝업까지 억제
+                                (autocomplete="new-password" 는 오히려 추천 팝업 유발)
                             2. name 비표준화 (pw_signup_x7k) — 비밀번호 매니저 매칭 회피
                             3. readonly + onfocus="removeAttribute" — 페이지 로드 시 비활성 → 포커스 시 활성화로 자동완성 트리거 회피
+                            4. data-1p-ignore / data-lpignore — 1Password / LastPass 등 매니저 무시 신호
+                            5. form autocomplete="off" 도 함께 적용 (위)
                         -->
-                        <input type="password" id="signupPw" name="pw_signup_x7k" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="최소 8자, 문자+숫자 포함" readonly onfocus="this.removeAttribute('readonly')">
+                        <input type="password" id="signupPw" name="pw_signup_x7k" required minlength="8" maxlength="128" autocomplete="off" data-1p-ignore="true" data-lpignore="true" placeholder="최소 8자, 문자+숫자 포함" readonly onfocus="this.removeAttribute('readonly')">
                         <button type="button" class="pw-toggle" data-target="signupPw" aria-label="비밀번호 표시/숨김" title="비밀번호 표시/숨김">👁</button>
                     </div>
                 </label>
@@ -80,7 +83,7 @@
                 <label class="auth-field">
                     <span>비밀번호 확인</span>
                     <div class="pw-input-wrap">
-                        <input type="password" id="signupPw2" name="pw_signup_confirm_x7k" required minlength="8" maxlength="128" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+                        <input type="password" id="signupPw2" name="pw_signup_confirm_x7k" required minlength="8" maxlength="128" autocomplete="off" data-1p-ignore="true" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly')">
                         <button type="button" class="pw-toggle" data-target="signupPw2" aria-label="비밀번호 표시/숨김" title="비밀번호 표시/숨김">👁</button>
                     </div>
                 </label>
