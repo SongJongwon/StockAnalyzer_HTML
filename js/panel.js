@@ -172,15 +172,19 @@ async function startPanelDiscussion() {
         return;
     }
 
-    // API 키 확인
+    // API 키 확인 — Phase 4 통합 후:
+    //   - body 의 user_*_key 는 호환을 위해 빈 문자열 유지 (backend 가 user_api_keys DB 자동 폴백)
+    //   - 가드는 NexusByok 캐시 (활성 키 ≥1) 기반
     const keys = {
         anthropic: getApiKey('anthropic') || '',
         openai:    getApiKey('openai')    || '',
         gemini:    getApiKey('gemini')    || '',
         groq:      getApiKey('groq')      || '',
     };
-    if (!keys.anthropic && !keys.openai && !keys.gemini && !keys.groq) {
-        alert(L('panel_no_keys') || '먼저 AI API 키를 등록해주세요.');
+    const hasBodyKey   = !!(keys.anthropic || keys.openai || keys.gemini || keys.groq);
+    const hasServerKey = !!(window.NexusByok && NexusByok.getActiveCount() > 0);
+    if (!hasBodyKey && !hasServerKey) {
+        alert(L('panel_no_keys') || '먼저 AI API 키를 등록해주세요. 마이페이지 또는 상단 ⋮ 메뉴 → AI API 설정.');
         return;
     }
 
