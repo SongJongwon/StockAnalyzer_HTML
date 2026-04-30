@@ -468,22 +468,85 @@
             margin-left: 4px;
         }
 
-        /* placeholder 카드 (토큰/비용 — 추후 도입) */
-        .placeholder-card {
-            background: var(--acct-card);
-            border: 1px dashed var(--acct-border);
-            border-radius: 12px;
-            padding: 28px 24px;
+        /* ── Phase 6: 토큰·비용 (ccusage 스타일) ── */
+        .token-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
             margin-bottom: 16px;
-            opacity: 0.85;
         }
-        .placeholder-card code {
+        .token-summary-card {
+            background: var(--acct-card);
+            border: 1px solid var(--acct-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .token-summary-card .label {
+            font-size: 11px;
+            color: var(--acct-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .token-summary-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--acct-text-strong);
+            font-variant-numeric: tabular-nums;
+        }
+        .token-summary-card .sub {
+            font-size: 11px;
+            color: var(--acct-muted);
+            font-variant-numeric: tabular-nums;
+        }
+        .token-summary-card[data-accent="cost"]   .value { color: #fbbf24; }
+        .token-summary-card[data-accent="byok"]   .value { color: #4ade80; }
+        .token-summary-card[data-accent="calls"]  .value { color: #a5b4fc; }
+        [data-theme="light"] .token-summary-card[data-accent="cost"]  .value { color: #b45309; }
+        [data-theme="light"] .token-summary-card[data-accent="byok"]  .value { color: #15803d; }
+        [data-theme="light"] .token-summary-card[data-accent="calls"] .value { color: #4338ca; }
+
+        .token-charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .source-pill {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .source-pill[data-byok="true"]  { background: rgba(34,197,94,0.20); color: #86efac; }
+        .source-pill[data-byok="false"] { background: rgba(99,102,241,0.18); color: #a5b4fc; }
+        [data-theme="light"] .source-pill[data-byok="true"]  { background: rgba(34,197,94,0.15); color: #15803d; }
+        [data-theme="light"] .source-pill[data-byok="false"] { background: rgba(99,102,241,0.15); color: #4338ca; }
+
+        .num-cell {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 12px;
+        }
+        .cost-cell {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        [data-theme="light"] .cost-cell { color: #b45309; }
+        .cost-cell.zero { color: var(--acct-muted); font-weight: 400; }
+
+        .model-mono {
             font-family: ui-monospace, 'SF Mono', Menlo, monospace;
             font-size: 11px;
-            background: var(--acct-input-bg);
-            padding: 1px 6px;
-            border-radius: 4px;
-            color: var(--acct-text);
+            color: var(--acct-text-soft);
         }
     </style>
 </head>
@@ -615,28 +678,68 @@
             </table>
         </div>
 
-        <!-- ── Phase 6: 토큰 사용량 + API 비용 (placeholder) ── -->
+        <!-- ── Phase 6: 토큰 사용량 + API 비용 (ccusage 스타일) ── -->
         <h3 class="account-card-title" style="color:var(--acct-text-soft);font-size:14px;margin:32px 0 12px;">
             💰 토큰 사용량 + API 비용
         </h3>
-        <div class="placeholder-card">
-            <div style="font-size:32px;text-align:center;margin-bottom:12px;">📊</div>
-            <p style="text-align:center;font-weight:600;color:var(--acct-text-strong);margin:0 0 8px;font-size:15px;">
-                다음 세션 별도 브랜치에서 도입 예정
-            </p>
-            <p style="text-align:center;font-size:13px;color:var(--acct-muted);margin:0 0 18px;line-height:1.6;">
-                <code>ai_token_usage</code> 테이블은 schema v1.2 에 정의돼 있으나
-                <strong>채우는 코드가 없어 비어 있는 상태</strong>입니다.<br>
-                현재 <code>user_activities.metadata</code> 에는 토큰·비용 정보가 저장되지 않습니다.
-            </p>
-            <ul style="font-size:12px;color:var(--acct-text-soft);max-width:640px;margin:0 auto;padding-left:20px;line-height:1.8;">
-                <li><strong>backend:</strong> <code>record_token_usage()</code> 헬퍼 추가 + <code>market.py</code> / <code>panel/routes.py</code> 호출 + provider별 단가 매핑 (Gemini 무료 / Groq 무료 / Claude $3·$15 / OpenAI $5·$20)</li>
-                <li><strong>새 endpoint:</strong> <code>GET /api/admin/tokens/recent</code> + <code>GET /api/admin/tokens/summary</code> (provider별 / 일별 비용 집계)</li>
-                <li><strong>frontend:</strong> provider별 토큰 막대 차트 + 일별 누적 비용 line chart + USD/KRW 변환</li>
-            </ul>
-            <p style="text-align:center;font-size:11px;color:var(--acct-muted);margin:18px 0 0;">
-                브랜치 후보: <code>feature/admin-token-cost</code>
-            </p>
+
+        <!-- 1) 요약 카드 (4개) -->
+        <div class="token-summary-grid" id="tokenSummaryGrid">
+            <div class="token-summary-card"><div class="label">로딩 중…</div><div class="value">—</div></div>
+        </div>
+
+        <!-- 2) Provider 별 토큰 막대 차트 + 3) 일별 누적 비용 line chart -->
+        <div class="token-charts-grid">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>Provider 별 토큰 (input / output)</h3>
+                    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                        <span class="chart-meta" id="tokenProviderMeta">—</span>
+                        <div class="range-tabs" id="tokenRangeTabs">
+                            <button data-days="7" class="active" type="button">7일</button>
+                            <button data-days="30" type="button">30일</button>
+                            <button data-days="90" type="button">90일</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="tokenProviderChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>일별 누적 비용 (USD)</h3>
+                    <span class="chart-meta" id="tokenCostMeta">—</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="tokenCostChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4) 최근 토큰 사용 테이블 -->
+        <h3 class="account-card-title" style="color:var(--acct-text-soft);font-size:14px;margin:32px 0 12px;">
+            최근 토큰 사용 (ai_token_usage)
+        </h3>
+        <div class="users-table-wrap">
+            <table class="users-table" id="tokenTable">
+                <thead>
+                    <tr>
+                        <th style="width:14%;">시간</th>
+                        <th style="width:18%;">사용자</th>
+                        <th style="width:9%;">Provider</th>
+                        <th style="width:14%;">Model</th>
+                        <th style="width:9%;text-align:right;">입력</th>
+                        <th style="width:9%;text-align:right;">출력</th>
+                        <th style="width:11%;text-align:right;">비용 (USD)</th>
+                        <th style="width:8%;text-align:right;">지연</th>
+                        <th style="width:8%;">출처</th>
+                    </tr>
+                </thead>
+                <tbody id="tokenTbody">
+                    <tr><td colspan="9" class="empty-row">로딩 중…</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -756,6 +859,8 @@
             loadUsageData(_currentDays);
             loadRecentActivity();
             loadErrorLogs();
+            loadTokenSummary(_tokenDays);
+            loadRecentTokens();
         }
 
         // ──────────────────────────────────────────
@@ -972,6 +1077,229 @@
             }
         }
 
+        // ──────────────────────────────────────────
+        // Phase 6 — 토큰·비용 (ccusage 스타일)
+        // ──────────────────────────────────────────
+        let _tokenProviderChart = null;
+        let _tokenCostChart = null;
+        let _tokenDays = 7;
+
+        // provider 별 차트 색상 (라이트/다크 공통)
+        const PROVIDER_COLORS = {
+            gemini:    '#4285f4',
+            openai:    '#10a37f',
+            anthropic: '#cc785c',
+            groq:      '#f97316',
+            unknown:   '#94a3b8',
+        };
+        const colorForProvider = (p) => PROVIDER_COLORS[p] || PROVIDER_COLORS.unknown;
+
+        // ccusage 스타일 포맷터
+        const fmtTokens = (n) => Number(n || 0).toLocaleString('en-US');
+        const fmtUsd    = (n) => '$' + Number(n || 0).toFixed(4);
+        const fmtKrw    = (n) => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
+        const fmtMs     = (n) => {
+            const v = Number(n || 0);
+            if (!v) return '—';
+            return v >= 1000 ? (v / 1000).toFixed(1) + 's' : v + 'ms';
+        };
+
+        async function loadTokenSummary(days) {
+            _tokenDays = days;
+            try {
+                const s = await NexusAuth.apiFetch(`/api/admin/tokens/summary?days=${days}`, { auth: true });
+                renderTokenSummaryGrid(s);
+                renderTokenProviderChart(s);
+                renderTokenCostChart(s);
+            } catch (e) {
+                document.getElementById('tokenSummaryGrid').innerHTML =
+                    `<div class="token-summary-card"><div class="label">로드 실패</div><div class="value">—</div><div class="sub">${escapeHtml(e.message || String(e))}</div></div>`;
+                document.getElementById('tokenProviderMeta').textContent = '집계 로드 실패';
+                document.getElementById('tokenCostMeta').textContent = '집계 로드 실패';
+                console.error('[admin] tokens/summary error:', e);
+            }
+        }
+
+        function renderTokenSummaryGrid(s) {
+            const t = s.totals || {};
+            const totalTokens = (t.tokens_in || 0) + (t.tokens_out || 0);
+            const grid = document.getElementById('tokenSummaryGrid');
+            grid.innerHTML = `
+                <div class="token-summary-card">
+                    <div class="label">최근 ${s.days || _tokenDays}일 토큰</div>
+                    <div class="value">${fmtTokens(totalTokens)}</div>
+                    <div class="sub">in ${fmtTokens(t.tokens_in)} · out ${fmtTokens(t.tokens_out)}</div>
+                </div>
+                <div class="token-summary-card" data-accent="cost">
+                    <div class="label">누적 비용 (USD)</div>
+                    <div class="value">${fmtUsd(t.cost_usd)}</div>
+                    <div class="sub">${fmtKrw(t.cost_krw)}</div>
+                </div>
+                <div class="token-summary-card" data-accent="calls">
+                    <div class="label">API 호출</div>
+                    <div class="value">${fmtTokens(t.count)}</div>
+                    <div class="sub">평균 ${t.count ? fmtTokens(Math.round(totalTokens / t.count)) : 0} 토큰/호출</div>
+                </div>
+                <div class="token-summary-card" data-accent="byok">
+                    <div class="label">BYOK 호출</div>
+                    <div class="value">${fmtTokens(t.byok_count)}</div>
+                    <div class="sub">서비스 ${fmtTokens((t.count || 0) - (t.byok_count || 0))} · 본인 키 ${fmtTokens(t.byok_count)}</div>
+                </div>
+            `;
+        }
+
+        function renderTokenProviderChart(s) {
+            const byProvider = s.by_provider || {};
+            const providers = Object.keys(byProvider).sort((a, b) =>
+                (byProvider[b].tokens_in + byProvider[b].tokens_out) -
+                (byProvider[a].tokens_in + byProvider[a].tokens_out)
+            );
+
+            const inputData  = providers.map(p => byProvider[p].tokens_in  || 0);
+            const outputData = providers.map(p => byProvider[p].tokens_out || 0);
+
+            document.getElementById('tokenProviderMeta').textContent =
+                `${providers.length}개 provider · ${fmtTokens(s.totals && s.totals.count || 0)} 호출`;
+
+            const isLight = document.documentElement.dataset.theme === 'light';
+            const tickColor = isLight ? '#475569' : '#94a3b8';
+            const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+
+            if (_tokenProviderChart) _tokenProviderChart.destroy();
+            const ctx = document.getElementById('tokenProviderChart').getContext('2d');
+            _tokenProviderChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: providers,
+                    datasets: [
+                        {
+                            label: 'input',
+                            data: inputData,
+                            backgroundColor: providers.map(p => colorForProvider(p) + 'cc'),
+                            stack: 'tokens',
+                            borderRadius: 3,
+                            borderWidth: 0,
+                        },
+                        {
+                            label: 'output',
+                            data: outputData,
+                            backgroundColor: providers.map(p => colorForProvider(p) + '88'),
+                            stack: 'tokens',
+                            borderRadius: 3,
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: tickColor, font: { size: 11 }, boxWidth: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: (item) => `${item.dataset.label}: ${fmtTokens(item.parsed.y)}`,
+                                footer: (items) => {
+                                    const p = items[0].label;
+                                    const cost = (byProvider[p] && byProvider[p].cost_usd) || 0;
+                                    return `비용: ${fmtUsd(cost)}`;
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: { stacked: true, ticks: { color: tickColor, font: { size: 11 } }, grid: { display: false } },
+                        y: { stacked: true, ticks: { color: tickColor, callback: (v) => fmtTokens(v) }, grid: { color: gridColor }, beginAtZero: true },
+                    },
+                },
+            });
+        }
+
+        function renderTokenCostChart(s) {
+            const byDay = (s.by_day || []).slice().reverse();   // 오래된 → 최신
+            const labels = byDay.map(d => d.date);
+
+            // provider 별 일 비용 line — by_day[d].by_provider[p].cost_usd
+            const providers = Array.from(new Set(byDay.flatMap(d => Object.keys(d.by_provider || {}))))
+                .sort();
+
+            const datasets = providers.map(p => ({
+                label: p,
+                data: byDay.map(d => (d.by_provider && d.by_provider[p] && d.by_provider[p].cost_usd) || 0),
+                borderColor: colorForProvider(p),
+                backgroundColor: colorForProvider(p) + '33',
+                fill: false,
+                tension: 0.25,
+                pointRadius: 2.5,
+                borderWidth: 2,
+            }));
+
+            const totalCost = (s.totals && s.totals.cost_usd) || 0;
+            document.getElementById('tokenCostMeta').textContent =
+                `누적 ${fmtUsd(totalCost)} · ${fmtKrw((s.totals && s.totals.cost_krw) || 0)}`;
+
+            const isLight = document.documentElement.dataset.theme === 'light';
+            const tickColor = isLight ? '#475569' : '#94a3b8';
+            const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+
+            if (_tokenCostChart) _tokenCostChart.destroy();
+            const ctx = document.getElementById('tokenCostChart').getContext('2d');
+            _tokenCostChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: tickColor, font: { size: 11 }, boxWidth: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: (item) => `${item.dataset.label}: ${fmtUsd(item.parsed.y)}`,
+                            },
+                        },
+                    },
+                    scales: {
+                        x: { ticks: { color: tickColor, font: { size: 10 } }, grid: { display: false } },
+                        y: { ticks: { color: tickColor, callback: (v) => '$' + Number(v).toFixed(4) }, grid: { color: gridColor }, beginAtZero: true },
+                    },
+                },
+            });
+        }
+
+        async function loadRecentTokens() {
+            const tbody = document.getElementById('tokenTbody');
+            try {
+                const r = await NexusAuth.apiFetch('/api/admin/tokens/recent?limit=30', { auth: true });
+                const items = r.items || [];
+                if (!items.length) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="empty-row">토큰 사용 기록 없음 — 페르소나 토론 또는 AI 분석을 한 번 실행하면 채워집니다</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = items.map(t => {
+                    const cost = Number(t.cost_usd || 0);
+                    const costCls = cost > 0 ? 'cost-cell' : 'cost-cell zero';
+                    const provider = (t.provider || 'unknown').toLowerCase();
+                    const isByok = !!t.is_user_key;
+                    return `
+                        <tr>
+                            <td class="meta-time" style="text-align:left;">${fmtDateTime(t.created_at)}</td>
+                            <td style="text-align:left;">${_userCellHtml(t.user_id)}</td>
+                            <td><span class="provider-badge" data-provider="${escapeHtml(provider)}">${escapeHtml(provider)}</span></td>
+                            <td class="model-mono" style="text-align:left;">${escapeHtml(t.model || '—')}</td>
+                            <td class="num-cell">${fmtTokens(t.input_tokens)}</td>
+                            <td class="num-cell">${fmtTokens(t.output_tokens)}</td>
+                            <td class="num-cell ${costCls}">${cost > 0 ? fmtUsd(cost) : '$0.0000'}</td>
+                            <td class="num-cell">${fmtMs(t.latency_ms)}</td>
+                            <td><span class="source-pill" data-byok="${isByok}">${isByok ? '🔑 BYOK' : '서비스'}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-row">로드 실패: ${escapeHtml(e.message || String(e))}</td></tr>`;
+            }
+        }
+
         function renderSummary(s) {
             const grid = document.getElementById('summaryGrid');
             const by = s.by_plan || {};
@@ -1152,6 +1480,16 @@
                 b.classList.toggle('active', b === btn)
             );
             loadUsageData(parseInt(btn.dataset.days, 10) || 7);
+        });
+
+        // 토큰·비용 차트 기간 토글
+        document.getElementById('tokenRangeTabs').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-days]');
+            if (!btn) return;
+            document.querySelectorAll('#tokenRangeTabs button').forEach(b =>
+                b.classList.toggle('active', b === btn)
+            );
+            loadTokenSummary(parseInt(btn.dataset.days, 10) || 7);
         });
     </script>
 </body>
