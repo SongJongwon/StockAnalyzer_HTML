@@ -8,6 +8,106 @@
     <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/theme.css">
     <script src="js/theme.js"></script>
+    <style>
+        /* Phase 4 — BYOK 서버 암호화 카드 */
+        .byok-section { margin-top: 12px; }
+        .byok-status {
+            font-size: 12px;
+            color: var(--acct-muted);
+            margin-bottom: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+        .byok-status.warn { color: #f59e0b; }
+        [data-theme="light"] .byok-status.warn { color: #b45309; }
+
+        .byok-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .byok-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: var(--acct-input-bg);
+            border: 1px solid var(--acct-border);
+            border-radius: 10px;
+        }
+        .byok-row[data-active="false"] { opacity: 0.6; }
+        .byok-row .prov-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--acct-text-strong);
+            min-width: 110px;
+        }
+        .byok-row .key-hint {
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 12px;
+            color: var(--acct-text-soft);
+            flex: 1;
+        }
+        .byok-row .key-hint.empty { color: var(--acct-muted); font-style: italic; }
+        .byok-row .last-used {
+            font-size: 11px;
+            color: var(--acct-muted);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .byok-row .row-btns {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .byok-row button {
+            background: transparent;
+            border: 1px solid var(--acct-border);
+            color: var(--acct-text-soft);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .byok-row button:hover:not(:disabled) {
+            background: var(--acct-card);
+            color: var(--acct-text-strong);
+        }
+        .byok-row button.danger { color: #f87171; border-color: rgba(239,68,68,0.40); }
+        .byok-row button.danger:hover { background: rgba(239,68,68,0.10); }
+        .byok-row button.primary { color: #4ade80; border-color: rgba(34,197,94,0.40); }
+        .byok-row button.primary:hover { background: rgba(34,197,94,0.10); }
+        [data-theme="light"] .byok-row button.danger  { color: #b91c1c; }
+        [data-theme="light"] .byok-row button.primary { color: #15803d; }
+
+        .byok-input-wrap {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            width: 100%;
+        }
+        .byok-input-wrap input {
+            flex: 1;
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 12px;
+            padding: 6px 10px;
+            background: var(--acct-card);
+            border: 1px solid var(--acct-border);
+            color: var(--acct-text-strong);
+            border-radius: 6px;
+        }
+        .byok-active-pill {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+        .byok-active-pill[data-active="true"]  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+        .byok-active-pill[data-active="false"] { background: rgba(148,163,184,0.18); color: #94a3b8; }
+        [data-theme="light"] .byok-active-pill[data-active="true"]  { color: #15803d; }
+        [data-theme="light"] .byok-active-pill[data-active="false"] { color: #475569; }
+    </style>
 </head>
 <body>
     <button class="theme-toggle" type="button"></button>
@@ -69,8 +169,15 @@
             </div>
 
             <div class="account-card">
-                <h3>AI API 키 (BYOK)</h3>
-                <p class="notice">본인 API 키를 등록하면 서버 쿼터와 무관하게 AI 분석을 무제한 호출할 수 있습니다. 현재는 홈 화면 상단의 <strong>AI 키 설정</strong> 버튼으로 브라우저에 저장됩니다.<br><br>(Phase 4 에서 서버 측 암호화 저장으로 업그레이드 예정)</p>
+                <h3>🔐 AI API 키 (BYOK · 서버 암호화 저장)</h3>
+                <p class="notice">본인 API 키를 서버에 <strong>AES-256-GCM 암호화</strong>로 저장하면 모든 기기에서 동기화돼 사용할 수 있습니다. 평문 키는 절대 저장·표시되지 않으며, 호출 시점에만 메모리에서 복호화돼 사용됩니다.</p>
+                <div id="byokSection" class="byok-section">
+                    <div id="byokStatus" class="byok-status">불러오는 중…</div>
+                    <div id="byokList" class="byok-list"></div>
+                </div>
+                <p class="notice" style="margin-top:14px;font-size:11px;color:var(--acct-muted);">
+                    <strong>우선순위</strong>: 브라우저 모달 키 (즉시) → 서버 저장 키 (계정 동기화) → 서버 환경변수 (관리자 폴백). 홈 화면 상단의 "AI 키 설정" 모달은 이 기기에만 저장하며 그대로 유지됩니다.
+                </p>
             </div>
 
             <div class="account-card">
@@ -176,6 +283,9 @@
                 renderSubscription(sub, user);
                 renderUsage(usage);
 
+                // BYOK 서버 키 목록 (개별 실패는 다른 카드에 영향 없음)
+                loadByokKeys();
+
                 // 마스터 계정이면 관리자 대시보드 버튼 노출
                 // (DEV_MODE fake_user.is_master / 실제 user.is_master / sub.is_master 중 하나라도 true)
                 const isMaster = !!(user && user.is_master) || !!(sub && sub.is_master);
@@ -228,6 +338,165 @@
             el.textContent = text;
             el.className = 'pw-message ' + (kind || '');
             el.hidden = false;
+        }
+
+        // ──────────────────────────────────────────
+        // Phase 4 — BYOK 서버 암호화 키 관리
+        // ──────────────────────────────────────────
+        const BYOK_PROVIDERS = [
+            { id: 'anthropic', label: 'Anthropic Claude', placeholder: 'sk-ant-api03-...' },
+            { id: 'openai',    label: 'OpenAI GPT',       placeholder: 'sk-proj-...' },
+            { id: 'gemini',    label: 'Google Gemini',    placeholder: 'AIza...' },
+            { id: 'groq',      label: 'Groq (무료)',      placeholder: 'gsk_...' },
+        ];
+
+        const fmtRelative = (iso) => {
+            if (!iso) return '미사용';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return '미사용';
+            const diffMs = Date.now() - d.getTime();
+            const sec = Math.floor(diffMs / 1000);
+            if (sec < 60) return '방금';
+            if (sec < 3600) return Math.floor(sec / 60) + '분 전';
+            if (sec < 86400) return Math.floor(sec / 3600) + '시간 전';
+            return Math.floor(sec / 86400) + '일 전';
+        };
+
+        const escapeHtml = (s) => String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+        async function loadByokKeys() {
+            const status = document.getElementById('byokStatus');
+            const list   = document.getElementById('byokList');
+            try {
+                const r = await NexusAuth.apiFetch('/api/auth/api-keys', { auth: true });
+                if (r.dev_mode) {
+                    status.className = 'byok-status warn';
+                    status.textContent = '⚠️ 개발 모드 사용자는 BYOK 서버 저장을 이용할 수 없습니다 (DB 미접속).';
+                    list.innerHTML = '';
+                    return;
+                }
+                if (!r.byok_configured) {
+                    status.className = 'byok-status warn';
+                    status.textContent = '⚠️ 관리자 BYOK 암호화 키 미설정 — 저장 기능을 사용할 수 없습니다.';
+                    list.innerHTML = '';
+                    return;
+                }
+                renderByokList(r.items || []);
+                const count = (r.items || []).length;
+                status.className = 'byok-status';
+                status.textContent = count
+                    ? `${count}개 provider 등록됨 · 평문 키는 서버에 저장되지 않습니다 (AES-256-GCM 암호화).`
+                    : '아직 등록된 키가 없습니다 — 등록 버튼을 눌러 추가하세요.';
+            } catch (e) {
+                status.className = 'byok-status warn';
+                status.textContent = '로드 실패: ' + (e.message || e);
+                list.innerHTML = '';
+            }
+        }
+
+        function renderByokList(items) {
+            const list = document.getElementById('byokList');
+            const byProvider = Object.fromEntries(items.map(i => [i.provider, i]));
+
+            list.innerHTML = BYOK_PROVIDERS.map(p => {
+                const item = byProvider[p.id];
+                if (item) {
+                    const active = item.is_active !== false;
+                    return `
+                        <div class="byok-row" data-active="${active}">
+                            <div class="prov-name">${escapeHtml(p.label)}</div>
+                            <div class="key-hint">${escapeHtml(item.key_hint || '(힌트 없음)')}</div>
+                            <span class="byok-active-pill" data-active="${active}">${active ? 'ON' : 'OFF'}</span>
+                            <div class="last-used">${fmtRelative(item.last_used_at)}</div>
+                            <div class="row-btns">
+                                <button onclick="toggleByokKey('${p.id}', ${!active})">${active ? '비활성' : '활성'}</button>
+                                <button onclick="byokShowReplace('${p.id}')">교체</button>
+                                <button class="danger" onclick="deleteByokKey('${p.id}')">삭제</button>
+                            </div>
+                            <div class="byok-input-wrap" id="byok-input-${p.id}" style="display:none;">
+                                <input type="password" id="byok-field-${p.id}" placeholder="${escapeHtml(p.placeholder)}" autocomplete="off">
+                                <button class="primary" onclick="saveByokKey('${p.id}')">저장</button>
+                                <button onclick="byokHideReplace('${p.id}')">취소</button>
+                            </div>
+                        </div>`;
+                }
+                return `
+                    <div class="byok-row" data-active="false">
+                        <div class="prov-name">${escapeHtml(p.label)}</div>
+                        <div class="key-hint empty">미등록</div>
+                        <div class="row-btns">
+                            <button class="primary" onclick="byokShowReplace('${p.id}')">+ 등록</button>
+                        </div>
+                        <div class="byok-input-wrap" id="byok-input-${p.id}" style="display:none;">
+                            <input type="password" id="byok-field-${p.id}" placeholder="${escapeHtml(p.placeholder)}" autocomplete="off">
+                            <button class="primary" onclick="saveByokKey('${p.id}')">저장</button>
+                            <button onclick="byokHideReplace('${p.id}')">취소</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function byokShowReplace(provider) {
+            const wrap = document.getElementById(`byok-input-${provider}`);
+            if (!wrap) return;
+            wrap.style.display = 'flex';
+            const field = document.getElementById(`byok-field-${provider}`);
+            field?.focus();
+        }
+        function byokHideReplace(provider) {
+            const wrap = document.getElementById(`byok-input-${provider}`);
+            if (!wrap) return;
+            wrap.style.display = 'none';
+            const field = document.getElementById(`byok-field-${provider}`);
+            if (field) field.value = '';
+        }
+
+        async function saveByokKey(provider) {
+            const field = document.getElementById(`byok-field-${provider}`);
+            const key = (field?.value || '').trim();
+            if (key.length < 8) {
+                alert('키가 너무 짧습니다 (최소 8자).');
+                return;
+            }
+            try {
+                await NexusAuth.apiFetch('/api/auth/api-keys', {
+                    method: 'POST',
+                    auth: true,
+                    body: { provider, key },
+                });
+                if (field) field.value = '';
+                await loadByokKeys();
+            } catch (e) {
+                alert('저장 실패: ' + (e.message || e));
+            }
+        }
+
+        async function deleteByokKey(provider) {
+            if (!confirm(`${provider} 키를 서버에서 영구 삭제할까요? 다음 호출은 브라우저 모달 키 또는 서버 환경변수로 폴백됩니다.`)) return;
+            try {
+                await NexusAuth.apiFetch(`/api/auth/api-keys/${provider}`, {
+                    method: 'DELETE',
+                    auth: true,
+                });
+                await loadByokKeys();
+            } catch (e) {
+                alert('삭제 실패: ' + (e.message || e));
+            }
+        }
+
+        async function toggleByokKey(provider, isActive) {
+            try {
+                await NexusAuth.apiFetch(`/api/auth/api-keys/${provider}`, {
+                    method: 'PATCH',
+                    auth: true,
+                    body: { is_active: isActive },
+                });
+                await loadByokKeys();
+            } catch (e) {
+                alert('상태 변경 실패: ' + (e.message || e));
+            }
         }
 
         document.getElementById('pwChangeForm').addEventListener('submit', async (e) => {
