@@ -263,6 +263,7 @@
     </div>
 
     <script src="js/auth.js"></script>
+    <script src="js/byok-store.js"></script>
     <script>
         const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }) : '—';
         const showError = (msg) => {
@@ -359,7 +360,16 @@
                 renderUsage(usage);
 
                 // BYOK 서버 키 목록 (개별 실패는 다른 카드에 영향 없음)
-                loadByokKeys();
+                // NexusByok 가 아직 init 안 됐으면 init (마이그레이션 prompt 포함), 그 후 cache 재렌더
+                if (window.NexusByok) {
+                    if (!NexusByok.getStatus().ready) {
+                        NexusByok.init().catch(() => { /* status 갱신은 옵저버가 처리 */ });
+                    } else {
+                        loadByokKeys();
+                    }
+                } else {
+                    loadByokKeys();
+                }
 
                 // 마스터 계정이면 관리자 대시보드 버튼 노출
                 // (DEV_MODE fake_user.is_master / 실제 user.is_master / sub.is_master 중 하나라도 true)
@@ -416,14 +426,15 @@
         }
 
         // ──────────────────────────────────────────
-        // Phase 4 — BYOK 서버 암호화 키 관리
+        // Phase 4 — BYOK 서버 암호화 키 관리 (NexusByok 위임 — 단일 진실)
         // ──────────────────────────────────────────
-        const BYOK_PROVIDERS = [
-            { id: 'anthropic', label: 'Anthropic Claude', placeholder: 'sk-ant-api03-...' },
-            { id: 'openai',    label: 'OpenAI GPT',       placeholder: 'sk-proj-...' },
-            { id: 'gemini',    label: 'Google Gemini',    placeholder: 'AIza...' },
-            { id: 'groq',      label: 'Groq (무료)',      placeholder: 'gsk_...' },
-        ];
+        const BYOK_PROVIDERS = (window.NexusByok && NexusByok.listProviders())
+            || [
+                { id: 'anthropic', label: 'Anthropic Claude', placeholder: 'sk-ant-api03-...' },
+                { id: 'openai',    label: 'OpenAI GPT',       placeholder: 'sk-proj-...' },
+                { id: 'gemini',    label: 'Google Gemini',    placeholder: 'AIza...' },
+                { id: 'groq',      label: 'Groq (무료)',      placeholder: 'gsk_...' },
+            ];
 
         const fmtRelative = (iso) => {
             if (!iso) return '미사용';
@@ -441,33 +452,65 @@
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        async function loadByokKeys() {
+        function _renderByokFromCache() {
             const status = document.getElementById('byokStatus');
             const list   = document.getElementById('byokList');
-            try {
-                const r = await NexusAuth.apiFetch('/api/auth/api-keys', { auth: true });
-                if (r.dev_mode) {
-                    status.className = 'byok-status warn';
-                    status.textContent = '⚠️ 개발 모드 사용자는 BYOK 서버 저장을 이용할 수 없습니다 (DB 미접속).';
-                    list.innerHTML = '';
-                    return;
-                }
-                if (!r.byok_configured) {
-                    status.className = 'byok-status warn';
-                    status.textContent = '⚠️ 관리자 BYOK 암호화 키 미설정 — 저장 기능을 사용할 수 없습니다.';
-                    list.innerHTML = '';
-                    return;
-                }
-                renderByokList(r.items || []);
-                const count = (r.items || []).length;
-                status.className = 'byok-status';
-                status.textContent = count
-                    ? `${count}개 provider 등록됨 · 평문 키는 서버에 저장되지 않습니다 (AES-256-GCM 암호화).`
-                    : '아직 등록된 키가 없습니다 — 등록 버튼을 눌러 추가하세요.';
-            } catch (e) {
+            if (!status || !list) return;
+            if (!window.NexusByok) {
                 status.className = 'byok-status warn';
-                status.textContent = '로드 실패: ' + (e.message || e);
+                status.textContent = 'BYOK 모듈이 로드되지 않았습니다.';
                 list.innerHTML = '';
+                return;
+            }
+            const s = NexusByok.getStatus();
+            if (!s.ready) {
+                status.className = 'byok-status';
+                status.textContent = '불러오는 중…';
+                list.innerHTML = '';
+                return;
+            }
+            if (s.error === 'not_authenticated') {
+                status.className = 'byok-status warn';
+                status.textContent = '⚠️ 키 등록·관리는 로그인이 필요합니다.';
+                list.innerHTML = '';
+                return;
+            }
+            if (s.dev_mode) {
+                status.className = 'byok-status warn';
+                status.textContent = '⚠️ 개발 모드 사용자는 BYOK 서버 저장을 이용할 수 없습니다 (DB 미접속).';
+                list.innerHTML = '';
+                return;
+            }
+            if (!s.byok_configured) {
+                status.className = 'byok-status warn';
+                status.textContent = '⚠️ 관리자 BYOK 암호화 키 미설정 — 저장 기능을 사용할 수 없습니다.';
+                list.innerHTML = '';
+                return;
+            }
+            if (s.error) {
+                status.className = 'byok-status warn';
+                status.textContent = '로드 실패: ' + s.error;
+                list.innerHTML = '';
+                return;
+            }
+            const items = NexusByok.listKeys();
+            renderByokList(items);
+            status.className = 'byok-status';
+            status.textContent = items.length
+                ? `${items.length}개 provider 등록됨 · 평문 키는 서버·브라우저 모두에 저장되지 않습니다 (AES-256-GCM 암호화).`
+                : '아직 등록된 키가 없습니다 — 등록 버튼을 눌러 추가하세요.';
+        }
+
+        // 옵저버 등록 — 홈 모달에서 변경 시 mypage 도 자동 갱신
+        if (window.NexusByok) {
+            NexusByok.on('change', _renderByokFromCache);
+        }
+
+        async function loadByokKeys() {
+            // 캐시 즉시 렌더 + 백그라운드에서 서버 재조회
+            _renderByokFromCache();
+            if (window.NexusByok) {
+                try { await NexusByok.refresh(); } catch (e) { /* 옵저버가 error 처리 */ }
             }
         }
 
@@ -556,46 +599,33 @@
         }
 
         async function saveByokKey(provider) {
+            if (!window.NexusByok) { alert('BYOK 모듈이 로드되지 않았습니다.'); return; }
             const field = document.getElementById(`byok-field-${provider}`);
             const key = (field?.value || '').trim();
-            if (key.length < 8) {
-                alert('키가 너무 짧습니다 (최소 8자).');
-                return;
-            }
             try {
-                await NexusAuth.apiFetch('/api/auth/api-keys', {
-                    method: 'POST',
-                    auth: true,
-                    body: { provider, key },
-                });
+                await NexusByok.save(provider, key);
                 if (field) field.value = '';
-                await loadByokKeys();
+                byokHideReplace(provider);
+                // 옵저버 'change' 가 자동 재렌더
             } catch (e) {
                 alert('저장 실패: ' + (e.message || e));
             }
         }
 
         async function deleteByokKey(provider) {
-            if (!confirm(`${provider} 키를 서버에서 영구 삭제할까요? 다음 호출은 브라우저 모달 키 또는 서버 환경변수로 폴백됩니다.`)) return;
+            if (!window.NexusByok) return;
+            if (!confirm(`${provider} 키를 서버에서 영구 삭제할까요? 다음 호출은 서버 환경변수로 폴백됩니다.`)) return;
             try {
-                await NexusAuth.apiFetch(`/api/auth/api-keys/${provider}`, {
-                    method: 'DELETE',
-                    auth: true,
-                });
-                await loadByokKeys();
+                await NexusByok.remove(provider);
             } catch (e) {
                 alert('삭제 실패: ' + (e.message || e));
             }
         }
 
         async function toggleByokKey(provider, isActive) {
+            if (!window.NexusByok) return;
             try {
-                await NexusAuth.apiFetch(`/api/auth/api-keys/${provider}`, {
-                    method: 'PATCH',
-                    auth: true,
-                    body: { is_active: isActive },
-                });
-                await loadByokKeys();
+                await NexusByok.setActive(provider, isActive);
             } catch (e) {
                 alert('상태 변경 실패: ' + (e.message || e));
             }

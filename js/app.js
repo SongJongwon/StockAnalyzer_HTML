@@ -870,6 +870,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateApiStatusMini();
     loadExchangeRate();
     loadSidebarNews();
+
+    // Phase 4 — BYOK 단일 진실 저장소 초기화 (서버 GET + localStorage 마이그레이션 prompt)
+    if (window.NexusByok) {
+        NexusByok.on('change', () => {
+            updateApiStatusMini();
+            // 모달이 열려있으면 즉시 재렌더 (mypage 에서 등록한 경우 등)
+            const modal = document.getElementById('apiKeyModal');
+            if (modal && modal.style.display !== 'none') renderApiKeyModal();
+        });
+        NexusByok.init().catch(e => console.warn('[init] NexusByok init 오류:', e));
+    }
 });
 
 // ═══════════════════════════════════════════════
@@ -1011,128 +1022,54 @@ function setupTopMenu() {
 }
 
 // ═══════════════════════════════════════════════
-// AI API Key Management
+// AI API Key Management — Phase 4 통합 (서버 단일 저장)
+// 모든 BYOK 키는 NexusByok (js/byok-store.js) 가 서버 endpoint 로 관리.
+// 평문 키는 frontend 에 절대 보관 안 됨 — UI 는 메타데이터 (key_hint 등) 만 표시.
+// 호출 (panel/discuss, /ai-analysis) 에 보내는 user_*_key 는 빈 문자열 →
+// backend 가 user_api_keys 테이블에서 자동 복호화 사용 (DB 폴백).
 // ═══════════════════════════════════════════════
 
 const AI_PROVIDERS = [
-    {
-        id: 'anthropic',
-        name: 'Anthropic Claude',
-        sub: L('claude_model_desc'),
-        icon: 'psychology',
-        iconBg: '#7c3aed22',
-        iconColor: '#7c3aed',
-        placeholder: 'sk-ant-api03-...',
-        storageKey: 'sa_key_anthropic',
-    },
-    {
-        id: 'openai',
-        name: 'OpenAI GPT',
-        sub: L('openai_model_desc'),
-        icon: 'auto_awesome',
-        iconBg: '#10a37f22',
-        iconColor: '#10a37f',
-        placeholder: 'sk-proj-...',
-        storageKey: 'sa_key_openai',
-    },
-    {
-        id: 'gemini',
-        name: 'Google Gemini',
-        sub: L('gemini_model_desc'),
-        icon: 'stars',
-        iconBg: '#4285f422',
-        iconColor: '#4285f4',
-        placeholder: 'AIza...',
-        storageKey: 'sa_key_gemini',
-    },
-    {
-        id: 'groq',
-        name: 'Groq (무료)',
-        sub: L('groq_model_desc'),
-        icon: 'bolt',
-        iconBg: '#ff6b3522',
-        iconColor: '#ff6b35',
-        placeholder: 'gsk_...',
-        storageKey: 'sa_key_groq',
-    },
+    { id: 'anthropic', name: 'Anthropic Claude', sub: L('claude_model_desc'), icon: 'psychology',   iconBg: '#7c3aed22', iconColor: '#7c3aed', placeholder: 'sk-ant-api03-...' },
+    { id: 'openai',    name: 'OpenAI GPT',       sub: L('openai_model_desc'), icon: 'auto_awesome', iconBg: '#10a37f22', iconColor: '#10a37f', placeholder: 'sk-proj-...' },
+    { id: 'gemini',    name: 'Google Gemini',    sub: L('gemini_model_desc'), icon: 'stars',        iconBg: '#4285f422', iconColor: '#4285f4', placeholder: 'AIza...' },
+    { id: 'groq',      name: 'Groq (무료)',      sub: L('groq_model_desc'),   icon: 'bolt',         iconBg: '#ff6b3522', iconColor: '#ff6b35', placeholder: 'gsk_...' },
 ];
 
-// ─── API 키 enabled 상태 (명시적 ON/OFF 토글) ─────────────────────
-// 키가 있어도 사용자가 일시적으로 OFF 할 수 있도록. 기본값은 true (키 등록 시 자동 ON).
-function _enabledStorageKey(providerId) { return `sa_key_${providerId}_enabled`; }
+// ─── Phase 4 호환 wrappers (NexusByok 위임) ──────────────────────
+// 평문 키 반환 함수들은 더 이상 평문을 반환하지 않음. backend DB 폴백을 신뢰.
 
 function isApiKeyEnabled(providerId) {
-    const v = localStorage.getItem(_enabledStorageKey(providerId));
-    // 저장값이 없으면(최초) true 간주 — 기존 사용자의 호환성 유지
-    return v === null ? true : v === 'true';
+    return !!(window.NexusByok && NexusByok.isActive(providerId));
 }
 
-function setApiKeyEnabled(providerId, enabled) {
-    localStorage.setItem(_enabledStorageKey(providerId), enabled ? 'true' : 'false');
-}
-
-/** 실제 저장된 원시 키 (enabled 상태 무시). 마스킹·수정 UI 전용. */
-function getRawApiKey(providerId) {
-    const p = AI_PROVIDERS.find(p => p.id === providerId);
-    return p ? (localStorage.getItem(p.storageKey) || '') : '';
-}
-
-/** 호출 시 사용할 키. OFF 토글이면 빈 문자열을 반환해서 폴백 체인에서 자동 제외됨. */
-function getApiKey(providerId) {
-    if (!isApiKeyEnabled(providerId)) return '';
-    return getRawApiKey(providerId);
-}
-
-function setApiKey(providerId, key) {
-    const p = AI_PROVIDERS.find(p => p.id === providerId);
-    if (p) {
-        localStorage.setItem(p.storageKey, key.trim());
-        // 새로 등록하면 기본 ON
-        setApiKeyEnabled(providerId, true);
-    }
-}
-
-function removeApiKey(providerId) {
-    const p = AI_PROVIDERS.find(p => p.id === providerId);
-    if (p) {
-        localStorage.removeItem(p.storageKey);
-        localStorage.removeItem(_enabledStorageKey(providerId));
-    }
-}
-
-function toggleApiKey(providerId) {
-    // 키가 없는 경우 토글 의미 없음
-    if (!getRawApiKey(providerId)) return;
-    setApiKeyEnabled(providerId, !isApiKeyEnabled(providerId));
-    renderApiKeyModal();
-    updateApiStatusMini();
-}
+/** 호환 stub. Phase 4 통합 후 평문 키는 frontend 에 없음 → 빈 문자열. backend 가 DB 키 사용. */
+function getRawApiKey(_providerId) { return ''; }
+function getApiKey(_providerId)    { return ''; }
 
 function getAiPriority() {
     return localStorage.getItem('sa_ai_priority') || 'auto';
 }
-
 function setAiPriority(val) {
     localStorage.setItem('sa_ai_priority', val);
 }
 
-/** 현재 활성 API 키 정보 반환 */
+/** 활성 키 정보 — 캐시 기반, 평문 없음. {provider, hint} 또는 null. */
 function getActiveApiKeyInfo() {
+    if (!window.NexusByok) return null;
     const priority = getAiPriority();
     if (priority !== 'auto') {
-        const key = getApiKey(priority);
-        if (key) return { provider: priority, key };
-        // 지정 provider 키 없으면 fallback
+        const k = NexusByok.getKey(priority);
+        if (k && k.is_active !== false) return { provider: priority, hint: k.key_hint || '' };
     }
-    // auto: 등록된 것 중 첫 번째
     for (const p of AI_PROVIDERS) {
-        const key = getApiKey(p.id);
-        if (key) return { provider: p.id, key };
+        const k = NexusByok.getKey(p.id);
+        if (k && k.is_active !== false) return { provider: p.id, hint: k.key_hint || '' };
     }
     return null;
 }
 
-/** 메뉴 내 미니 상태 업데이트 */
+/** 메뉴 내 미니 상태 업데이트 — byok-store 의 'change' 이벤트로 자동 호출됨. */
 function updateApiStatusMini() {
     const el = document.getElementById('apiStatusMini');
     if (!el) return;
@@ -1151,6 +1088,10 @@ function openApiKeyModal() {
     if (!modal) return;
     modal.style.display = 'flex';
     renderApiKeyModal();
+    // 캐시 갱신 (mypage 등에서 변경됐을 수 있음)
+    if (window.NexusByok) {
+        NexusByok.refresh().catch(() => { /* 옵저버가 'change' 시 재렌더 */ });
+    }
 }
 
 function closeApiKeyModal() {
@@ -1163,26 +1104,51 @@ function handleModalOverlayClick(e) {
     if (e.target === document.getElementById('apiKeyModal')) closeApiKeyModal();
 }
 
+function _modalStatusBanner() {
+    if (!window.NexusByok) return '';
+    const s = NexusByok.getStatus();
+    if (!s.ready) return '<div class="modal-status-banner">불러오는 중…</div>';
+    if (s.error === 'not_authenticated') {
+        return '<div class="modal-status-banner warn">⚠️ 키 등록·관리는 로그인이 필요합니다. <a href="login.html" style="color:inherit;text-decoration:underline;">로그인</a></div>';
+    }
+    if (s.dev_mode) {
+        return '<div class="modal-status-banner warn">⚠️ 개발 모드 사용자는 BYOK 서버 저장을 이용할 수 없습니다.</div>';
+    }
+    if (!s.byok_configured) {
+        return '<div class="modal-status-banner warn">⚠️ 관리자 BYOK 암호화 키 미설정 — 키 등록이 일시 차단되었습니다.</div>';
+    }
+    if (s.error) return `<div class="modal-status-banner warn">⚠️ ${escapeHtmlForModal(s.error)}</div>`;
+    return `<div class="modal-status-banner">🔐 모든 키는 서버에 AES-256-GCM 으로 암호화 저장됩니다. 평문은 어디에도 보관되지 않습니다.</div>`;
+}
+
+function escapeHtmlForModal(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function renderApiKeyModal() {
     const body = document.getElementById('apiKeyModalBody');
     if (!body) return;
 
     const priority = getAiPriority();
+    const status = window.NexusByok ? NexusByok.getStatus() : { ready: false };
+    const interactive = status.ready && !status.error && !status.dev_mode && status.byok_configured;
 
-    let html = '';
+    let html = _modalStatusBanner();
 
     AI_PROVIDERS.forEach(p => {
-        const rawKey = getRawApiKey(p.id);
-        const hasKey = !!rawKey;
-        const enabled = hasKey && isApiKeyEnabled(p.id);
-        const masked = hasKey ? (rawKey.substring(0, 12) + '••••••••••••' + rawKey.slice(-4)) : '';
+        const meta = window.NexusByok ? NexusByok.getKey(p.id) : null;
+        const hasKey = !!meta;
+        const enabled = hasKey && meta.is_active !== false;
+        const hintDisplay = hasKey ? (meta.key_hint || '(힌트 없음)') : '';
 
-        // 키 있음: 클릭 가능한 토글 배지 / 키 없음: 단순 OFF 표시
         const badgeHtml = hasKey
             ? `<button type="button" class="api-status-badge ${enabled ? 'on' : 'off'}" id="kbadge-${p.id}"
                        onclick="toggleApiKey('${p.id}')" title="클릭하여 ${enabled ? '비활성화' : '활성화'}"
-                       style="cursor:pointer;border:none;">${enabled ? 'ON' : 'OFF'}</button>`
-            : `<span class="api-status-badge off" id="kbadge-${p.id}">OFF</span>`;
+                       ${interactive ? '' : 'disabled'}
+                       style="cursor:${interactive ? 'pointer' : 'not-allowed'};border:none;">${enabled ? 'ON' : 'OFF'}</button>`
+            : `<span class="api-status-badge off" id="kbadge-${p.id}">미등록</span>`;
 
         html += `
         <div class="api-provider-row" id="apr-${p.id}">
@@ -1192,16 +1158,17 @@ function renderApiKeyModal() {
             <div class="api-provider-info">
                 <div class="api-provider-name">${p.name}</div>
                 <div class="api-provider-sub">${p.sub}</div>
-                ${hasKey ? `<div class="api-key-preview" id="kprev-${p.id}">${masked}</div>` : ''}
+                ${hasKey ? `<div class="api-key-preview" id="kprev-${p.id}" title="${escapeHtmlForModal(hintDisplay)}">${escapeHtmlForModal(hintDisplay)}</div>` : ''}
                 <div id="kinput-${p.id}" style="display:none;">
                     <div class="api-key-input-wrap">
-                        <input type="password" id="kinput-field-${p.id}" placeholder="${p.placeholder}" autocomplete="off">
-                        <button class="api-key-btn" onclick="toggleKeyVisibility('${p.id}')" title="${L('api_view_hide')}">
+                        <input type="password" id="kinput-field-${p.id}" placeholder="${escapeHtmlForModal(p.placeholder)}" autocomplete="off" spellcheck="false">
+                        <button type="button" class="api-key-btn" onclick="toggleKeyVisibility('${p.id}')" title="${L('api_view_hide')}">
                             <span class="ms" id="keye-${p.id}">visibility</span>
                         </button>
-                        <button class="api-key-btn primary" onclick="saveApiKey('${p.id}')">
+                        <button type="button" class="api-key-btn primary" onclick="saveApiKey('${p.id}')" ${interactive ? '' : 'disabled'}>
                             <span class="ms">save</span> ${L('api_save')}
                         </button>
+                        <button type="button" class="api-key-btn" onclick="hideKeyInput('${p.id}')">취소</button>
                     </div>
                 </div>
             </div>
@@ -1209,15 +1176,16 @@ function renderApiKeyModal() {
                 ${badgeHtml}
                 <div style="display:flex;gap:6px;">
                     ${hasKey
-                        ? `<button class="api-key-btn danger" onclick="deleteApiKey('${p.id}')"><span class="ms">delete</span> ${L('api_delete')}</button>`
-                        : `<button class="api-key-btn" onclick="showKeyInput('${p.id}')"><span class="ms">add</span> ${L('api_register')}</button>`
+                        ? `<button type="button" class="api-key-btn danger" onclick="deleteApiKey('${p.id}')" ${interactive ? '' : 'disabled'}><span class="ms">delete</span> ${L('api_delete')}</button>
+                           <button type="button" class="api-key-btn" onclick="showKeyInput('${p.id}')" ${interactive ? '' : 'disabled'}>교체</button>`
+                        : `<button type="button" class="api-key-btn primary" onclick="showKeyInput('${p.id}')" ${interactive ? '' : 'disabled'}><span class="ms">add</span> ${L('api_register')}</button>`
                     }
                 </div>
             </div>
         </div>`;
     });
 
-    // Priority selector
+    // Priority selector (개인 선호 — localStorage 그대로)
     const priorityOptions = [
         { val: 'auto',      label: L('api_auto') },
         { val: 'anthropic', label: L('api_claude_first') },
@@ -1231,7 +1199,7 @@ function renderApiKeyModal() {
         <label><span class="ms sm">tune</span> ${L('api_priority')}</label>
         <div class="api-priority-btns">
             ${priorityOptions.map(o => `
-                <button class="api-priority-btn ${priority === o.val ? 'active' : ''}"
+                <button type="button" class="api-priority-btn ${priority === o.val ? 'active' : ''}"
                         onclick="selectAiPriority('${o.val}')" id="apri-${o.val}">
                     ${o.label}
                 </button>`).join('')}
@@ -1242,8 +1210,24 @@ function renderApiKeyModal() {
 }
 
 function showKeyInput(providerId) {
-    document.getElementById(`kinput-${providerId}`).style.display = 'block';
+    const wrap = document.getElementById(`kinput-${providerId}`);
+    if (!wrap) return;
+    wrap.style.display = 'block';
     document.getElementById(`kinput-field-${providerId}`)?.focus();
+}
+
+function hideKeyInput(providerId) {
+    const wrap = document.getElementById(`kinput-${providerId}`);
+    if (!wrap) return;
+    wrap.style.display = 'none';
+    const field = document.getElementById(`kinput-field-${providerId}`);
+    if (field) {
+        field.value = '';
+        field.type = 'password';
+        field.style.borderColor = '';
+    }
+    const eye = document.getElementById(`keye-${providerId}`);
+    if (eye) eye.textContent = 'visibility';
 }
 
 function toggleKeyVisibility(providerId) {
@@ -1259,25 +1243,47 @@ function toggleKeyVisibility(providerId) {
     }
 }
 
-function saveApiKey(providerId) {
+async function saveApiKey(providerId) {
+    if (!window.NexusByok) { alert('BYOK 모듈이 로드되지 않았습니다.'); return; }
     const input = document.getElementById(`kinput-field-${providerId}`);
     if (!input) return;
     const key = input.value.trim();
-    if (!key) { input.style.borderColor = 'var(--red)'; return; }
-    setApiKey(providerId, key);
-    renderApiKeyModal(); // 재렌더
+    if (key.length < 8) { input.style.borderColor = 'var(--red, #ef4444)'; return; }
+    try {
+        await NexusByok.save(providerId, key);
+        // 옵저버 'change' 가 자동 재렌더 + status mini 갱신
+        hideKeyInput(providerId);
+    } catch (e) {
+        alert('저장 실패: ' + (e.message || e));
+    }
 }
 
-function deleteApiKey(providerId) {
+async function deleteApiKey(providerId) {
+    if (!window.NexusByok) return;
     if (!confirm(L('api_delete_confirm'))) return;
-    removeApiKey(providerId);
-    renderApiKeyModal();
+    try {
+        await NexusByok.remove(providerId);
+    } catch (e) {
+        alert('삭제 실패: ' + (e.message || e));
+    }
+}
+
+async function toggleApiKey(providerId) {
+    if (!window.NexusByok) return;
+    const meta = NexusByok.getKey(providerId);
+    if (!meta) return;
+    try {
+        await NexusByok.setActive(providerId, !(meta.is_active !== false));
+    } catch (e) {
+        alert('상태 변경 실패: ' + (e.message || e));
+    }
 }
 
 function selectAiPriority(val) {
     setAiPriority(val);
     document.querySelectorAll('.api-priority-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`apri-${val}`)?.classList.add('active');
+    updateApiStatusMini();
 }
 
 // ═══════════════════════════════════════════════
