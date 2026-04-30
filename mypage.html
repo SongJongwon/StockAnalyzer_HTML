@@ -28,6 +28,7 @@
         .byok-row {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;          /* 입력창이 보일 때 자연스럽게 다음 줄로 */
             gap: 12px;
             padding: 10px 12px;
             background: var(--acct-input-bg);
@@ -82,12 +83,15 @@
 
         .byok-input-wrap {
             display: flex;
+            align-items: center;
             gap: 6px;
             margin-top: 6px;
             width: 100%;
+            flex-basis: 100%;       /* flex-wrap 부모 안에서 강제로 새 줄 차지 */
         }
         .byok-input-wrap input {
             flex: 1;
+            min-width: 0;           /* 좁은 공간에서 placeholder 잘림 방지 */
             font-family: ui-monospace, 'SF Mono', Menlo, monospace;
             font-size: 12px;
             padding: 6px 10px;
@@ -95,6 +99,13 @@
             border: 1px solid var(--acct-border);
             color: var(--acct-text-strong);
             border-radius: 6px;
+        }
+        .byok-input-wrap button.byok-eye {
+            padding: 5px 8px;
+            font-size: 14px;
+            line-height: 1;
+            min-width: 32px;
+            color: var(--acct-text-soft);
         }
         .byok-active-pill {
             display: inline-block;
@@ -417,6 +428,7 @@
                             </div>
                             <div class="byok-input-wrap" id="byok-input-${p.id}" style="display:none;">
                                 <input type="password" id="byok-field-${p.id}" placeholder="${escapeHtml(p.placeholder)}" autocomplete="off">
+                                <button type="button" class="byok-eye" id="byok-eye-${p.id}" onclick="byokToggleEye('${p.id}')" aria-label="키 표시/숨김" title="키 표시/숨김">👁</button>
                                 <button class="primary" onclick="saveByokKey('${p.id}')">저장</button>
                                 <button onclick="byokHideReplace('${p.id}')">취소</button>
                             </div>
@@ -450,7 +462,25 @@
             if (!wrap) return;
             wrap.style.display = 'none';
             const field = document.getElementById(`byok-field-${provider}`);
-            if (field) field.value = '';
+            if (field) {
+                field.value = '';
+                field.type = 'password';   // 다음 등록 때 다시 가려진 상태로
+            }
+            const eye = document.getElementById(`byok-eye-${provider}`);
+            if (eye) eye.textContent = '👁';
+        }
+
+        function byokToggleEye(provider) {
+            const field = document.getElementById(`byok-field-${provider}`);
+            const eye   = document.getElementById(`byok-eye-${provider}`);
+            if (!field || !eye) return;
+            if (field.type === 'password') {
+                field.type = 'text';
+                eye.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                eye.textContent = '👁';
+            }
         }
 
         async function saveByokKey(provider) {
