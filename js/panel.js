@@ -200,7 +200,8 @@ async function startPanelDiscussion() {
         const res = await fetch(`${API}/api/panel/discuss`, {
             method: 'POST',
             headers: _authHeaders(),
-            // ai_provider 는 서버 폴백 체인에 위임. OFF 토글된 제공자는 빈 문자열.
+            // ai_provider — 사용자 선호 폴백 1순위 ('auto' 또는 provider id).
+            // OFF 토글된 제공자는 keys 가 빈 문자열이라 자동 제외됨.
             body: JSON.stringify({
                 query,
                 personas,
@@ -210,6 +211,7 @@ async function startPanelDiscussion() {
                 user_openai_key:    keys.openai,
                 user_gemini_key:    keys.gemini,
                 user_groq_key:      keys.groq,
+                ai_provider:        (typeof getAiPriority === 'function' ? getAiPriority() : 'auto'),
             }),
         });
 
