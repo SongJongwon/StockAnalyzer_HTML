@@ -1964,16 +1964,19 @@ main {
     color: #e2e8f0 !important;
 }
 
-/* ── API Key Modal ── */
+/* ── 공용 모달 (apiKeyModal, customPersonaModal 등) ── */
 .modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.55);
     z-index: 9999;
     display: flex;
-    align-items: center;
+    /* align-items 제거 — .modal-box 의 margin-block:auto 가 중앙정렬 담당.
+       매우 긴 모달도 상단이 잘리지 않고 overlay 가 스크롤됨. */
     justify-content: center;
     padding: 16px;
+    overflow-y: auto;             /* 모달이 화면보다 길면 overlay 스크롤 */
+    overscroll-behavior: contain; /* 끝에서 배경 페이지로 스크롤 전파 방지 */
 }
 .modal-box {
     background: var(--card);
@@ -1987,6 +1990,7 @@ main {
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    margin-block: auto;           /* 짧은 모달 중앙정렬, 긴 모달 자연 스크롤 위치 */
 }
 .modal-header {
     display: flex;
