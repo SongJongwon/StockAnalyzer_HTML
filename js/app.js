@@ -1086,7 +1086,12 @@ function updateApiStatusMini() {
 function openApiKeyModal() {
     const modal = document.getElementById('apiKeyModal');
     if (!modal) return;
+    if (modal.style.display === 'flex') return;  // 이미 열려 있으면 lock 중복 호출 방지
     modal.style.display = 'flex';
+    NexusModal.lock();  // 배경 페이지 스크롤 잠금 (counter +1)
+    // modal-body 스크롤 위치 초기화 (이전 콘텐츠 잔재 방지)
+    const body = modal.querySelector('.modal-body');
+    if (body) body.scrollTop = 0;
     renderApiKeyModal();
     // 캐시 갱신 (mypage 등에서 변경됐을 수 있음)
     if (window.NexusByok) {
@@ -1096,7 +1101,9 @@ function openApiKeyModal() {
 
 function closeApiKeyModal() {
     const modal = document.getElementById('apiKeyModal');
-    if (modal) modal.style.display = 'none';
+    if (!modal || modal.style.display === 'none') return;  // 이미 닫혀 있으면 unlock skip
+    modal.style.display = 'none';
+    NexusModal.unlock();  // 배경 페이지 스크롤 복원 (counter -1)
     updateApiStatusMini();
 }
 

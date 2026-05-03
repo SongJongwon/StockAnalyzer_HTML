@@ -1964,16 +1964,19 @@ main {
     color: #e2e8f0 !important;
 }
 
-/* ── API Key Modal ── */
+/* ── 공용 모달 (apiKeyModal, customPersonaModal 등) ── */
 .modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.55);
     z-index: 9999;
     display: flex;
-    align-items: center;
+    /* align-items 제거 — .modal-box 의 margin-block:auto 가 중앙정렬 담당.
+       매우 긴 모달도 상단이 잘리지 않고 overlay 가 스크롤됨. */
     justify-content: center;
     padding: 16px;
+    overflow-y: auto;             /* 모달이 화면보다 길면 overlay 스크롤 */
+    overscroll-behavior: contain; /* 끝에서 배경 페이지로 스크롤 전파 방지 */
 }
 .modal-box {
     background: var(--card);
@@ -1983,6 +1986,11 @@ main {
     max-width: 520px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.3);
     overflow: hidden;
+    /* 콘텐츠가 길어도 모달이 화면을 넘어가지 않게 — header 고정 + body 스크롤 */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    margin-block: auto;           /* 짧은 모달 중앙정렬, 긴 모달 자연 스크롤 위치 */
 }
 .modal-header {
     display: flex;
@@ -1990,6 +1998,7 @@ main {
     justify-content: space-between;
     padding: 18px 20px 14px;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;            /* 스크롤되지 않고 항상 상단 고정 */
 }
 .modal-header h3 {
     font-size: 1.1rem;
@@ -2011,7 +2020,17 @@ main {
     transition: color 0.15s;
 }
 .modal-close-btn:hover { color: var(--text); }
-.modal-body { padding: 20px; }
+.modal-body {
+    padding: 20px;
+    /* 모달 내부 스크롤 — 헤더 아래 영역만 휠로 움직임 */
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;             /* flex child overflow 정상 작동 */
+    overscroll-behavior: contain;  /* 끝에 닿아도 배경 페이지로 스크롤 전파 안 함 */
+}
+
+/* 모달이 열려있는 동안 배경 페이지 스크롤 잠금 */
+body.modal-open { overflow: hidden; }
 
 /* Provider row */
 .api-provider-row {

@@ -182,6 +182,142 @@
         .byok-active-pill[data-active="false"] { background: rgba(148,163,184,0.18); color: #94a3b8; }
         [data-theme="light"] .byok-active-pill[data-active="true"]  { color: #15803d; }
         [data-theme="light"] .byok-active-pill[data-active="false"] { color: #475569; }
+
+        /* ──────────────────────────────────────────
+           Phase 7 — 커스텀 페르소나 관리 (목록·재생성·삭제)
+           BYOK 카드와 동일한 row-info / row-meta 2그룹 + flex-wrap 패턴
+           ────────────────────────────────────────── */
+        .cpm-mgr-section { margin-top: 12px; }
+        .cpm-mgr-status {
+            font-size: 12px;
+            color: var(--acct-muted);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        .cpm-mgr-status.warn { color: #f59e0b; }
+        [data-theme="light"] .cpm-mgr-status.warn { color: #b45309; }
+
+        .cpm-mgr-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cpm-mgr-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px 14px;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, rgba(236,72,153,0.06), rgba(147,51,234,0.06));
+            border: 1px solid var(--acct-border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        [data-theme="light"] .cpm-mgr-row {
+            background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(147,51,234,0.08));
+        }
+
+        .cpm-mgr-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex: 1 1 240px;
+            min-width: 0;
+        }
+        .cpm-mgr-emoji {
+            font-size: 28px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .cpm-mgr-text {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+        .cpm-mgr-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--acct-text-strong);
+            line-height: 1.2;
+        }
+        .cpm-mgr-name-en {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--acct-muted);
+            margin-left: 4px;
+        }
+        .cpm-mgr-title {
+            font-size: 12px;
+            color: var(--acct-text-soft);
+            line-height: 1.3;
+        }
+        .cpm-mgr-meta-line {
+            font-size: 11px;
+            color: var(--acct-muted);
+            font-variant-numeric: tabular-nums;
+            margin-top: 4px;
+        }
+        .cpm-mgr-model-pill {
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--acct-input-bg);
+            border: 1px solid var(--acct-border);
+            color: var(--acct-text-soft);
+        }
+
+        .cpm-mgr-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .cpm-mgr-actions button {
+            background: transparent;
+            border: 1px solid var(--acct-border);
+            color: var(--acct-text-soft);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.12s, color 0.12s, border-color 0.12s;
+        }
+        .cpm-mgr-actions button:hover:not(:disabled) {
+            background: var(--acct-card);
+            color: var(--acct-text-strong);
+            border-color: var(--acct-text-soft);
+        }
+        .cpm-mgr-actions button:disabled {
+            opacity: 0.5;
+            cursor: progress;
+        }
+        .cpm-mgr-actions button.danger { color: #f87171; border-color: rgba(239,68,68,0.40); }
+        .cpm-mgr-actions button.danger:hover:not(:disabled) { background: rgba(239,68,68,0.10); border-color: rgba(239,68,68,0.60); }
+        [data-theme="light"] .cpm-mgr-actions button.danger { color: #b91c1c; }
+
+        .cpm-mgr-empty {
+            padding: 18px 16px;
+            border: 1px dashed var(--acct-border);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--acct-text-soft);
+            line-height: 1.6;
+        }
+        .cpm-mgr-empty a {
+            color: var(--acct-accent-soft);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .cpm-mgr-empty a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -253,6 +389,15 @@
                 <p class="notice" style="margin-top:14px;font-size:11px;color:var(--acct-muted);">
                     <strong>우선순위</strong>: 브라우저 모달 키 (즉시) → 서버 저장 키 (계정 동기화) → 서버 환경변수 (관리자 폴백). 홈 화면 상단의 "AI 키 설정" 모달은 이 기기에만 저장하며 그대로 유지됩니다.
                 </p>
+            </div>
+
+            <div class="account-card">
+                <h3>🎭 내 커스텀 페르소나</h3>
+                <p class="notice">투자자 패널의 <strong>+ 커스텀 만들기</strong> 카드에서 LLM 자동 생성으로 추가한 페르소나 목록입니다. 같은 이름으로 다시 만들면 기존 항목을 <strong>재생성</strong>(슬롯 차지 안 함)하고, 다른 인물을 만들려면 먼저 <strong>삭제</strong>하세요.</p>
+                <div id="customPersonaSection" class="cpm-mgr-section">
+                    <div id="customPersonaStatus" class="cpm-mgr-status">불러오는 중…</div>
+                    <div id="customPersonaList" class="cpm-mgr-list"></div>
+                </div>
             </div>
 
             <div class="account-card">
@@ -370,6 +515,11 @@
                 } else {
                     loadByokKeys();
                 }
+
+                // 커스텀 페르소나 목록 (개별 실패는 다른 카드에 영향 없음)
+                loadCustomPersonas().catch((e) => {
+                    console.warn('[mypage] 커스텀 페르소나 로드 실패:', e.message);
+                });
 
                 // 마스터 계정이면 관리자 대시보드 버튼 노출
                 // (DEV_MODE fake_user.is_master / 실제 user.is_master / sub.is_master 중 하나라도 true)
@@ -676,6 +826,171 @@
                 submitBtn.textContent = '비밀번호 변경';
             }
         });
+
+        // ──────────────────────────────────────────
+        // Phase 7 — 커스텀 페르소나 관리 (목록·재생성·삭제)
+        // 백엔드: GET /api/panel/personas/custom/mine
+        //         POST /api/panel/personas/custom/{uuid}/regenerate
+        //         DELETE /api/panel/personas/custom/{uuid}
+        // ──────────────────────────────────────────
+        async function loadCustomPersonas() {
+            const statusEl = document.getElementById('customPersonaStatus');
+            const listEl   = document.getElementById('customPersonaList');
+            if (!statusEl || !listEl) return;
+
+            // 비로그인 / DEV 분기
+            const dev = await NexusAuth.getDevStatus();
+            if (dev.dev_mode) {
+                statusEl.className = 'cpm-mgr-status warn';
+                statusEl.textContent = '⚠️ 개발 모드 사용자는 커스텀 페르소나를 사용할 수 없습니다 (DB 미접속).';
+                listEl.innerHTML = '';
+                return;
+            }
+            if (!NexusAuth.getAccessToken()) {
+                statusEl.className = 'cpm-mgr-status warn';
+                statusEl.textContent = '⚠️ 로그인이 필요합니다.';
+                listEl.innerHTML = '';
+                return;
+            }
+
+            try {
+                const data = await NexusAuth.apiFetch('/api/panel/personas/custom/mine', { auth: true });
+                renderCustomPersonaSection(data);
+            } catch (e) {
+                statusEl.className = 'cpm-mgr-status warn';
+                statusEl.textContent = '로드 실패: ' + (e.message || e);
+                listEl.innerHTML = '';
+            }
+        }
+
+        function renderCustomPersonaSection(data) {
+            const statusEl = document.getElementById('customPersonaStatus');
+            const listEl   = document.getElementById('customPersonaList');
+            const items   = data.personas || [];
+            const used    = data.slot_used  || 0;
+            const limit   = (typeof data.slot_limit === 'number') ? data.slot_limit : 0;
+            const limitLabel = (limit === -1) ? '무제한' : String(limit);
+
+            // 슬롯 잠김 (Free / Basic) — 빈 안내 + 업그레이드 링크
+            if (limit === 0 && items.length === 0) {
+                statusEl.className = 'cpm-mgr-status warn';
+                statusEl.textContent = '⚠️ Pro 등급부터 커스텀 페르소나를 1개 만들 수 있습니다 (VIP 무제한).';
+                listEl.innerHTML = `
+                    <div class="cpm-mgr-empty">
+                        <a href="pricing.html">요금제 페이지로 이동 →</a>
+                    </div>`;
+                return;
+            }
+
+            statusEl.className = 'cpm-mgr-status';
+            statusEl.textContent = `슬롯 ${used} / ${limitLabel} 사용 중`;
+
+            if (items.length === 0) {
+                listEl.innerHTML = `
+                    <div class="cpm-mgr-empty">
+                        아직 만든 커스텀 페르소나가 없습니다.<br>
+                        <a href="index.html">홈 → 투자자 패널 탭</a>의 <strong>+ 커스텀 만들기</strong> 카드에서 추가하세요.
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = items.map((p) => _cpmRowHtml(p)).join('');
+        }
+
+        function _cpmRowHtml(p) {
+            const uuid     = p.uuid || '';
+            const emoji    = escapeHtml(p.emoji || '🧑‍💼');
+            const nameKo   = escapeHtml(p.name_ko || p.slug || '?');
+            const nameEn   = escapeHtml(p.name_en || '');
+            const title    = escapeHtml(p.title || '');
+            const created  = fmt(p.created_at);
+            const updated  = fmt(p.updated_at);
+            const sameDate = p.created_at && p.updated_at && (new Date(p.created_at).toDateString() === new Date(p.updated_at).toDateString());
+            const dateLine = (updated && !sameDate)
+                ? `생성 ${created} · 수정 ${updated}`
+                : `생성 ${created}`;
+            const model    = escapeHtml(p.generation_model || '—');
+
+            // 재생성·삭제 호출용으로 name_en/name_ko 를 data-attr 에 보관 (regenerate body 필수)
+            const dsName   = encodeURIComponent(p.name_en || p.slug || '');
+            const dsNameKo = encodeURIComponent(p.name_ko || '');
+
+            return `
+                <div class="cpm-mgr-row" data-uuid="${escapeHtml(uuid)}">
+                    <div class="cpm-mgr-info">
+                        <div class="cpm-mgr-emoji">${emoji}</div>
+                        <div class="cpm-mgr-text">
+                            <div class="cpm-mgr-name">${nameKo}${nameEn ? ` <span class="cpm-mgr-name-en">(${nameEn})</span>` : ''}</div>
+                            ${title ? `<div class="cpm-mgr-title">${title}</div>` : ''}
+                            <div class="cpm-mgr-meta-line">${escapeHtml(dateLine)} · 모델 <span class="cpm-mgr-model-pill">${model}</span></div>
+                        </div>
+                    </div>
+                    <div class="cpm-mgr-actions">
+                        <button type="button" onclick="regenerateCustomPersona('${uuid}', '${dsName}', '${dsNameKo}')">재생성</button>
+                        <button type="button" class="danger" onclick="deleteCustomPersona('${uuid}', '${dsNameKo}')">삭제</button>
+                    </div>
+                </div>`;
+        }
+
+        async function regenerateCustomPersona(uuid, nameEnEnc, nameKoEnc) {
+            if (!uuid) return;
+            const nameEn = decodeURIComponent(nameEnEnc || '');
+            const nameKo = decodeURIComponent(nameKoEnc || '');
+            if (!confirm(`"${nameKo || nameEn}" 페르소나를 재생성합니다.\nLLM 이 새로 생성하므로 10~30초 정도 걸리고, 결과가 이전과 다를 수 있습니다.\n계속할까요?`)) return;
+
+            const row = document.querySelector(`.cpm-mgr-row[data-uuid="${uuid}"]`);
+            const btns = row ? row.querySelectorAll('button') : [];
+            btns.forEach((b) => { b.disabled = true; });
+            const regenBtn = row ? row.querySelector('button:not(.danger)') : null;
+            const origLabel = regenBtn ? regenBtn.textContent : '';
+            if (regenBtn) regenBtn.textContent = '생성 중…';
+
+            try {
+                // BYOK + AI 우선순위 (홈 모달의 getApiKey / getAiPriority — 이 페이지엔 없으므로 빈 키만 보냄,
+                // 백엔드가 NexusByok 서버 저장 키를 자동으로 폴백)
+                const body = {
+                    name_en: nameEn,
+                    name_ko: nameKo,
+                    hint: '',
+                    user_anthropic_key: '',
+                    user_openai_key: '',
+                    user_gemini_key: '',
+                    user_groq_key: '',
+                    ai_provider: 'auto',
+                };
+                await NexusAuth.apiFetch(`/api/panel/personas/custom/${encodeURIComponent(uuid)}/regenerate`, {
+                    method: 'POST',
+                    auth: true,
+                    body,
+                });
+                await loadCustomPersonas();
+            } catch (e) {
+                alert('재생성 실패: ' + (e.message || e));
+                btns.forEach((b) => { b.disabled = false; });
+                if (regenBtn) regenBtn.textContent = origLabel || '재생성';
+            }
+        }
+
+        async function deleteCustomPersona(uuid, nameKoEnc) {
+            if (!uuid) return;
+            const nameKo = decodeURIComponent(nameKoEnc || '') || '커스텀 페르소나';
+            if (!confirm(`"${nameKo}" 페르소나를 영구 삭제합니다.\n삭제 후에는 슬롯이 비고, 같은 인물을 다시 만들려면 새로 생성해야 합니다.\n계속할까요?`)) return;
+
+            const row = document.querySelector(`.cpm-mgr-row[data-uuid="${uuid}"]`);
+            const btns = row ? row.querySelectorAll('button') : [];
+            btns.forEach((b) => { b.disabled = true; });
+
+            try {
+                await NexusAuth.apiFetch(`/api/panel/personas/custom/${encodeURIComponent(uuid)}`, {
+                    method: 'DELETE',
+                    auth: true,
+                });
+                await loadCustomPersonas();
+            } catch (e) {
+                alert('삭제 실패: ' + (e.message || e));
+                btns.forEach((b) => { b.disabled = false; });
+            }
+        }
     </script>
 </body>
 </html>
