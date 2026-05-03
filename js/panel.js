@@ -792,6 +792,10 @@ function openCustomPersonaModal() {
     const modal = document.getElementById('customPersonaModal');
     if (!modal) return;
     modal.style.display = 'flex';
+    document.body.classList.add('modal-open');  // 배경 페이지 스크롤 잠금
+    // modal-body 스크롤 위치를 항상 최상단으로 (이전 미리보기 잔재 방지)
+    const body = modal.querySelector('.modal-body');
+    if (body) body.scrollTop = 0;
     // 입력 초기화
     document.getElementById('cpmNameEn').value = '';
     document.getElementById('cpmNameKo').value = '';
@@ -807,6 +811,7 @@ function openCustomPersonaModal() {
 function closeCustomPersonaModal() {
     const modal = document.getElementById('customPersonaModal');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-open');  // 배경 페이지 스크롤 복원
 }
 
 function _cpmHandleOverlayClick(e) {
