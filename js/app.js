@@ -101,6 +101,17 @@ const LANG = {
         krx_stock: '원화 종목 (KRX)', usd_stock: '달러 종목',
         // Verdict
         verdict_label: '종합 판단', buy_signals: '매수 신호', sell_signals: '매도 신호',
+        // Verdict v2 (펀더멘털 통합 2차 — 5단계 라벨)
+        verdict_strong_buy: '강력 매수', verdict_strong_sell: '강력 매도',
+        overall_score_label: '종합 점수',
+        value_trap_warning: '가치 함정 주의',
+        tech_only_label: '기술 분석만',
+        // 펀더멘털 카드 신규 (PEG / 품질)
+        peg_card_title: 'PEG', quality_card_title: '품질 점수',
+        peg_tooltip_ko: 'PER ÷ EPS 성장률(%). 1.0 이하 저평가, 1.5 이상 고평가',
+        peg_threshold_ko: '<0.7 매우저 · 0.7–1.0 저 · 1.0–1.5 정상 · 1.5–2.0 고 · >2.0 매우고',
+        quality_tooltip_ko: 'ROE 50% + EPS 성장률 30% + 부채 20% 가중. 0.7+ 우수',
+        quality_threshold_ko: '>0.7 우수 · 0.5–0.7 양호 · 0.3–0.5 보통 · <0.3 약함',
         // Analysis sections
         ai_analysis: 'AI 분석', analyzing: '분석 중...',
         ai_loading: 'AI 코멘트 불러오는 중...', company_loading: '회사 정보 로딩 중...',
@@ -374,6 +385,16 @@ const LANG = {
         krx_stock: 'KRW Stock (KRX)', usd_stock: 'USD Stock',
         // Verdict
         verdict_label: 'Verdict', buy_signals: 'Buy Signals', sell_signals: 'Sell Signals',
+        // Verdict v2 (Fundamentals Phase 2)
+        verdict_strong_buy: 'Strong Buy', verdict_strong_sell: 'Strong Sell',
+        overall_score_label: 'Score',
+        value_trap_warning: 'Value Trap Warning',
+        tech_only_label: 'Technical Only',
+        peg_card_title: 'PEG', quality_card_title: 'Quality',
+        peg_tooltip_ko: 'PER ÷ EPS Growth(%). ≤1.0 Undervalued, ≥1.5 Overvalued',
+        peg_threshold_ko: '<0.7 Deep · 0.7–1.0 Under · 1.0–1.5 Fair · 1.5–2.0 Over · >2.0 Deep Over',
+        quality_tooltip_ko: 'ROE 50% + EPS Growth 30% + Debt 20% weighted. 0.7+ Excellent',
+        quality_threshold_ko: '>0.7 High · 0.5–0.7 Good · 0.3–0.5 Fair · <0.3 Weak',
         // Analysis sections
         ai_analysis: 'AI Analysis', analyzing: 'Analyzing...',
         ai_loading: 'Loading AI analysis...', company_loading: 'Loading company info...',
@@ -589,8 +610,22 @@ function dSignal(s) {
         '매수': 'buy', '매도': 'sell', '중립': 'neutral',
         '강한 매수': 'strong_buy', '매수 우세': 'buy_lean',
         '강한 매도': 'strong_sell', '매도 우세': 'sell_lean',
+        // 펀더멘털 통합 2차 — 5단계 verdict_v2 라벨
+        '강력 매수': 'verdict_strong_buy', '강력 매도': 'verdict_strong_sell',
     };
     return m[s] ? L(m[s]) : s;
+}
+
+/** 5단계 verdict tier → 이모지 아이콘 (강력매수=초록별 / 매수=초록체크 / 중립=회색 / 매도=주황경고 / 강력매도=빨강X) */
+function verdictIcon(tier) {
+    const m = {
+        strong_buy:  '🌟',
+        buy:         '✅',
+        neutral:     '⚪',
+        sell:        '⚠️',
+        strong_sell: '❌',
+    };
+    return m[tier] || '';
 }
 
 /** 정적 HTML의 data-i18n 요소에 번역 적용 */
@@ -1510,13 +1545,18 @@ function renderAnalysis(data, container) {
     const buy_cnt = [rsi_s, macd_s, bb_s, ma_s, stk_s].filter(s => s === '매수').length;
     const sell_cnt = [rsi_s, macd_s, bb_s, ma_s, stk_s].filter(s => s === '매도').length;
 
-    // Verdict
-    let verdict, vColor;
-    if (buy_cnt >= 4) { verdict = '강한 매수'; vColor = '#00C851'; }
-    else if (buy_cnt >= 3) { verdict = '매수 우세'; vColor = '#44bb44'; }
-    else if (sell_cnt >= 4) { verdict = '강한 매도'; vColor = '#FF4444'; }
-    else if (sell_cnt >= 3) { verdict = '매도 우세'; vColor = '#ff7777'; }
-    else { verdict = '중립'; vColor = '#FFA500'; }
+    // Verdict — 펀더멘털 통합 2차: backend verdict_v2 우선, 없으면 1차 호환 (frontend 재계산).
+    // 향후 backend 가 항상 verdict_v2 를 보낼 때 1차 fallback 제거 가능.
+    let verdict, vColor, verdictTier;
+    if (d.verdict_v2 && d.verdict_color_v2) {
+        verdict = d.verdict_v2;
+        vColor = d.verdict_color_v2;
+        verdictTier = d.verdict_tier || 'neutral';
+    } else if (buy_cnt >= 4) { verdict = '강한 매수'; vColor = '#00C851'; verdictTier = 'strong_buy'; }
+    else if (buy_cnt >= 3) { verdict = '매수 우세'; vColor = '#44bb44'; verdictTier = 'buy'; }
+    else if (sell_cnt >= 4) { verdict = '강한 매도'; vColor = '#FF4444'; verdictTier = 'strong_sell'; }
+    else if (sell_cnt >= 3) { verdict = '매도 우세'; vColor = '#ff7777'; verdictTier = 'sell'; }
+    else { verdict = '중립'; vColor = '#FFA500'; verdictTier = 'neutral'; }
 
     // Entry / targets / stoploss
     const entry = Math.min(d.bb_l, d.ma20);
@@ -1616,10 +1656,11 @@ function renderAnalysis(data, container) {
         <div class="info-bar">USD/KRW: ${fmt(rate, 1)} · ${krw ? L('krx_stock') : L('usd_stock')}</div>
         <hr class="divider">
 
-        <!-- Verdict Banner -->
-        <div class="verdict-banner" style="background:${vColor}22;border-color:${vColor};color:${vColor};">
-            <h2>${L('verdict_label')}: ${dSignal(verdict)}</h2>
-            <div class="sub">${L('buy_signals')} ${buy_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('sell_signals')} ${sell_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('neutral')} ${5 - buy_cnt - sell_cnt}</div>
+        <!-- Verdict Banner — 펀더멘털 통합 2차: 5단계 라벨 + 한 줄 근거 + 업종 + 종합 점수 -->
+        <div class="verdict-banner verdict-${verdictTier}" style="background:${vColor}22;border-color:${vColor};color:${vColor};">
+            <h2>${verdictIcon(verdictTier)} ${L('verdict_label')}: ${dSignal(verdict)}</h2>
+            ${d.one_line_reason ? `<div class="verdict-reason">${d.one_line_reason}</div>` : ''}
+            <div class="sub">${L('buy_signals')} ${buy_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('sell_signals')} ${sell_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('neutral')} ${5 - buy_cnt - sell_cnt}${d.overall_score != null ? ` · ${L('overall_score_label')} ${d.overall_score >= 0 ? '+' : ''}${d.overall_score.toFixed(2)}` : ''}${d.sector_kr ? ` · ${d.sector_kr}` : ''}</div>
         </div>
 
         <!-- AI 분석 (키 등록 시 자동 표시) -->
@@ -1922,6 +1963,14 @@ const FUND_TOOLTIPS = {
         ko: '주당순이익. 높을수록 수익성 좋음. 양수면 흑자',
         en: 'Earnings Per Share. Higher = more profitable. Positive = profit',
     },
+    peg: {
+        ko: 'PER ÷ EPS 성장률(%). 성장 대비 PER. 1.0 이하 저평가 / 1.5 이상 고평가',
+        en: 'PER ÷ EPS Growth (%). PER relative to growth. ≤1.0 Under / ≥1.5 Over',
+    },
+    quality: {
+        ko: '품질 점수 — ROE 50% + EPS 성장 30% + 부채 20% 가중. 0.7 이상 우수',
+        en: 'Quality — ROE 50% + EPS Growth 30% + Debt 20% weighted. ≥0.7 Excellent',
+    },
 };
 
 // 카드 하단 작은 글씨 — 백엔드 interpret_fundamentals 임계값과 정확히 일치
@@ -1941,6 +1990,14 @@ const FUND_THRESHOLDS = {
     eps: {
         ko: '<0 적자 · >0 흑자',
         en: '<0 Loss · >0 Profit',
+    },
+    peg: {
+        ko: '<0.7 매우저 · 0.7–1.0 저 · 1.0–1.5 정상 · 1.5–2.0 고 · >2.0 매우고',
+        en: '<0.7 Deep · 0.7–1.0 Under · 1.0–1.5 Fair · 1.5–2.0 Over · >2.0 Deep',
+    },
+    quality: {
+        ko: '>0.7 우수 · 0.5–0.7 양호 · 0.3–0.5 보통 · <0.3 약함',
+        en: '>0.7 High · 0.5–0.7 Good · 0.3–0.5 Fair · <0.3 Weak',
     },
 };
 
@@ -1992,6 +2049,8 @@ function renderFundamentalsTopCards(fin) {
     const container = document.getElementById('fundCards');
     if (!container) return;
     const interp = (fin && fin.interpretations) || {};
+    // 펀더멘털 통합 2차 — interpretations_v2.peg_card / quality_card (sector-aware).
+    const v2 = (fin && fin.interpretations_v2) || {};
     // EPS 는 종목 통화 기준 — 한국 6,400원 / 미국 6.12$ 같이 절댓값 따라 적응
     const epsFmt = v => Math.abs(v) >= 100
         ? Math.round(v).toLocaleString()
@@ -2001,6 +2060,8 @@ function renderFundamentalsTopCards(fin) {
         ${renderFundamentalsCard('PBR', interp.pbr, v => `${v.toFixed(2)}x`, 'pbr')}
         ${renderFundamentalsCard('ROE', interp.roe, v => `${(v * 100).toFixed(1)}%`, 'roe')}
         ${renderFundamentalsCard('EPS (TTM)', interp.eps, epsFmt, 'eps')}
+        ${renderFundamentalsCard(L('peg_card_title'), v2.peg_card, v => `${v.toFixed(2)}x`, 'peg')}
+        ${renderFundamentalsCard(L('quality_card_title'), v2.quality_card, v => v.toFixed(2), 'quality')}
     `;
 }
 
@@ -3459,7 +3520,11 @@ function renderWatchlist(data, container) {
             const rsi = r.rsi ?? 50;
             const cc = chg >= 0 ? '#00C851' : '#FF4444';
             const rsiC = rsi < 40 ? '#00C851' : (rsi > 65 ? '#FF4444' : '#FFA500');
-            const vColor = r.color || '#FFA500';
+            // 펀더멘털 통합 2차 — verdict_v2 / verdict_color_v2 / verdict_tier 우선, 없으면 1차 fallback.
+            const verdictV2 = r.verdict_v2 || r.verdict || '—';
+            const vColor = r.verdict_color_v2 || r.color || '#FFA500';
+            const vTier = r.verdict_tier || 'neutral';
+            const oneLine = r.one_line_reason || r.reason || L('wl_mixed');
             const retS = r.ret_short ?? 0;
             const retM = r.ret_mid ?? 0;
             const retL = r.ret_long ?? 0;
@@ -3467,11 +3532,13 @@ function renderWatchlist(data, container) {
             const crm = retM > 0 ? '#00C851' : '#FF4444';
             const crl = retL > 0 ? '#00C851' : '#FF4444';
             const noData = r.close === null || r.close === undefined;
-            html += `<tr>
+            // 강력 매수 행 highlight 클래스 — CSS 에서 gold border + 그라디언트
+            const rowClass = vTier === 'strong_buy' ? 'wl-row-strong-buy' : '';
+            html += `<tr class="${rowClass}">
                 <td class="name-cell" style="min-width:120px;">
-                    <div class="name">${r.name}</div>
+                    <div class="name">${vTier === 'strong_buy' ? '🥇 ' : ''}${r.name}</div>
                     <div class="ticker">${r.ticker}</div>
-                    <div class="verdict" style="color:${vColor};">${r.verdict || '—'}</div>
+                    <div class="verdict verdict-${vTier}" style="color:${vColor};">${verdictIcon(vTier)} ${dSignal(verdictV2)}</div>
                     ${r.desc ? `<div class="wl-desc">${r.desc}</div>` : ''}
                 </td>
                 <td style="font-weight:600;">${noData ? '<span style="color:var(--muted);">—</span>' : fmtPrice(r.close)}</td>
@@ -3483,7 +3550,7 @@ function renderWatchlist(data, container) {
                 <td style="color:${crs};font-weight:600;">${noData ? '—' : Number(retS).toFixed(1) + '%'}</td>
                 <td style="color:${crm};font-weight:600;">${noData ? '—' : Number(retM).toFixed(1) + '%'}</td>
                 <td style="color:${crl};font-weight:600;">${noData ? '—' : Number(retL).toFixed(1) + '%'}</td>
-                <td style="color:var(--text-secondary);max-width:200px;">${r.reason || L('wl_mixed')}</td>
+                <td style="color:var(--text-secondary);max-width:240px;">${oneLine}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';
@@ -3627,14 +3694,22 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
         const sid = _safeId(r.ticker);
         const cc = (r.change_pct || 0) >= 0 ? '#00C851' : '#FF4444';
         const rsiC = r.rsi < 40 ? '#00C851' : (r.rsi > 65 ? '#FF4444' : '#FFA500');
-        const vColor = r.color || '#FFA500';
+        // 펀더멘털 통합 2차 — verdict_v2 우선, 없으면 1차 fallback.
+        const verdictV2 = r.verdict_v2 || r.verdict || '—';
+        const vColor = r.verdict_color_v2 || r.color || '#FFA500';
+        const vTier = r.verdict_tier || 'neutral';
+        const oneLine = r.one_line_reason || r.reason || L('wl_mixed');
+        // 가치 함정 경고 — one_line_reason 에 "가치 함정" 포함 시 ⚠️ 행 prefix
+        const valueTrapWarn = oneLine && oneLine.indexOf('가치 함정') >= 0;
         const noData = r.close === null || r.close === undefined;
+        // 강력 매수 highlight — gold border + 메달 prefix
+        const rowClass = vTier === 'strong_buy' ? 'theme-stock-row wl-row-strong-buy' : 'theme-stock-row';
 
         html += `
-        <tr class="theme-stock-row" id="tsr-${sid}" onclick="toggleThemeRow('${sid}')">
+        <tr class="${rowClass}" id="tsr-${sid}" onclick="toggleThemeRow('${sid}')">
             <td style="text-align:center;font-size:1.1em;">${badge}</td>
             <td class="name-cell" style="min-width:110px;">
-                <div class="name">${r.name}</div>
+                <div class="name">${valueTrapWarn ? '<span title="' + L('value_trap_warning') + '">⚠️ </span>' : ''}${r.name}</div>
                 <div class="ticker">${r.ticker}</div>
             </td>
             <td style="font-weight:600;">${noData ? '—' : fmtPrice(r.close)}</td>
@@ -3643,8 +3718,8 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <td style="color:#44aaff;">${noData ? '—' : fmtPrice(r.entry)}</td>
             <td style="color:#ffaa00;">${noData ? '—' : fmtPrice(r.target2)}</td>
             <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};font-weight:600;">${noData ? '—' : Number(r.ret_short || 0).toFixed(1) + '%'}</td>
-            <td style="color:${vColor};font-weight:bold;">${r.verdict || '—'}</td>
-            <td style="color:var(--text-secondary);font-size:0.88em;">${r.reason || L('wl_mixed')}</td>
+            <td class="verdict verdict-${vTier}" style="color:${vColor};font-weight:bold;">${verdictIcon(vTier)} ${dSignal(verdictV2)}</td>
+            <td style="color:var(--text-secondary);font-size:0.88em;">${oneLine}</td>
             <td style="text-align:center;color:var(--muted);font-size:0.8em;" class="tsr-arrow">▶</td>
         </tr>
         <tr class="theme-detail-row" id="tdr-${sid}">
