@@ -130,6 +130,11 @@ const LANG = {
         stability: '안정성', debt_equity: '부채비율 (D/E)',
         current_ratio: '유동비율', interest_coverage: '이자보상배율',
         native_currency: '원본', unit_label: '단위',
+        // Fundamentals top cards (Phase 1 — PER/PBR/EPS/ROE 자동 해석)
+        fund_title: '핵심 펀더멘털',
+        fund_loading: '펀더멘털 데이터 불러오는 중...',
+        fund_no_data: '데이터 없음',
+        fund_error: '펀더멘털 데이터 로드 실패',
         // Chart traces
         annual_chart: '연간 손익 & 현금흐름',
         c_revenue: '매출', c_op_income: '영업이익', c_net_income: '순이익', c_op_cf: '영업CF',
@@ -398,6 +403,11 @@ const LANG = {
         stability: 'Stability', debt_equity: 'Debt/Equity',
         current_ratio: 'Current Ratio', interest_coverage: 'Interest Coverage',
         native_currency: 'Native', unit_label: 'Unit',
+        // Fundamentals top cards (Phase 1)
+        fund_title: 'Key Fundamentals',
+        fund_loading: 'Loading fundamentals...',
+        fund_no_data: 'N/A',
+        fund_error: 'Failed to load fundamentals',
         // Chart traces
         annual_chart: 'Annual P&L & Cash Flow',
         c_revenue: 'Revenue', c_op_income: 'Op. Income', c_net_income: 'Net Income', c_op_cf: 'Op. CF',
@@ -1631,6 +1641,13 @@ function renderAnalysis(data, container) {
         </div>
         <hr class="divider">
 
+        <!-- Fundamentals Top Cards (Phase 1 — PER/PBR/EPS/ROE 자동 해석) -->
+        <h3 class="subheader"><span class="ms">analytics</span> ${L('fund_title')}</h3>
+        <div class="fundamentals-grid" id="fundCards">
+            <div class="caption" style="grid-column:1/-1;">${L('fund_loading')}</div>
+        </div>
+        <hr class="divider">
+
         <!-- Strategy Panel -->
         <h3 class="subheader"><span class="ms">lightbulb</span> ${L('trading_strategy')}</h3>
         <div class="action-banner" style="background:${advColor}18;border-color:${advColor};">
@@ -1868,6 +1885,60 @@ function renderIndicatorCard(name, signal, msg, val) {
         <div class="val">${val}</div>
         <div class="msg">${msg}</div>
     </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// Fundamentals top cards (Phase 1 — PER/PBR/EPS/ROE)
+// 백엔드 interpret_fundamentals(fin) 가 label/tier/color 까지 계산해서 보내줌.
+// 영문 UI 면 tier → 영문 라벨 매핑.
+// ═══════════════════════════════════════════════
+
+const FUND_TIER_LABEL_EN = {
+    undervalued: 'Undervalued',
+    fair: 'Fair',
+    overvalued: 'Overvalued',
+    high: 'High',
+    low: 'Low',
+    loss: 'Loss',
+    positive: 'Positive',
+    negative: 'Negative',
+};
+
+function _fundLabel(ind) {
+    if (currentLang === 'ko') return ind.label;
+    return FUND_TIER_LABEL_EN[ind.tier] || ind.label;
+}
+
+function renderFundamentalsCard(name, ind, valueFmt) {
+    if (!ind || ind.value == null) {
+        return `<div class="fundamentals-card">
+            <div class="name">${name}</div>
+            <div class="value">—</div>
+            <div class="tier" style="color:var(--muted);">${L('fund_no_data')}</div>
+        </div>`;
+    }
+    const vStr = valueFmt(ind.value);
+    return `<div class="fundamentals-card" style="border-color:${ind.color}66;">
+        <div class="name">${name}</div>
+        <div class="value" style="color:${ind.color};">${vStr}</div>
+        <div class="tier" style="color:${ind.color};">${_fundLabel(ind)}</div>
+    </div>`;
+}
+
+function renderFundamentalsTopCards(fin) {
+    const container = document.getElementById('fundCards');
+    if (!container) return;
+    const interp = (fin && fin.interpretations) || {};
+    // EPS 는 종목 통화 기준 — 한국 6,400원 / 미국 6.12$ 같이 절댓값 따라 적응
+    const epsFmt = v => Math.abs(v) >= 100
+        ? Math.round(v).toLocaleString()
+        : v.toFixed(2);
+    container.innerHTML = `
+        ${renderFundamentalsCard('PER', interp.per, v => `${v.toFixed(1)}x`)}
+        ${renderFundamentalsCard('PBR', interp.pbr, v => `${v.toFixed(2)}x`)}
+        ${renderFundamentalsCard('ROE', interp.roe, v => `${(v * 100).toFixed(1)}%`)}
+        ${renderFundamentalsCard('EPS (TTM)', interp.eps, epsFmt)}
+    `;
 }
 
 function renderStrategyCard(label, price, color, desc, sym) {
@@ -2932,11 +3003,15 @@ async function loadFinancials(sym) {
         const res = await fetch(`${API}/api/stock/financials/${encodeURIComponent(sym)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const fin = await res.json();
+        // Phase 1: 분석 페이지 상단 펀더멘털 핵심 카드 4개
+        renderFundamentalsTopCards(fin);
         // 섹션 자동 펼치기 (Plotly가 보이는 상태에서 렌더링되도록)
         const sec = document.getElementById('financialsSection');
         if (sec && !sec.classList.contains('open')) sec.classList.add('open');
         renderFinancials(fin);
     } catch (e) {
+        const cards = document.getElementById('fundCards');
+        if (cards) cards.innerHTML = `<div class="caption" style="grid-column:1/-1;">${L('fund_error')} (${e.message})</div>`;
         const body = document.getElementById('financialsBody');
         if (body) body.innerHTML = `<div class="caption">${L('fin_error')} (${e.message})</div>`;
     }

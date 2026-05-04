@@ -944,6 +944,59 @@ main {
 }
 
 /* ═══════════════════════════════════════════════
+   Fundamentals Top Cards (Phase 1 — PER/PBR/EPS/ROE)
+   border-color · value · tier 색상은 inline style 로
+   backend interpret_fundamentals 결과 (#00C851 녹 / #FFA500 주황 /
+   #FF4444 빨 / #888 회) 적용.
+   ═══════════════════════════════════════════════ */
+
+.fundamentals-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.fundamentals-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 12px;
+    text-align: center;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--card);
+    transition: transform 0.15s ease;
+}
+
+.fundamentals-card:hover {
+    transform: translateY(-2px);
+}
+
+.fundamentals-card .name {
+    font-weight: 700;
+    font-size: 0.92em;
+    color: var(--text);
+    letter-spacing: 0.02em;
+}
+
+.fundamentals-card .value {
+    font-size: 1.7em;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.fundamentals-card .tier {
+    font-size: 0.86em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════
    Strategy Panel Cards
    ═══════════════════════════════════════════════ */
 
@@ -1764,6 +1817,7 @@ main {
     .fin-val-grid { grid-template-columns: repeat(3, 1fr); }
     .fib-grid { grid-template-columns: repeat(4, 1fr); }
     .indices-grid { grid-template-columns: repeat(3, 1fr); }
+    .fundamentals-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -1779,6 +1833,7 @@ main {
     .search-row { grid-template-columns: 1fr; }
     .metrics-row { grid-template-columns: repeat(2, 1fr); }
     .indicators-grid { grid-template-columns: repeat(2, 1fr); }
+    .fundamentals-grid { grid-template-columns: repeat(2, 1fr); }
     .strategy-grid, .strategy-grid-4 { grid-template-columns: repeat(2, 1fr); }
     .scenario-grid { grid-template-columns: 1fr; }
     .theme-grid { grid-template-columns: repeat(2, 1fr); }
