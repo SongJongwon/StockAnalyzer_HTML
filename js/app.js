@@ -1891,6 +1891,7 @@ function renderIndicatorCard(name, signal, msg, val) {
 // Fundamentals top cards (Phase 1 — PER/PBR/EPS/ROE)
 // 백엔드 interpret_fundamentals(fin) 가 label/tier/color 까지 계산해서 보내줌.
 // 영문 UI 면 tier → 영문 라벨 매핑.
+// 임계값은 backend interpret_fundamentals 와 동기화 필요 (PER 15/25, PBR 1.5/3 등).
 // ═══════════════════════════════════════════════
 
 const FUND_TIER_LABEL_EN = {
@@ -1904,24 +1905,86 @@ const FUND_TIER_LABEL_EN = {
     negative: 'Negative',
 };
 
+const FUND_TOOLTIPS = {
+    per: {
+        ko: '주가 ÷ 주당순이익. 낮을수록 저평가. 15 이하 저평가 / 25 이상 고평가',
+        en: 'Price ÷ EPS. Lower = undervalued. ≤15 Undervalued / ≥25 Overvalued',
+    },
+    pbr: {
+        ko: '주가 ÷ 순자산. 1 이하면 자산 대비 저평가. 1.5 이하 저평가 / 3 이상 고평가',
+        en: 'Price ÷ Book Value. ≤1 = below assets. ≤1.5 Undervalued / ≥3 Overvalued',
+    },
+    roe: {
+        ko: '순이익 ÷ 자기자본. 높을수록 효율적 경영. 15% 이상 우수',
+        en: 'Net Income ÷ Equity. Higher = more efficient. ≥15% Excellent',
+    },
+    eps: {
+        ko: '주당순이익. 높을수록 수익성 좋음. 양수면 흑자',
+        en: 'Earnings Per Share. Higher = more profitable. Positive = profit',
+    },
+};
+
+// 카드 하단 작은 글씨 — 백엔드 interpret_fundamentals 임계값과 정확히 일치
+const FUND_THRESHOLDS = {
+    per: {
+        ko: '<15 저평가 · 15–25 적정 · >25 고평가',
+        en: '<15 Under · 15–25 Fair · >25 Over',
+    },
+    pbr: {
+        ko: '<1.5 저평가 · 1.5–3 적정 · >3 고평가',
+        en: '<1.5 Under · 1.5–3 Fair · >3 Over',
+    },
+    roe: {
+        ko: '<5% 낮음 · 5–15% 적정 · >15% 우수',
+        en: '<5% Low · 5–15% Fair · >15% High',
+    },
+    eps: {
+        ko: '<0 적자 · >0 흑자',
+        en: '<0 Loss · >0 Profit',
+    },
+};
+
 function _fundLabel(ind) {
     if (currentLang === 'ko') return ind.label;
     return FUND_TIER_LABEL_EN[ind.tier] || ind.label;
 }
 
-function renderFundamentalsCard(name, ind, valueFmt) {
+function _fundLocalized(map, key) {
+    const entry = map[key];
+    if (!entry) return '';
+    return entry[currentLang] || entry.ko || entry.en || '';
+}
+
+// HTML attribute 안전한 값으로 escape (data-tooltip / aria-label 용).
+function _escAttr(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function renderFundamentalsCard(name, ind, valueFmt, key) {
+    const tooltip = _fundLocalized(FUND_TOOLTIPS, key);
+    const threshold = _fundLocalized(FUND_THRESHOLDS, key);
+    const tipAttrs = tooltip
+        ? `data-tooltip="${_escAttr(tooltip)}" aria-label="${_escAttr(name + ': ' + tooltip)}"`
+        : '';
     if (!ind || ind.value == null) {
-        return `<div class="fundamentals-card">
+        return `<div class="fundamentals-card" ${tipAttrs}>
             <div class="name">${name}</div>
             <div class="value">—</div>
             <div class="tier" style="color:var(--muted);">${L('fund_no_data')}</div>
+            ${threshold ? `<div class="threshold">${threshold}</div>` : ''}
         </div>`;
     }
     const vStr = valueFmt(ind.value);
-    return `<div class="fundamentals-card" style="border-color:${ind.color}66;">
+    return `<div class="fundamentals-card" style="border-color:${ind.color}66;" ${tipAttrs}>
         <div class="name">${name}</div>
         <div class="value" style="color:${ind.color};">${vStr}</div>
         <div class="tier" style="color:${ind.color};">${_fundLabel(ind)}</div>
+        ${threshold ? `<div class="threshold">${threshold}</div>` : ''}
     </div>`;
 }
 
@@ -1934,10 +1997,10 @@ function renderFundamentalsTopCards(fin) {
         ? Math.round(v).toLocaleString()
         : v.toFixed(2);
     container.innerHTML = `
-        ${renderFundamentalsCard('PER', interp.per, v => `${v.toFixed(1)}x`)}
-        ${renderFundamentalsCard('PBR', interp.pbr, v => `${v.toFixed(2)}x`)}
-        ${renderFundamentalsCard('ROE', interp.roe, v => `${(v * 100).toFixed(1)}%`)}
-        ${renderFundamentalsCard('EPS (TTM)', interp.eps, epsFmt)}
+        ${renderFundamentalsCard('PER', interp.per, v => `${v.toFixed(1)}x`, 'per')}
+        ${renderFundamentalsCard('PBR', interp.pbr, v => `${v.toFixed(2)}x`, 'pbr')}
+        ${renderFundamentalsCard('ROE', interp.roe, v => `${(v * 100).toFixed(1)}%`, 'roe')}
+        ${renderFundamentalsCard('EPS (TTM)', interp.eps, epsFmt, 'eps')}
     `;
 }
 

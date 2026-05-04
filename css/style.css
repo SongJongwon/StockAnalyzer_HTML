@@ -960,16 +960,18 @@ main {
 .fundamentals-card {
     border: 2px solid var(--border);
     border-radius: 12px;
-    padding: 18px 12px;
+    padding: 18px 12px 14px;
     text-align: center;
-    min-height: 130px;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     background: var(--card);
     transition: transform 0.15s ease;
+    position: relative; /* 툴팁 절대 위치 기준 */
+    cursor: help;
 }
 
 .fundamentals-card:hover {
@@ -994,6 +996,50 @@ main {
     font-size: 0.86em;
     font-weight: 600;
     letter-spacing: 0.02em;
+}
+
+.fundamentals-card .threshold {
+    font-size: 0.72em;
+    color: var(--muted);
+    line-height: 1.35;
+    margin-top: 2px;
+    letter-spacing: 0.01em;
+}
+
+/* CSS-only 툴팁 (data-tooltip + 호버) — JS 의존 없음 */
+.fundamentals-card[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.96);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.78em;
+    font-weight: 500;
+    line-height: 1.55;
+    width: max-content;
+    max-width: 260px;
+    white-space: normal;
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    letter-spacing: 0.01em;
+}
+
+.fundamentals-card[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(15, 23, 42, 0.96);
+    z-index: 11;
+    pointer-events: none;
 }
 
 /* ═══════════════════════════════════════════════
