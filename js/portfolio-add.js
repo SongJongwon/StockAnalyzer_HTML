@@ -368,6 +368,15 @@
     }
 
     // ─── 이벤트 위임 ──────────────────────────────────────────
+    //
+    // capture: true — Tab 3 의 <tr onclick="toggleThemeRow(...)"> 인라인 onclick 보다
+    // 먼저 발화하여 stopPropagation 으로 bubble 차단. bubble phase 위임이면 tr.onclick
+    // 이 button click 다음 단계에서 즉시 발화하여 행이 펼쳐지는 버그 (c9 fix).
+    //
+    // capture phase 는 document → ... → tr → button (target) 순서로 내려오므로
+    // document 위임이 가장 먼저 실행 → stopPropagation 호출 → bubble phase 의
+    // tr.onclick 까지 모두 차단됨. Tab 1/2/패널 (부모 onclick 없음) 동작 영향 0.
+    //
     let _delegationAttached = false;
     function attachPortfolioAddHandlers(container) {
         const target = container || document.body;
@@ -379,7 +388,8 @@
             const btn = e.target.closest('.port-add-btn');
             if (!btn) return;
 
-            // 행 onclick (예: Tab 3 toggleThemeRow) 차단 — 모든 .port-add-btn 클릭에 무조건
+            // 행 onclick (예: Tab 3 toggleThemeRow) 차단 — capture phase 위임이라
+            // bubble phase 의 tr.onclick 보다 먼저 발화하여 stopPropagation 효과 정상
             e.stopPropagation();
 
             const state = btn.dataset.state;
@@ -463,7 +473,7 @@
                 console.warn('[NexusPortfolio] post-result handler threw:', handlerErr);
                 _setButtonState(btn, 'idle');
             }
-        });
+        }, { capture: true });   // ← c9 fix: capture phase 위임 (Tab 3 tr.onclick 차단)
     }
 
     // ─── 글로벌 노출 ──────────────────────────────────────────
