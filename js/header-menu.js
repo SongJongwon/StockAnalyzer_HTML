@@ -8,7 +8,7 @@
  *
  * 마크업 패턴 (각 페이지에서 직접 추가):
  *   <a class="portfolio-link" href="portfolio.html">
- *     📊<span class="portfolio-link-label">내 포트폴리오</span>
+ *     📊<span class="portfolio-link-label">포트폴리오</span>
  *   </a>
  *
  * 스타일은 portfolio.css 의 .portfolio-link 가 담당 (다크/라이트 + 호버 + 모바일).
@@ -56,7 +56,7 @@
             // 비로그인 시 숨김 (포트폴리오는 로그인 필수 기능)
             el.hidden = !authed;
             if (!el.getAttribute('aria-label')) {
-                el.setAttribute('aria-label', '내 포트폴리오');
+                el.setAttribute('aria-label', '포트폴리오');
             }
         });
     }

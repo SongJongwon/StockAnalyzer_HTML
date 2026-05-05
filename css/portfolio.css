@@ -92,21 +92,28 @@
 /* ─────────────────────────────────────────────────────────────
  * 헤더 진입 버튼 (.portfolio-link) — 모든 페이지에서 사용
  * 사용자 명시 색상 + 호버 + active 스펙 그대로
+ *
+ * 높이 통일 (사용자 요청): height 32px / padding 0 14px / line-height 1 /
+ * display inline-flex / align-items center / box-sizing border-box —
+ * 📊 이모지가 line-height 늘리는 문제 차단. 다른 헤더 버튼 (.btn-link /
+ * .btn-primary) 도 account.css 에서 동일 통일.
  * ───────────────────────────────────────────────────────────── */
 .portfolio-link {
     display: inline-flex;
     align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    line-height: 1;
+    box-sizing: border-box;
     background: var(--port-accent-bg);
     color: var(--port-accent);
     border: 0.5px solid var(--port-accent-border);
     font-weight: 500;
     font-size: 12px;
-    padding: 6px 14px;
     border-radius: 5px;
     text-decoration: none;
     transition: all 0.2s;
     cursor: pointer;
-    line-height: 1;
     white-space: nowrap;
 }
 
@@ -128,7 +135,7 @@
 
 @media (max-width: 480px) {
     .portfolio-link {
-        padding: 6px 10px;
+        padding: 0 10px;
     }
     .portfolio-link .portfolio-link-label {
         display: none;
