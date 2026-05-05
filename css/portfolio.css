@@ -718,39 +718,69 @@
     flex: 1;
 }
 
-/* 검색 결과 — input 바로 아래 자동완성 드롭다운 */
-.port-search-results {
+/* 검색 결과 — input 바로 아래 자동완성 드롭다운
+ * 종목 분석 화면 (style.css .autocomplete-*) 과 100% 동일 마크업/UX —
+ * .autocomplete-item / .ac-name / .ac-ticker / .ac-en 클래스 사용.
+ * 모달 안에서는 --port-* 토큰으로 다크/라이트 분기.
+ *
+ * 컨테이너: #portAddResults (.port-search-results 클래스도 같이 적용됨) */
+#portAddResults {
     position: absolute;
-    top: calc(100% + 2px);          /* input 아래 2px 간격 */
+    top: calc(100% + 2px);
     left: 0;
     right: 0;
-    z-index: 20;                    /* 모달 내부 다른 요소 위 */
+    z-index: 20;
     border: 1px solid var(--port-border);
-    border-radius: 5px;
-    max-height: 220px;
+    border-radius: 6px;
+    max-height: 280px;
     overflow-y: auto;
     background: var(--port-card);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
-[data-theme="light"] .port-search-results {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+[data-theme="light"] #portAddResults {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
-.port-search-results:empty { display: none; }
-.port-search-result {
-    padding: 8px 10px;
+#portAddResults:empty { display: none; }
+
+/* .autocomplete-item — 종목 분석 화면과 동일 양쪽 정렬 (이름 ⟷ 영문/ticker) */
+#portAddResults .autocomplete-item {
+    padding: 8px 12px;
     cursor: pointer;
     font-size: 13px;
     color: var(--port-text);
     border-bottom: 1px solid var(--port-card-divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
-.port-search-result:last-child { border-bottom: none; }
-.port-search-result:hover,
-.port-search-result.kbd-active {
+#portAddResults .autocomplete-item:last-child { border-bottom: none; }
+#portAddResults .autocomplete-item:hover,
+#portAddResults .autocomplete-item.active {
     background: var(--port-card-divider);
 }
-.port-search-result.selected {
-    background: var(--port-accent-bg);
+#portAddResults .autocomplete-item .ac-name {
+    color: var(--port-text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#portAddResults .autocomplete-item .ac-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+#portAddResults .autocomplete-item .ac-en {
+    color: var(--port-muted);
+    font-size: 11px;
+}
+#portAddResults .autocomplete-item .ac-ticker {
     color: var(--port-accent);
+    font-weight: 600;
+    font-size: 12px;
+    font-family: 'Menlo', 'Consolas', monospace;
 }
 
 /* 미리보기 */

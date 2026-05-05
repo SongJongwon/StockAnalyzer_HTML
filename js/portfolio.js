@@ -487,22 +487,23 @@
     let _kbdIdx = -1;             // 자동완성 키보드 선택 인덱스 (-1 = 미선택)
 
     function getResultItems() {
-        return document.querySelectorAll('#portAddResults .port-search-result[data-ticker]');
+        // 종목 분석 화면과 동일 클래스 사용 (.autocomplete-item)
+        return document.querySelectorAll('#portAddResults .autocomplete-item[data-ticker]');
     }
 
     function setKbdIdx(idx) {
         const items = getResultItems();
         if (!items.length) { _kbdIdx = -1; return; }
-        // 순환 (배열 길이 안에서 wrap)
         const n = items.length;
         const i = ((idx % n) + n) % n;
-        items.forEach((el, j) => el.classList.toggle('kbd-active', j === i));
+        // 종목 분석 화면 .autocomplete-item.active 와 동일 클래스 사용
+        items.forEach((el, j) => el.classList.toggle('active', j === i));
         items[i].scrollIntoView({ block: 'nearest' });
         _kbdIdx = i;
     }
 
     function clearKbdIdx() {
-        getResultItems().forEach(el => el.classList.remove('kbd-active'));
+        getResultItems().forEach(el => el.classList.remove('active'));
         _kbdIdx = -1;
     }
 
@@ -534,75 +535,81 @@
         openModal('portSlotFullModal');
     }
 
+    // 종목 분석 화면 (app.js renderAutocomplete) 와 100% 동일 패턴 —
+    // KR_DICT 로컬 즉시 표시 (한글 1글자/초성 매칭) + ticker 형식이면 backend
+    // /api/stock/search 보강. 마크업도 동일 (.autocomplete-item / .ac-name /
+    // .ac-ticker / .ac-en) — portfolio.css 가 그 클래스 스타일링.
     async function handleAddSearch(q) {
         const resultsEl = document.getElementById('portAddResults');
-        if (!q || q.length < 2) {
+        if (!q || !q.length) {
             resultsEl.innerHTML = '';
             return;
         }
-        try {
-            const r = await fetch(`${API_BASE}/api/stock/search?q=${encodeURIComponent(q)}`, {
-                headers: authHeaders(),
-            });
 
-            // backend /api/stock/search 는 단일 객체 {symbol, name} 또는 404 반환.
-            // 검색 실패는 정상 흐름 — q 가 ticker 형식이면 직접 담기 활성화,
-            // 아니면 안내만 (한글 검색어 "삼성" 같은 것이 ticker 로 잘못 들어가지 않도록).
-            if (r.status === 404) {
-                const TICKER_RE = /^[A-Za-z0-9.\-]{1,20}$/;
-                const trimmed = q.trim();
-                if (TICKER_RE.test(trimmed)) {
-                    const tk = trimmed.toUpperCase();
-                    resultsEl.innerHTML = `<div class="port-search-result" data-ticker="${escapeAttr(tk)}" data-name="">
-                        <strong>${escapeHtml(tk)}</strong>
-                        <span style="color:var(--port-muted); margin-left:8px;">검색 결과 없음 — 직접 담기</span>
-                    </div>`;
-                } else {
-                    resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-muted); cursor:default;">
-                        검색 결과 없음 — 정확한 ticker (예: <strong>AAPL</strong>, <strong>005930.KS</strong>) 를 입력하세요
+        // 1단계: 로컬 KR_DICT 즉시 표시 (1글자/초성 즉시 동작)
+        const local = (window.NexusKrDict ? window.NexusKrDict.searchKrDict(q) : []).slice(0, 8);
+        if (local.length) {
+            renderAutocompleteList(local.map(it => ({
+                name: it.name, ticker: it.ticker, en: it.en,
+            })));
+        }
+
+        // 2단계: ticker 형식 (영숫자/.\-) 이면 backend /api/stock/search 추가 시도
+        // — KR_DICT 에 없는 글로벌 종목 (예: PLTR, HON 등) 보강.
+        // 한글이거나 너무 짧으면 backend 호출 생략 (불필요한 트래픽 방지).
+        const TICKER_RE = /^[A-Za-z0-9.\-]{1,20}$/;
+        if (q.length >= 2 && TICKER_RE.test(q)) {
+            try {
+                const r = await fetch(
+                    `${API_BASE}/api/stock/search?q=${encodeURIComponent(q)}`,
+                    { headers: authHeaders() }
+                );
+                if (r.ok) {
+                    const data = await r.json();
+                    const remoteSym  = data.symbol || data.ticker || '';
+                    const remoteName = data.name || data.longName || data.shortName || '';
+                    if (remoteSym && !local.some(it => it.ticker === remoteSym)) {
+                        // 로컬 결과에 추가 (중복 방지)
+                        const merged = local.concat([{
+                            name: remoteName || remoteSym,
+                            ticker: remoteSym,
+                            en: remoteName,
+                        }]).slice(0, 8);
+                        renderAutocompleteList(merged);
+                    }
+                } else if (r.status === 404 && !local.length) {
+                    // ticker 직접 입력 가능 안내 (로컬 결과 없을 때만)
+                    const tk = q.toUpperCase();
+                    resultsEl.innerHTML = `<div class="autocomplete-item" data-ticker="${escapeAttr(tk)}" data-name="">
+                        <span class="ac-name">검색 결과 없음 — 직접 담기</span>
+                        <span class="ac-right"><span class="ac-ticker">${escapeHtml(tk)}</span></span>
                     </div>`;
                 }
-                return;
-            }
-            if (!r.ok) {
-                let detail = `HTTP ${r.status}`;
-                try { const j = await r.json(); detail = j.detail || detail; } catch (_) {}
-                throw new Error(detail);
-            }
-
-            const data = await r.json();
-            // 호환 파싱 — 향후 backend 가 다중 결과 지원해도 동작:
-            //   1) Array            → 그대로
-            //   2) {items: [...]}   → items
-            //   3) {results: [...]} → results
-            //   4) {symbol, name}   → 단일 객체 → [data]  (현재 backend)
-            let items = [];
-            if (Array.isArray(data)) {
-                items = data;
-            } else if (Array.isArray(data.items)) {
-                items = data.items;
-            } else if (Array.isArray(data.results)) {
-                items = data.results;
-            } else if (data && data.symbol) {
-                items = [data];
-            }
-            items = items.slice(0, 6);
-
-            if (!items.length) {
-                resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-muted); cursor:default;">검색 결과 없음</div>`;
-                return;
-            }
-            resultsEl.innerHTML = items.map(s => {
-                const sym = s.symbol || s.ticker || '';
-                const name = s.name || s.longName || s.shortName || '';
-                return `<div class="port-search-result" data-ticker="${escapeAttr(sym)}" data-name="${escapeAttr(name)}">
-                    <strong>${escapeHtml(sym)}</strong>
-                    ${name ? `<span style="color:var(--port-muted); margin-left:8px;">${escapeHtml(name)}</span>` : ''}
-                </div>`;
-            }).join('');
-        } catch (e) {
-            resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-loss); cursor:default;">검색 실패: ${escapeHtml(e.message)}</div>`;
+            } catch (_) { /* backend 장애는 무시 — 로컬 결과만 사용 */ }
         }
+
+        // 3단계: 로컬도 없고 backend 도 결과 없음 — 안내
+        if (!resultsEl.children.length) {
+            resultsEl.innerHTML = `<div class="autocomplete-item" style="cursor:default;">
+                <span class="ac-name" style="color:var(--port-muted);">검색 결과 없음</span>
+            </div>`;
+        }
+    }
+
+    function renderAutocompleteList(items) {
+        const resultsEl = document.getElementById('portAddResults');
+        resultsEl.innerHTML = items.map(it => {
+            const name   = it.name   || it.ticker || '';
+            const ticker = it.ticker || '';
+            const en     = it.en     || '';
+            return `<div class="autocomplete-item" data-ticker="${escapeAttr(ticker)}" data-name="${escapeAttr(name)}">
+                <span class="ac-name">${escapeHtml(name)}</span>
+                <span class="ac-right">
+                    ${en && en !== name ? `<span class="ac-en">${escapeHtml(en)}</span>` : ''}
+                    <span class="ac-ticker">${escapeHtml(ticker)}</span>
+                </span>
+            </div>`;
+        }).join('');
     }
 
     async function selectSearchResult(ticker, name) {
@@ -673,7 +680,8 @@
                 if (inAdd) renderAddTagChips(); else renderEditTagChips();
             }
         }
-        const result = e.target.closest('.port-search-result[data-ticker]');
+        // 종목 분석 화면과 동일 .autocomplete-item 사용
+        const result = e.target.closest('.autocomplete-item[data-ticker]');
         if (result) selectSearchResult(result.dataset.ticker, result.dataset.name || '');
     });
 
