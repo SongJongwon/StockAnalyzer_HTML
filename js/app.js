@@ -1545,7 +1545,13 @@ function renderAnalysis(data, container) {
     const rrColor = rr >= 1.5 ? '#aaffaa' : '#ffaaaa';
 
     container.innerHTML = `
-        <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
+        <!-- 종목명 헤더 라인 — 좌측 종목명, 우측 끝 [📊 담기] (PR-9C) -->
+        <div class="analysis-title-row">
+            <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
+            ${window.NexusPortfolio
+                ? NexusPortfolio.renderPortfolioAddButton(sym, 'idle', { source: 'analysis', sourceMeta: {}, size: 'medium' })
+                : ''}
+        </div>
 
         <!-- Company Info Card -->
         <div class="company-info-card" id="companyInfoCard">
@@ -1576,14 +1582,12 @@ function renderAnalysis(data, container) {
         <div class="info-bar">USD/KRW: ${fmt(rate, 1)} · ${krw ? L('krx_stock') : L('usd_stock')}</div>
         <hr class="divider">
 
-        <!-- Verdict Banner — 펀더멘털 통합 2차: 5단계 라벨 + 한 줄 근거 + 업종 + 종합 점수 -->
+        <!-- Verdict Banner — 펀더멘털 통합 2차: 5단계 라벨 + 한 줄 근거 + 업종 + 종합 점수
+             ([📊 담기] 는 종목명 헤더 라인 우측 끝으로 이동 — PR-9C c8) -->
         <div class="verdict-banner verdict-${verdictTier}" style="background:${vColor}22;border-color:${vColor};color:${vColor};">
             <h2>${verdictIcon(verdictTier)} ${L('verdict_label')}: ${dSignal(verdict)}</h2>
             ${d.one_line_reason ? `<div class="verdict-reason">${d.one_line_reason}</div>` : ''}
             <div class="sub">${L('buy_signals')} ${buy_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('sell_signals')} ${sell_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('neutral')} ${5 - buy_cnt - sell_cnt}${d.overall_score != null ? ` · ${L('overall_score_label')} ${d.overall_score >= 0 ? '+' : ''}${d.overall_score.toFixed(2)}` : ''}${d.sector_kr ? ` · ${d.sector_kr}` : ''}</div>
-            ${window.NexusPortfolio ? `<div class="verdict-actions" style="margin-top:10px;">${
-                NexusPortfolio.renderPortfolioAddButton(sym, 'idle', { source: 'analysis', sourceMeta: {}, size: 'medium' })
-            }</div>` : ''}
         </div>
 
         <!-- AI 분석 (키 등록 시 자동 표시) -->

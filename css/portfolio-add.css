@@ -137,3 +137,23 @@ td.port-add-cell {
         width: auto;
     }
 }
+
+/* ─────────────────────────────────────────────
+ * Tab 1 종목명 헤더 라인 — 좌측 종목명, 우측 끝 [📊 담기]
+ * (PR-9C c8 — verdict-banner 안에서 이동)
+ * ───────────────────────────────────────────── */
+.analysis-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;       /* 모바일에서 자연 wrap (담기 다음 줄 떨어짐) */
+    gap: 8px;
+    margin: 0 0 12px;
+}
+.analysis-title-row .subheader {
+    margin: 0;
+    flex: 1 1 auto;
+}
+.analysis-title-row .port-add-btn {
+    flex-shrink: 0;
+}
