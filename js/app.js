@@ -3629,6 +3629,7 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <th>${L('short_return')}</th>
             <th>${L('verdict_col')}</th>
             <th>${L('buy_basis')}</th>
+            <th></th>
             <th style="width:32px"></th>
         </tr></thead><tbody>`;
 
@@ -3664,10 +3665,17 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};font-weight:600;">${noData ? '—' : Number(r.ret_short || 0).toFixed(1) + '%'}</td>
             <td class="verdict verdict-${vTier}" style="color:${vColor};font-weight:bold;">${verdictIcon(vTier)} ${dSignal(verdictV2)}</td>
             <td style="color:var(--text-secondary);font-size:0.88em;">${oneLine}</td>
+            <td class="port-add-cell">${window.NexusPortfolio
+                ? NexusPortfolio.renderPortfolioAddButton(r.ticker, 'idle', {
+                      source: 'theme',
+                      sourceMeta: { theme_name: currentTheme },
+                      size: 'small',
+                  })
+                : ''}</td>
             <td style="text-align:center;color:var(--muted);font-size:0.8em;" class="tsr-arrow">▶</td>
         </tr>
         <tr class="theme-detail-row" id="tdr-${sid}">
-            <td colspan="11" style="padding:0;">
+            <td colspan="12" style="padding:0;">
                 <div class="theme-detail-wrap" id="tdw-${sid}"></div>
             </td>
         </tr>`;
@@ -3687,6 +3695,13 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
     html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
 
     container.innerHTML = html;
+
+    // PR-9C — 화면 마운트 후 ticker 일괄 check (행 클릭 toggleThemeRow 와는
+    // 분리됨 — portfolio-add.js 의 위임 핸들러가 stopPropagation 적용)
+    if (window.NexusPortfolio) {
+        const tickers = (stocks || []).map(r => r && r.ticker).filter(Boolean);
+        NexusPortfolio.fetchPortfolioCheck(tickers);
+    }
 }
 
 function toggleThemeRow(sid) {
