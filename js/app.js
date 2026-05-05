@@ -1545,7 +1545,13 @@ function renderAnalysis(data, container) {
     const rrColor = rr >= 1.5 ? '#aaffaa' : '#ffaaaa';
 
     container.innerHTML = `
-        <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
+        <!-- 종목명 헤더 라인 — 좌측 종목명, 우측 끝 [📊 담기] (PR-9C) -->
+        <div class="analysis-title-row">
+            <h2 class="subheader"><span class="ms">push_pin</span> ${name} (${sym})</h2>
+            ${window.NexusPortfolio
+                ? NexusPortfolio.renderPortfolioAddButton(sym, 'idle', { source: 'analysis', sourceMeta: {}, size: 'medium' })
+                : ''}
+        </div>
 
         <!-- Company Info Card -->
         <div class="company-info-card" id="companyInfoCard">
@@ -1576,7 +1582,8 @@ function renderAnalysis(data, container) {
         <div class="info-bar">USD/KRW: ${fmt(rate, 1)} · ${krw ? L('krx_stock') : L('usd_stock')}</div>
         <hr class="divider">
 
-        <!-- Verdict Banner — 펀더멘털 통합 2차: 5단계 라벨 + 한 줄 근거 + 업종 + 종합 점수 -->
+        <!-- Verdict Banner — 펀더멘털 통합 2차: 5단계 라벨 + 한 줄 근거 + 업종 + 종합 점수
+             ([📊 담기] 는 종목명 헤더 라인 우측 끝으로 이동 — PR-9C c8) -->
         <div class="verdict-banner verdict-${verdictTier}" style="background:${vColor}22;border-color:${vColor};color:${vColor};">
             <h2>${verdictIcon(verdictTier)} ${L('verdict_label')}: ${dSignal(verdict)}</h2>
             ${d.one_line_reason ? `<div class="verdict-reason">${d.one_line_reason}</div>` : ''}
@@ -1720,6 +1727,11 @@ function renderAnalysis(data, container) {
 
     // AI 분석 (키 등록된 경우에만)
     _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict);
+
+    // PR-9C — [📊 담기] 상태 동기화 (이미 담긴 종목 / 비로그인 자동 disabled)
+    if (window.NexusPortfolio) {
+        NexusPortfolio.fetchPortfolioCheck([sym]);
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -3433,7 +3445,7 @@ function renderWatchlist(data, container) {
         html += `<div class="watchlist-category"><h4>${category}</h4>`;
         html += `<table class="wl-table"><thead><tr>
             <th>${L('wl_name')}</th><th>${L('wl_price')}</th><th>${L('wl_change')}</th><th>${L('wl_rsi')}</th><th>${L('wl_entry')}</th>
-            <th>${L('wl_target1')}</th><th>${L('wl_target2')}</th><th>${L('wl_short')}</th><th>${L('wl_mid')}</th><th>${L('wl_long')}</th><th>${L('wl_reason')}</th>
+            <th>${L('wl_target1')}</th><th>${L('wl_target2')}</th><th>${L('wl_short')}</th><th>${L('wl_mid')}</th><th>${L('wl_long')}</th><th>${L('wl_reason')}</th><th></th>
         </tr></thead><tbody>`;
         for (const r of rows) {
             const chg = r.change_pct ?? 0;
@@ -3471,12 +3483,28 @@ function renderWatchlist(data, container) {
                 <td style="color:${crm};font-weight:600;">${noData ? '—' : Number(retM).toFixed(1) + '%'}</td>
                 <td style="color:${crl};font-weight:600;">${noData ? '—' : Number(retL).toFixed(1) + '%'}</td>
                 <td style="color:var(--text-secondary);max-width:240px;">${oneLine}</td>
+                <td class="port-add-cell">${window.NexusPortfolio
+                    ? NexusPortfolio.renderPortfolioAddButton(r.ticker, 'idle', {
+                          source: 'watchlist',
+                          sourceMeta: { buy_cnt: r.buy_cnt, sell_cnt: r.sell_cnt },
+                          size: 'small',
+                      })
+                    : ''}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';
     }
     html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
     container.innerHTML = html;
+
+    // PR-9C — 화면 마운트 후 ticker 일괄 check (이미 담긴 종목 done 표시 + 비로그인 disabled)
+    if (window.NexusPortfolio) {
+        const tickers = [];
+        for (const rows of Object.values(data)) {
+            (rows || []).forEach(r => { if (r && r.ticker) tickers.push(r.ticker); });
+        }
+        NexusPortfolio.fetchPortfolioCheck(tickers);
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -3605,6 +3633,7 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <th>${L('short_return')}</th>
             <th>${L('verdict_col')}</th>
             <th>${L('buy_basis')}</th>
+            <th></th>
             <th style="width:32px"></th>
         </tr></thead><tbody>`;
 
@@ -3640,10 +3669,17 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
             <td style="color:${(r.ret_short || 0) > 0 ? '#00C851' : '#FF4444'};font-weight:600;">${noData ? '—' : Number(r.ret_short || 0).toFixed(1) + '%'}</td>
             <td class="verdict verdict-${vTier}" style="color:${vColor};font-weight:bold;">${verdictIcon(vTier)} ${dSignal(verdictV2)}</td>
             <td style="color:var(--text-secondary);font-size:0.88em;">${oneLine}</td>
+            <td class="port-add-cell">${window.NexusPortfolio
+                ? NexusPortfolio.renderPortfolioAddButton(r.ticker, 'idle', {
+                      source: 'theme',
+                      sourceMeta: { theme_name: currentTheme },
+                      size: 'small',
+                  })
+                : ''}</td>
             <td style="text-align:center;color:var(--muted);font-size:0.8em;" class="tsr-arrow">▶</td>
         </tr>
         <tr class="theme-detail-row" id="tdr-${sid}">
-            <td colspan="11" style="padding:0;">
+            <td colspan="12" style="padding:0;">
                 <div class="theme-detail-wrap" id="tdw-${sid}"></div>
             </td>
         </tr>`;
@@ -3663,6 +3699,13 @@ function renderThemeStocksTable(headerHtml, stocks, container) {
     html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
 
     container.innerHTML = html;
+
+    // PR-9C — 화면 마운트 후 ticker 일괄 check (행 클릭 toggleThemeRow 와는
+    // 분리됨 — portfolio-add.js 의 위임 핸들러가 stopPropagation 적용)
+    if (window.NexusPortfolio) {
+        const tickers = (stocks || []).map(r => r && r.ticker).filter(Boolean);
+        NexusPortfolio.fetchPortfolioCheck(tickers);
+    }
 }
 
 function toggleThemeRow(sid) {

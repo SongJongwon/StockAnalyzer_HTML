@@ -498,6 +498,19 @@ function renderPanelResult(data, el) {
             ${finalSummaryHtml}
         </details>
     `;
+
+    // PR-9C — 4-bucket 의 모든 ticker 일괄 check (이미 담긴 종목 done 표시 +
+    // 비로그인 disabled). verified=false 종목은 renderHeader 가 disabled 마크업 자체 적용.
+    if (window.NexusPortfolio) {
+        const tickers = []
+            .concat(s.agreed    || [])
+            .concat(s.persuaded || [])
+            .concat(s.disputed  || [])
+            .concat(s.solo      || [])
+            .map(it => it && it.ticker)
+            .filter(Boolean);
+        NexusPortfolio.fetchPortfolioCheck(tickers);
+    }
 }
 
 
@@ -528,12 +541,29 @@ function renderPanelRecommendations(s) {
     // verified=true / null → 표시 변화 없음 (정상 카드).
     const cardModifier = (item) => item && item.verified === false ? ' panel-rec-card--unverified' : '';
 
-    const renderHeader = (item) => {
+    // PR-9C — bucket + extraMeta 인자 추가 (source_meta 풍부 컨텍스트)
+    //   bucket: 'agreed' | 'persuaded' | 'disputed' | 'solo'
+    //   extraMeta: { rank, supporters?, originally_by?, for_side?, against_side?, supporter? } 등
+    const renderHeader = (item, bucket, extraMeta) => {
         const t = item.ticker || '';
         const n = item.name || '';
         const warningBadge = item.verified === false
             ? `<span class="panel-rec-warning-badge" title="야후 파이낸스에서 실존 확인 안 됨">⚠️</span>`
             : '';
+        // PR-9C — [📊 담기] 버튼: source='panel', source_meta={bucket, ...extraMeta}
+        // verified=false 종목은 disabled (사용자 결정 #3 옵션 A)
+        let portBtn = '';
+        if (window.NexusPortfolio && t) {
+            const isUnverified = item.verified === false;
+            const status = isUnverified ? 'disabled' : 'idle';
+            const sourceMeta = Object.assign({ bucket: bucket || '' }, extraMeta || {});
+            portBtn = NexusPortfolio.renderPortfolioAddButton(t, status, {
+                source: 'panel',
+                sourceMeta,
+                size: 'medium',
+                disabledReason: isUnverified ? 'unverified' : '',
+            });
+        }
         return `
         <div class="panel-rec-header">
             <span class="panel-rec-ticker">${escapeHtml(t)}</span>
@@ -543,6 +573,7 @@ function renderPanelRecommendations(s) {
                     onclick="analyzeFromPanel('${safeAttr(t)}', '${safeAttr(n)}')">
                 <span class="ms">bar_chart</span> 종목 분석
             </button>
+            ${portBtn}
         </div>`;
     };
 
@@ -579,7 +610,7 @@ function renderPanelRecommendations(s) {
     const agreedCards = agreed.length === 0 ? `<div class="caption muted">없음</div>` :
         agreed.map(c => `
             <div class="panel-rec-card panel-rec-agreed${cardModifier(c)}">
-                ${renderHeader(c)}
+                ${renderHeader(c, 'agreed', { rank: 1, supporters: c.supporters || [] })}
                 <div class="panel-rec-summary">${escapeHtml(joinReasons(c.reasons))}</div>
                 <div class="panel-rec-foot caption muted">
                     지지: ${(c.supporters || []).map(personaLabel).map(escapeHtml).join(' · ')}
@@ -591,7 +622,11 @@ function renderPanelRecommendations(s) {
     const persuadedCards = persuaded.length === 0 ? `<div class="caption muted">없음</div>` :
         persuaded.map(p => `
             <div class="panel-rec-card panel-rec-persuaded${cardModifier(p)}">
-                ${renderHeader(p)}
+                ${renderHeader(p, 'persuaded', {
+                    rank: 2,
+                    originally_by: p.originally_by,
+                    supporters: p.now_supported_by || [],
+                })}
                 <div class="panel-rec-summary">
                     <strong>최초 추천:</strong> ${escapeHtml(personaLabel(p.originally_by))}
                     → <strong>현재 지지:</strong> ${(p.now_supported_by || []).map(personaLabel).map(escapeHtml).join(' · ')}
@@ -607,7 +642,11 @@ function renderPanelRecommendations(s) {
             const againstLine = `👎 반대 (${(d.against_side || []).map(personaLabel).join(', ')}) ${joinReasons(d.against_reasons)}`;
             return `
                 <div class="panel-rec-card panel-rec-disputed${cardModifier(d)}">
-                    ${renderHeader(d)}
+                    ${renderHeader(d, 'disputed', {
+                        rank: 3,
+                        for_side: d.for_side || [],
+                        against_side: d.against_side || [],
+                    })}
                     <div class="panel-rec-summary panel-rec-for-line">${escapeHtml(forLine)}</div>
                     <div class="panel-rec-summary panel-rec-against-line">${escapeHtml(againstLine)}</div>
                     ${d.next_question ? `<div class="panel-rec-foot caption muted">추가 논의: ${escapeHtml(d.next_question)}</div>` : ''}
@@ -619,7 +658,7 @@ function renderPanelRecommendations(s) {
     const soloCards = solo.length === 0 ? `<div class="caption muted">없음</div>` :
         solo.map(o => `
             <div class="panel-rec-card panel-rec-solo${cardModifier(o)}">
-                ${renderHeader(o)}
+                ${renderHeader(o, 'solo', { rank: 4, supporter: o.supporter })}
                 <div class="panel-rec-summary">${escapeHtml(o.reason || '(근거 미제공)')}</div>
                 <div class="panel-rec-foot caption muted">${escapeHtml(personaLabel(o.supporter))}</div>
                 ${renderWarningBlock(o)}
