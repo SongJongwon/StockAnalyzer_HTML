@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/portfolio.css">
     <script src="js/theme.js"></script>
     <style>
         /* ──────────────────────────────────────────
@@ -331,6 +332,9 @@
             <div class="header-actions">
                 <a class="btn-link" href="index.html">← 홈으로</a>
                 <a class="btn-link" href="pricing.html">요금제</a>
+                <a class="portfolio-link" href="portfolio.html" hidden>
+                    📊<span class="portfolio-link-label">내 포트폴리오</span>
+                </a>
                 <!-- 마스터 판정 후 JS 가 hidden 속성을 제거 (auth.css 의 [hidden]{display:none !important} 적용) -->
                 <a class="btn-primary" href="admin.html" id="adminLink" hidden>👑 관리자 대시보드</a>
                 <button class="btn-link" id="logoutBtn">로그아웃</button>
@@ -348,6 +352,12 @@
             <div class="account-card">
                 <h3>이번 달 사용량</h3>
                 <div id="usageBox">불러오는 중…</div>
+            </div>
+
+            <!-- Phase 9 — 포트폴리오 요약 카드 -->
+            <div class="account-card port-summary-card" id="portfolioSummaryCard">
+                <h3>📊 포트폴리오</h3>
+                <div id="portfolioSummaryBody">불러오는 중…</div>
             </div>
 
             <div class="account-card">
@@ -409,6 +419,7 @@
 
     <script src="js/auth.js"></script>
     <script src="js/byok-store.js"></script>
+    <script src="js/header-menu.js"></script>
     <script>
         const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }) : '—';
         const showError = (msg) => {
@@ -475,6 +486,45 @@
             `;
         }
 
+        // Phase 9 — 포트폴리오 요약 카드
+        async function loadPortfolioSummary() {
+            const box = document.getElementById('portfolioSummaryBody');
+            try {
+                const data = await NexusAuth.apiFetch('/api/portfolio/items', { auth: true });
+                const items = data.items || [];
+                const slot = data.slot || { used: 0, limit: 0 };
+
+                if (!items.length) {
+                    box.innerHTML = `
+                        <p class="notice" style="margin:0;">아직 담은 종목이 없습니다.</p>
+                        <a class="port-summary-link" href="portfolio.html">+ 포트폴리오 시작하기 →</a>
+                    `;
+                    return;
+                }
+
+                // 평균 수익률 (단순 평균)
+                const returns = items.map(it => (it.delta && it.delta.price_pct) || null).filter(v => v != null);
+                const avgReturn = returns.length ? returns.reduce((a, b) => a + b, 0) / returns.length : null;
+                // 평균 종합 점수
+                const scores = items.map(it => (it.current && it.current.overall_score) || null).filter(v => v != null);
+                const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+
+                const limitText = slot.limit === -1 ? '∞' : slot.limit;
+                const retText = avgReturn == null ? '—' :
+                    `<span style="color:${avgReturn >= 0 ? 'var(--port-gain)' : 'var(--port-loss)'};">${(avgReturn >= 0 ? '+' : '') + avgReturn.toFixed(2)}%</span>`;
+                const scoreText = avgScore == null ? '—' : (avgScore >= 0 ? '+' : '') + avgScore.toFixed(3);
+
+                box.innerHTML = `
+                    <div class="port-summary-row"><span class="label">보유 종목</span><span class="value">${items.length} / ${limitText}</span></div>
+                    <div class="port-summary-row"><span class="label">평균 수익률</span><span class="value">${retText}</span></div>
+                    <div class="port-summary-row"><span class="label">평균 종합 점수</span><span class="value">${scoreText}</span></div>
+                    <a class="port-summary-link" href="portfolio.html">전체 보기 →</a>
+                `;
+            } catch (e) {
+                box.innerHTML = `<p class="notice" style="margin:0; color:var(--acct-error-text, #fecaca);">불러오기 실패: ${e.message}</p>`;
+            }
+        }
+
         (async function () {
             try {
                 let user = await gateOrRedirect();
@@ -503,6 +553,11 @@
                 ]);
                 renderSubscription(sub, user);
                 renderUsage(usage);
+
+                // Phase 9 — 포트폴리오 요약 카드 (개별 실패는 다른 카드에 영향 없음)
+                loadPortfolioSummary().catch((e) => {
+                    console.warn('[mypage] 포트폴리오 요약 로드 실패:', e.message);
+                });
 
                 // BYOK 서버 키 목록 (개별 실패는 다른 카드에 영향 없음)
                 // NexusByok 가 아직 init 안 됐으면 init (마이그레이션 prompt 포함), 그 후 cache 재렌더

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>나의 포트폴리오 · Nexus Alpha</title>
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/account.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/portfolio.css">
+</head>
+<body class="port-page">
+    <button class="theme-toggle" aria-label="테마 전환"></button>
+
+    <div class="port-shell">
+        <!-- ── 페이지 헤더 ───────────────────────────────────────── -->
+        <header class="port-page-header account-header">
+            <div>
+                <h1 class="port-title">📊 내 포트폴리오</h1>
+                <p class="port-subtitle">
+                    현재 <strong id="portCount">—</strong>종목 ·
+                    슬롯 <strong id="portSlot">—</strong>
+                    <span id="portPlan"></span>
+                </p>
+            </div>
+            <div class="port-actions header-actions">
+                <a class="btn-link" href="index.html">← 종목 분석으로</a>
+                <a class="btn-link" href="pricing.html">요금제</a>
+                <a class="portfolio-link active" href="portfolio.html">
+                    📊<span class="portfolio-link-label">내 포트폴리오</span>
+                </a>
+                <a class="btn-link" href="mypage.html">마이페이지</a>
+                <button class="port-btn port-btn-primary" id="portAddBtn" type="button">+ 종목 추가</button>
+                <button class="port-btn" id="portRefreshBtn" type="button">🔄 새로고침</button>
+            </div>
+        </header>
+
+        <!-- ── 에러 배너 ─────────────────────────────────────────── -->
+        <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+        <!-- ── 요약 카드 4개 ─────────────────────────────────────── -->
+        <section class="port-summary" id="portSummary" hidden>
+            <div class="port-sum-card">
+                <div class="port-sum-label">보유 종목</div>
+                <div class="port-sum-value" id="sumCount">0</div>
+                <div class="port-sum-sub" id="sumSlot">슬롯 0/0</div>
+            </div>
+            <div class="port-sum-card">
+                <div class="port-sum-label">평균 수익률</div>
+                <div class="port-sum-value" id="sumReturn">—</div>
+                <div class="port-sum-sub">담은 시점 대비</div>
+            </div>
+            <div class="port-sum-card">
+                <div class="port-sum-label">평균 종합 점수</div>
+                <div class="port-sum-value" id="sumScore">—</div>
+                <div class="port-sum-sub">현재 overall_score</div>
+            </div>
+            <div class="port-sum-card">
+                <div class="port-sum-label">Verdict 분포</div>
+                <div class="port-verdict-dist" id="sumVerdictDist">—</div>
+            </div>
+        </section>
+
+        <!-- ── 정렬·필터 바 ──────────────────────────────────────── -->
+        <div class="port-controls" id="portControls" hidden>
+            <select id="portSortBy" aria-label="정렬">
+                <option value="created_at_desc">담은순 (최신)</option>
+                <option value="created_at_asc">담은순 (오래된)</option>
+                <option value="return_pct_desc">수익률 ↓</option>
+                <option value="return_pct_asc">수익률 ↑</option>
+                <option value="overall_score_desc">현재 종합 점수 ↓</option>
+                <option value="overall_score_asc">현재 종합 점수 ↑</option>
+                <option value="delta_score_desc">점수 변화 ↓</option>
+                <option value="delta_score_asc">점수 변화 ↑</option>
+                <option value="target_proximity">목표가 근접</option>
+                <option value="stoploss_proximity">손절가 근접 ⚠️</option>
+            </select>
+            <select id="portFilterVerdict" aria-label="Verdict 필터">
+                <option value="">전체 Verdict</option>
+                <option value="strong_buy">강력 매수</option>
+                <option value="buy">매수</option>
+                <option value="neutral">중립</option>
+                <option value="sell">매도</option>
+                <option value="strong_sell">강력 매도</option>
+            </select>
+            <select id="portFilterSource" aria-label="출처 필터">
+                <option value="">전체 출처</option>
+                <option value="analysis">종목 분석</option>
+                <option value="watchlist">추천 종목</option>
+                <option value="theme">테마주</option>
+                <option value="panel">투자자 패널</option>
+                <option value="manual">직접 추가</option>
+            </select>
+            <select id="portFilterTag" aria-label="태그 필터">
+                <option value="">전체 태그</option>
+                <!-- options 는 JS 에서 동적 채움 -->
+            </select>
+            <input type="search" id="portSearch" placeholder="ticker / 회사명 검색">
+        </div>
+
+        <!-- ── 빈 상태 ───────────────────────────────────────────── -->
+        <div class="port-empty" id="portEmpty" hidden>
+            <div class="port-empty-icon">📊</div>
+            <h2>아직 담은 종목이 없습니다</h2>
+            <p>위의 [+ 종목 추가] 버튼으로 직접 추가하거나,<br>
+               종목 분석에서 발견한 종목을 [📊 담기] 버튼으로 추가하세요.</p>
+            <a href="index.html" class="port-btn port-btn-primary">→ 종목 분석으로</a>
+        </div>
+
+        <!-- ── 종목 테이블 ───────────────────────────────────────── -->
+        <table class="port-table" id="portTable" hidden>
+            <thead>
+                <tr>
+                    <th>종목</th>
+                    <th>현재가</th>
+                    <th>수익률</th>
+                    <th>판단</th>
+                    <th>PER</th>
+                    <th>ROE</th>
+                    <th>PEG</th>
+                    <th>품질</th>
+                    <th>메모</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="portTbody"></tbody>
+        </table>
+
+        <!-- ── 로딩 표시 ─────────────────────────────────────────── -->
+        <div id="portLoading" class="port-empty">
+            <div class="port-empty-icon">⏳</div>
+            <h2>포트폴리오 불러오는 중…</h2>
+            <p>현재 가격·펀더멘털을 yfinance 에서 조회하고 있어요.</p>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         종목 추가 모달
+         ───────────────────────────────────────────────────────── -->
+    <div class="port-modal-overlay" id="portAddModal" hidden>
+        <div class="port-modal-content" role="dialog" aria-labelledby="portAddTitle">
+            <header class="port-modal-header">
+                <h3 id="portAddTitle">+ 종목 추가</h3>
+                <button class="port-modal-close" type="button" data-close-modal="portAddModal" aria-label="닫기">✕</button>
+            </header>
+            <div class="port-modal-body">
+                <div class="port-field">
+                    <label for="portAddSearch">종목 검색</label>
+                    <input type="search" id="portAddSearch"
+                           placeholder="ticker (AAPL) 또는 회사명 (삼성전자)"
+                           autocomplete="off">
+                    <div class="port-search-results" id="portAddResults"></div>
+                </div>
+
+                <div class="port-preview" id="portAddPreview" hidden>
+                    <h4 id="portPreviewName">—</h4>
+                    <div class="port-preview-meta" id="portPreviewMeta">—</div>
+                    <div id="portPreviewVerdict"></div>
+                    <p class="port-preview-reason" id="portPreviewReason"></p>
+                </div>
+
+                <div class="port-field">
+                    <label for="portAddMemo">메모 (선택, 최대 5,000자)</label>
+                    <textarea id="portAddMemo" rows="2" maxlength="5000"
+                              placeholder="이 종목을 담은 이유 / 매매 계획 등"></textarea>
+                </div>
+
+                <div class="port-field">
+                    <label>태그 (선택, 최대 10개)</label>
+                    <div class="port-tag-chips" id="portAddTagChips"></div>
+                    <div class="port-tag-suggestions">
+                        <button type="button" data-tag="핵심 종목">+ 핵심 종목</button>
+                        <button type="button" data-tag="보유 중">+ 보유 중</button>
+                        <button type="button" data-tag="관망">+ 관망</button>
+                        <button type="button" data-tag="매도 완료">+ 매도 완료</button>
+                    </div>
+                    <input type="text" id="portAddTagInput" placeholder="자유 태그 (Enter 로 추가)" maxlength="50">
+                </div>
+
+                <div class="port-field-group">
+                    <div class="port-field">
+                        <label for="portAddTarget">목표가 (선택)</label>
+                        <input type="number" id="portAddTarget" min="0" step="0.01">
+                    </div>
+                    <div class="port-field">
+                        <label for="portAddStoploss">손절가 (선택)</label>
+                        <input type="number" id="portAddStoploss" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+            <footer class="port-modal-footer">
+                <button class="port-btn" type="button" data-close-modal="portAddModal">취소</button>
+                <button class="port-btn port-btn-primary" type="button" id="portAddSubmit" disabled>담기</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         편집 모달
+         ───────────────────────────────────────────────────────── -->
+    <div class="port-modal-overlay" id="portEditModal" hidden>
+        <div class="port-modal-content" role="dialog" aria-labelledby="portEditTitle">
+            <header class="port-modal-header">
+                <h3 id="portEditTitle">✏️ 편집</h3>
+                <button class="port-modal-close" type="button" data-close-modal="portEditModal" aria-label="닫기">✕</button>
+            </header>
+            <div class="port-modal-body">
+                <div class="port-field">
+                    <label for="portEditMemo">메모 (선택)</label>
+                    <textarea id="portEditMemo" rows="2" maxlength="5000"></textarea>
+                </div>
+                <div class="port-field">
+                    <label>태그</label>
+                    <div class="port-tag-chips" id="portEditTagChips"></div>
+                    <div class="port-tag-suggestions">
+                        <button type="button" data-tag="핵심 종목">+ 핵심 종목</button>
+                        <button type="button" data-tag="보유 중">+ 보유 중</button>
+                        <button type="button" data-tag="관망">+ 관망</button>
+                        <button type="button" data-tag="매도 완료">+ 매도 완료</button>
+                    </div>
+                    <input type="text" id="portEditTagInput" placeholder="자유 태그 (Enter)" maxlength="50">
+                </div>
+                <div class="port-field-group">
+                    <div class="port-field">
+                        <label for="portEditTarget">목표가</label>
+                        <input type="number" id="portEditTarget" min="0" step="0.01">
+                    </div>
+                    <div class="port-field">
+                        <label for="portEditStoploss">손절가</label>
+                        <input type="number" id="portEditStoploss" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--port-card-divider); padding-top: 12px; margin-top: 4px;">
+                    <button type="button" class="port-btn port-btn-danger" id="portEditRefresh">
+                        🔄 기준 재설정 (스냅샷 덮어쓰기)
+                    </button>
+                    <p style="font-size: 11px; color: var(--port-muted); margin: 6px 0 0;">
+                        담은 시점 가격·점수가 사라지고 현재 값으로 갱신됩니다.
+                    </p>
+                </div>
+            </div>
+            <footer class="port-modal-footer">
+                <button class="port-btn" type="button" data-close-modal="portEditModal">취소</button>
+                <button class="port-btn port-btn-primary" type="button" id="portEditSubmit">저장</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         슬롯 가득 모달
+         ───────────────────────────────────────────────────────── -->
+    <div class="port-modal-overlay" id="portSlotFullModal" hidden>
+        <div class="port-modal-content" style="max-width: 400px;">
+            <header class="port-modal-header">
+                <h3>📊 슬롯이 가득 찼어요</h3>
+                <button class="port-modal-close" type="button" data-close-modal="portSlotFullModal" aria-label="닫기">✕</button>
+            </header>
+            <div class="port-modal-body">
+                <p style="margin: 0 0 12px;">
+                    현재 사용: <strong id="portSlotFullText">—</strong>
+                </p>
+                <p style="font-size: 13px; color: var(--port-muted); margin: 0 0 8px;">
+                    더 많은 종목을 담으려면:
+                </p>
+                <ul style="font-size: 13px; color: var(--port-text); margin: 0 0 0 18px; padding: 0;">
+                    <li>기존 종목 정리</li>
+                    <li>또는 요금제 업그레이드</li>
+                </ul>
+            </div>
+            <footer class="port-modal-footer">
+                <button class="port-btn" type="button" data-close-modal="portSlotFullModal">취소</button>
+                <a class="port-btn port-btn-primary" href="pricing.html">요금제 보기</a>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────────
+         스크립트 (NexusAuth → NexusModal → header-menu → portfolio)
+         ───────────────────────────────────────────────────────── -->
+    <script src="js/auth.js"></script>
+    <script src="js/modal-utils.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/header-menu.js"></script>
+    <script src="js/portfolio.js"></script>
+</body>
+</html>

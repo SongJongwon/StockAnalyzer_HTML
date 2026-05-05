@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link rel="stylesheet" href="css/account.css">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/portfolio.css">
     <script src="js/theme.js"></script>
 </head>
 <body>
@@ -19,6 +20,9 @@
             </div>
             <div class="header-actions">
                 <a class="btn-link" href="index.html">← 홈으로</a>
+                <a class="portfolio-link" href="portfolio.html" hidden>
+                    📊<span class="portfolio-link-label">내 포트폴리오</span>
+                </a>
                 <a class="btn-link" href="mypage.html" id="mypageLink" style="display:none;">마이페이지</a>
                 <a class="btn-primary" href="login.html" id="loginLink">로그인</a>
             </div>
@@ -36,6 +40,7 @@
     </div>
 
     <script src="js/auth.js"></script>
+    <script src="js/header-menu.js"></script>
     <script>
         const CURRENCY = (n) => n === 0 ? '무료' : '₩' + n.toLocaleString();
 
