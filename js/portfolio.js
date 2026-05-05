@@ -522,10 +522,52 @@
             const r = await fetch(`${API_BASE}/api/stock/search?q=${encodeURIComponent(q)}`, {
                 headers: authHeaders(),
             });
+
+            // backend /api/stock/search 는 단일 객체 {symbol, name} 또는 404 반환.
+            // 검색 실패는 정상 흐름 — q 가 ticker 형식이면 직접 담기 활성화,
+            // 아니면 안내만 (한글 검색어 "삼성" 같은 것이 ticker 로 잘못 들어가지 않도록).
+            if (r.status === 404) {
+                const TICKER_RE = /^[A-Za-z0-9.\-]{1,20}$/;
+                const trimmed = q.trim();
+                if (TICKER_RE.test(trimmed)) {
+                    const tk = trimmed.toUpperCase();
+                    resultsEl.innerHTML = `<div class="port-search-result" data-ticker="${escapeAttr(tk)}" data-name="">
+                        <strong>${escapeHtml(tk)}</strong>
+                        <span style="color:var(--port-muted); margin-left:8px;">검색 결과 없음 — 직접 담기</span>
+                    </div>`;
+                } else {
+                    resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-muted); cursor:default;">
+                        검색 결과 없음 — 정확한 ticker (예: <strong>AAPL</strong>, <strong>005930.KS</strong>) 를 입력하세요
+                    </div>`;
+                }
+                return;
+            }
+            if (!r.ok) {
+                let detail = `HTTP ${r.status}`;
+                try { const j = await r.json(); detail = j.detail || detail; } catch (_) {}
+                throw new Error(detail);
+            }
+
             const data = await r.json();
-            const items = (data.items || data.results || data || []).slice(0, 6);
+            // 호환 파싱 — 향후 backend 가 다중 결과 지원해도 동작:
+            //   1) Array            → 그대로
+            //   2) {items: [...]}   → items
+            //   3) {results: [...]} → results
+            //   4) {symbol, name}   → 단일 객체 → [data]  (현재 backend)
+            let items = [];
+            if (Array.isArray(data)) {
+                items = data;
+            } else if (Array.isArray(data.items)) {
+                items = data.items;
+            } else if (Array.isArray(data.results)) {
+                items = data.results;
+            } else if (data && data.symbol) {
+                items = [data];
+            }
+            items = items.slice(0, 6);
+
             if (!items.length) {
-                resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-muted);">검색 결과 없음</div>`;
+                resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-muted); cursor:default;">검색 결과 없음</div>`;
                 return;
             }
             resultsEl.innerHTML = items.map(s => {
@@ -537,7 +579,7 @@
                 </div>`;
             }).join('');
         } catch (e) {
-            resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-loss);">검색 실패: ${escapeHtml(e.message)}</div>`;
+            resultsEl.innerHTML = `<div class="port-search-result" style="color:var(--port-loss); cursor:default;">검색 실패: ${escapeHtml(e.message)}</div>`;
         }
     }
 
@@ -809,14 +851,16 @@
         });
 
         // 추가 모달 검색
+        // input 이 변경되면 이전 선택 무효화 — 한글 검색어 ("삼성") 가 ticker 로
+        // 잘못 설정되는 것 방지. handleAddSearch 가 응답에 따라 selectedTicker 설정.
         const addSearch = document.getElementById('portAddSearch');
         addSearch.addEventListener('input', () => {
             const q = addSearch.value.trim();
-            // ticker 직접 입력 (선택 안 했지만 ≥ 1자) 도 담기 가능하도록
-            if (q && !state.addState.selectedTicker) {
-                state.addState.selectedTicker = q.split(' ')[0].toUpperCase();
-                document.getElementById('portAddSubmit').disabled = false;
-            }
+            state.addState.selectedTicker = null;
+            state.addState.selectedName = null;
+            state.addState.preview = null;
+            document.getElementById('portAddSubmit').disabled = true;
+            document.getElementById('portAddPreview').hidden = true;
             if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
             searchDebounceTimer = setTimeout(() => handleAddSearch(q), 300);
         });
