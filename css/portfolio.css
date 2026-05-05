@@ -858,6 +858,44 @@
     color: var(--port-accent);
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * 모달 스크롤바 — 페르소나 모달 (style.css 글로벌) 과 동일 톤
+ *
+ * portfolio.html 은 style.css 미로드라 시스템 기본 스크롤바 (밝은 회색)
+ * 가 다크 모드와 어색. .port-modal-* / #portAddResults 에만 한정 적용 →
+ * 사이트 다른 모달 (페르소나 등) 영향 0.
+ *
+ * --port-* 토큰으로 라이트·다크 자동 분기.
+ * ───────────────────────────────────────────────────────────── */
+.port-modal-content::-webkit-scrollbar,
+.port-modal-body::-webkit-scrollbar,
+#portAddResults::-webkit-scrollbar {
+    width: 8px;
+}
+.port-modal-content::-webkit-scrollbar-track,
+.port-modal-body::-webkit-scrollbar-track,
+#portAddResults::-webkit-scrollbar-track {
+    background: var(--port-card);
+}
+.port-modal-content::-webkit-scrollbar-thumb,
+.port-modal-body::-webkit-scrollbar-thumb,
+#portAddResults::-webkit-scrollbar-thumb {
+    background: var(--port-border);
+    border-radius: 4px;
+}
+.port-modal-content::-webkit-scrollbar-thumb:hover,
+.port-modal-body::-webkit-scrollbar-thumb:hover,
+#portAddResults::-webkit-scrollbar-thumb:hover {
+    background: var(--port-border-hover);
+}
+/* Firefox */
+.port-modal-content,
+.port-modal-body,
+#portAddResults {
+    scrollbar-width: thin;
+    scrollbar-color: var(--port-border) var(--port-card);
+}
+
 /* 토스트 */
 .port-toast {
     position: fixed;
