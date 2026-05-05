@@ -3441,7 +3441,7 @@ function renderWatchlist(data, container) {
         html += `<div class="watchlist-category"><h4>${category}</h4>`;
         html += `<table class="wl-table"><thead><tr>
             <th>${L('wl_name')}</th><th>${L('wl_price')}</th><th>${L('wl_change')}</th><th>${L('wl_rsi')}</th><th>${L('wl_entry')}</th>
-            <th>${L('wl_target1')}</th><th>${L('wl_target2')}</th><th>${L('wl_short')}</th><th>${L('wl_mid')}</th><th>${L('wl_long')}</th><th>${L('wl_reason')}</th>
+            <th>${L('wl_target1')}</th><th>${L('wl_target2')}</th><th>${L('wl_short')}</th><th>${L('wl_mid')}</th><th>${L('wl_long')}</th><th>${L('wl_reason')}</th><th></th>
         </tr></thead><tbody>`;
         for (const r of rows) {
             const chg = r.change_pct ?? 0;
@@ -3479,12 +3479,28 @@ function renderWatchlist(data, container) {
                 <td style="color:${crm};font-weight:600;">${noData ? '—' : Number(retM).toFixed(1) + '%'}</td>
                 <td style="color:${crl};font-weight:600;">${noData ? '—' : Number(retL).toFixed(1) + '%'}</td>
                 <td style="color:var(--text-secondary);max-width:240px;">${oneLine}</td>
+                <td class="port-add-cell">${window.NexusPortfolio
+                    ? NexusPortfolio.renderPortfolioAddButton(r.ticker, 'idle', {
+                          source: 'watchlist',
+                          sourceMeta: { buy_cnt: r.buy_cnt, sell_cnt: r.sell_cnt },
+                          size: 'small',
+                      })
+                    : ''}</td>
             </tr>`;
         }
         html += '</tbody></table></div>';
     }
     html += `<hr class="divider"><p class="caption">${L('disclaimer_text')}</p>`;
     container.innerHTML = html;
+
+    // PR-9C — 화면 마운트 후 ticker 일괄 check (이미 담긴 종목 done 표시 + 비로그인 disabled)
+    if (window.NexusPortfolio) {
+        const tickers = [];
+        for (const rows of Object.values(data)) {
+            (rows || []).forEach(r => { if (r && r.ticker) tickers.push(r.ticker); });
+        }
+        NexusPortfolio.fetchPortfolioCheck(tickers);
+    }
 }
 
 // ═══════════════════════════════════════════════
