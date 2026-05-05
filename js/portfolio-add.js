@@ -186,11 +186,27 @@
         );
     }
 
-    // ─── 단일 버튼 상태 갱신 (DOM 직접 조작) ──────────────────
+    // ─── 단일 버튼 상태 강제 전환 (loading 가드 우회) ─────────
+    // 클릭 핸들러가 모든 분기에서 명시적으로 사용 — POST 결과 후 stuck 방지
+    function _setButtonState(btn, newState, disabledReason) {
+        if (!btn) return;
+        const size = btn.dataset.size || 'medium';
+        btn.dataset.state = newState;
+        if (disabledReason !== undefined) {
+            if (disabledReason) btn.dataset.disabledReason = disabledReason;
+            else delete btn.dataset.disabledReason;
+        }
+        btn.className = btn.className.replace(/port-add-btn--(idle|done|disabled|loading)/g, '').trim();
+        btn.classList.add('port-add-btn', `port-add-btn--${newState}`,
+                          size === 'small' ? 'port-add-btn--small' : 'port-add-btn--medium');
+        btn.innerHTML = _renderButtonContent(newState, size);
+        btn.title = _titleFor(newState, btn.dataset.disabledReason || '');
+    }
+
+    // ─── 단일 버튼 상태 갱신 (캐시 기반, loading 보호 가드) ───
     function updateButtonState(btn) {
         const ticker = btn.dataset.ticker;
         if (!ticker) return;
-        const size = btn.dataset.size || 'medium';
         const disabledReason = btn.dataset.disabledReason || '';
 
         let status;
@@ -202,15 +218,12 @@
             status = 'idle';
         }
 
-        // loading 중에는 갱신 미루기 (POST 진행 중 덮어쓰기 방지)
+        // loading 중인 버튼은 자동 갱신 우회 — 클릭 핸들러가 명시적으로
+        // _setButtonState 로 직접 전환 (refreshButtonsByTicker 의 자동 호출이
+        // loading 상태를 덮어쓰지 못하도록 보호. 핸들러는 _setButtonState 사용).
         if (btn.dataset.state === 'loading') return;
 
-        btn.dataset.state = status;
-        btn.className = btn.className.replace(/port-add-btn--(idle|done|disabled|loading)/g, '').trim();
-        btn.classList.add('port-add-btn', `port-add-btn--${status}`,
-                          size === 'small' ? 'port-add-btn--small' : 'port-add-btn--medium');
-        btn.innerHTML = _renderButtonContent(status, size);
-        btn.title = _titleFor(status, disabledReason);
+        _setButtonState(btn, status, disabledReason);
     }
 
     function refreshButtonsByTicker(ticker) {
@@ -375,11 +388,10 @@
             let sourceMeta = {};
             try { sourceMeta = JSON.parse(btn.dataset.sourceMeta || '{}'); } catch (_) {}
 
-            // 'done' — no-op
-            if (state === 'done') return;
+            console.debug('[NexusPortfolio.click]', { ticker, source, state });
 
-            // 'loading' — 중복 클릭 방지 (pointer-events:none 으로도 막히지만 안전망)
-            if (state === 'loading') return;
+            // 'done' / 'loading' — no-op
+            if (state === 'done' || state === 'loading') return;
 
             // 'disabled' — 비활성 사유 안내
             if (state === 'disabled') {
@@ -397,57 +409,60 @@
             }
 
             // 'idle' — 정상 흐름
-            const size = btn.dataset.size || 'medium';
-            btn.dataset.state = 'loading';
-            btn.classList.remove('port-add-btn--idle');
-            btn.classList.add('port-add-btn--loading');
-            btn.innerHTML = _renderButtonContent('loading', size);
-            btn.title = _titleFor('loading');
+            _setButtonState(btn, 'loading');
 
-            const result = await postPortfolioAdd(ticker, source, sourceMeta);
-
-            if (result.ok || result.errorKind === 'duplicate') {
-                markAdded(ticker);
-                _toast(result.ok ? '포트폴리오에 담았습니다' : '이미 포트폴리오에 있습니다', 'success');
-                return;
+            // POST 자체의 throw 도 안전망 — postPortfolioAdd 가 이미 try/catch
+            // 하지만 예상 못 한 throw 대비 한 번 더 보강.
+            let result;
+            try {
+                result = await postPortfolioAdd(ticker, source, sourceMeta);
+            } catch (err) {
+                console.warn('[NexusPortfolio] postPortfolioAdd threw:', err);
+                result = { ok: false, status: 0, errorKind: 'network', detail: (err && err.message) || 'Unknown' };
             }
 
-            if (result.errorKind === 'slot_full') {
-                _openSlotFullModal(result.detail);
-                btn.dataset.state = 'idle';
-                btn.classList.remove('port-add-btn--loading');
-                btn.classList.add('port-add-btn--idle');
-                btn.innerHTML = _renderButtonContent('idle', size);
-                btn.title = _titleFor('idle');
-                return;
-            }
+            console.debug('[NexusPortfolio.result]', { ticker, status: result.status, errorKind: result.errorKind });
 
-            if (result.errorKind === 'auth') {
-                _toast('로그인이 만료됐습니다. 다시 로그인해주세요.', 'error');
-                btn.dataset.state = 'disabled';
-                btn.dataset.disabledReason = 'auth_required';
-                btn.classList.remove('port-add-btn--loading');
-                btn.classList.add('port-add-btn--disabled');
-                btn.innerHTML = _renderButtonContent('disabled', size);
-                btn.title = _titleFor('disabled', 'auth_required');
-                return;
-            }
+            // 응답 처리 — 모든 경로에서 _setButtonState 호출 보장 (stuck 방지).
+            // 결과 분기 자체에서 throw 가 나도 마지막 catch 가 idle 롤백.
+            try {
+                if (result.ok || result.errorKind === 'duplicate') {
+                    // 클릭한 버튼은 명시적으로 done 으로 직접 전환 (updateButtonState 의
+                    // loading 가드 우회). 같은 ticker 의 다른 화면 버튼은 markAdded 가
+                    // _cache 갱신 + refreshButtonsByTicker 로 동기화.
+                    _setButtonState(btn, 'done');
+                    markAdded(ticker);
+                    _toast(result.ok ? '포트폴리오에 담았습니다' : '이미 포트폴리오에 있습니다', 'success');
+                    return;
+                }
 
-            if (result.errorKind === 'fetch_failed') {
-                _toast('종목 데이터를 가져올 수 없어요. 잠시 후 다시 시도해주세요.', 'error');
-            } else if (result.errorKind === 'network') {
-                _toast('네트워크 오류 — 잠시 후 다시 시도해주세요.', 'error');
-            } else {
-                const det = (result.detail && typeof result.detail === 'string')
-                    ? result.detail.slice(0, 80) : '알 수 없는 오류';
-                _toast('담기 실패: ' + det, 'error');
+                if (result.errorKind === 'slot_full') {
+                    _openSlotFullModal(result.detail);
+                    _setButtonState(btn, 'idle');
+                    return;
+                }
+
+                if (result.errorKind === 'auth') {
+                    _toast('로그인이 만료됐습니다. 다시 로그인해주세요.', 'error');
+                    _setButtonState(btn, 'disabled', 'auth_required');
+                    return;
+                }
+
+                if (result.errorKind === 'fetch_failed') {
+                    _toast('종목 데이터를 가져올 수 없어요. 잠시 후 다시 시도해주세요.', 'error');
+                } else if (result.errorKind === 'network') {
+                    _toast('네트워크 오류 — 잠시 후 다시 시도해주세요.', 'error');
+                } else {
+                    const det = (result.detail && typeof result.detail === 'string')
+                        ? result.detail.slice(0, 80) : '알 수 없는 오류';
+                    _toast('담기 실패: ' + det, 'error');
+                }
+                _setButtonState(btn, 'idle');
+            } catch (handlerErr) {
+                // 마지막 안전망 — 결과 분기 어디에서도 stuck 안 되도록
+                console.warn('[NexusPortfolio] post-result handler threw:', handlerErr);
+                _setButtonState(btn, 'idle');
             }
-            // 롤백
-            btn.dataset.state = 'idle';
-            btn.classList.remove('port-add-btn--loading');
-            btn.classList.add('port-add-btn--idle');
-            btn.innerHTML = _renderButtonContent('idle', size);
-            btn.title = _titleFor('idle');
         });
     }
 
