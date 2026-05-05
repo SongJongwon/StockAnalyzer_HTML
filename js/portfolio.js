@@ -484,6 +484,28 @@
 
     // ─── 종목 추가 모달 ─────────────────────────────────────
     let searchDebounceTimer = null;
+    let _kbdIdx = -1;             // 자동완성 키보드 선택 인덱스 (-1 = 미선택)
+
+    function getResultItems() {
+        return document.querySelectorAll('#portAddResults .port-search-result[data-ticker]');
+    }
+
+    function setKbdIdx(idx) {
+        const items = getResultItems();
+        if (!items.length) { _kbdIdx = -1; return; }
+        // 순환 (배열 길이 안에서 wrap)
+        const n = items.length;
+        const i = ((idx % n) + n) % n;
+        items.forEach((el, j) => el.classList.toggle('kbd-active', j === i));
+        items[i].scrollIntoView({ block: 'nearest' });
+        _kbdIdx = i;
+    }
+
+    function clearKbdIdx() {
+        getResultItems().forEach(el => el.classList.remove('kbd-active'));
+        _kbdIdx = -1;
+    }
+
     function openAddModal() {
         // 슬롯 가득 사전 체크
         if (state.slot.limit !== -1 && state.slot.used >= state.slot.limit) {
@@ -588,6 +610,7 @@
         state.addState.selectedName = name;
         document.getElementById('portAddSearch').value = ticker + (name ? ' — ' + name : '');
         document.getElementById('portAddResults').innerHTML = '';
+        clearKbdIdx();
         document.getElementById('portAddSubmit').disabled = false;
 
         // 미리보기 — analyze_ticker (사용자 결정 #7 옵션 A)
@@ -850,9 +873,9 @@
             saveFiltersToStorage();
         });
 
-        // 추가 모달 검색
-        // input 이 변경되면 이전 선택 무효화 — 한글 검색어 ("삼성") 가 ticker 로
-        // 잘못 설정되는 것 방지. handleAddSearch 가 응답에 따라 selectedTicker 설정.
+        // 추가 모달 검색 — 자동완성 드롭다운 + 키보드 ↑↓ + Enter
+        // input 이 변경되면 이전 선택 무효화 (한글 검색어 "삼성" 이 ticker 로
+        // 잘못 설정되는 것 방지). handleAddSearch 가 응답에 따라 selectedTicker 설정.
         const addSearch = document.getElementById('portAddSearch');
         addSearch.addEventListener('input', () => {
             const q = addSearch.value.trim();
@@ -861,8 +884,43 @@
             state.addState.preview = null;
             document.getElementById('portAddSubmit').disabled = true;
             document.getElementById('portAddPreview').hidden = true;
+            clearKbdIdx();
             if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(() => handleAddSearch(q), 300);
+            // 200ms debounce — 종목 분석 화면 (300ms) 보다 약간 빠른 자동완성 감각
+            searchDebounceTimer = setTimeout(() => handleAddSearch(q), 200);
+        });
+
+        // 키보드 — ↑/↓ 항목 이동, Enter 선택, Esc 결과 닫기
+        addSearch.addEventListener('keydown', (e) => {
+            const items = getResultItems();
+            if (e.key === 'ArrowDown') {
+                if (!items.length) return;
+                e.preventDefault();
+                setKbdIdx(_kbdIdx + 1);
+            } else if (e.key === 'ArrowUp') {
+                if (!items.length) return;
+                e.preventDefault();
+                setKbdIdx(_kbdIdx - 1);
+            } else if (e.key === 'Enter') {
+                // 검색 결과 있으면 선택, 없으면 기본 동작 차단 (form submit 방지)
+                if (items.length) {
+                    e.preventDefault();
+                    const target = items[_kbdIdx >= 0 ? _kbdIdx : 0];
+                    if (target && target.dataset.ticker) {
+                        selectSearchResult(target.dataset.ticker, target.dataset.name || '');
+                    }
+                } else {
+                    e.preventDefault();
+                }
+            } else if (e.key === 'Escape') {
+                // 결과만 닫기 (모달은 글로벌 ESC 가 처리하지만 결과 있으면 우선 닫기)
+                const resultsEl = document.getElementById('portAddResults');
+                if (resultsEl && resultsEl.children.length) {
+                    e.stopPropagation();
+                    resultsEl.innerHTML = '';
+                    clearKbdIdx();
+                }
+            }
         });
 
         // 태그 input Enter

@@ -670,6 +670,7 @@
     flex-direction: column;
     gap: 4px;
     flex: 1 1 100%;
+    position: relative;          /* .port-search-results absolute 기준점 */
 }
 .port-field label {
     font-size: 12px;
@@ -686,6 +687,16 @@
     border-radius: 5px;
     font-size: 13px;
     font-family: inherit;
+}
+
+/* number input 화살표 숨김 (옵션 A — 키보드 입력만) — 다크 모드 어색한 화살표 차단 */
+.port-field input[type="number"] {
+    -moz-appearance: textfield;     /* Firefox */
+}
+.port-field input[type="number"]::-webkit-inner-spin-button,
+.port-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;       /* Chrome/Edge/Safari */
+    margin: 0;
 }
 .port-field input:focus,
 .port-field textarea:focus,
@@ -707,24 +718,36 @@
     flex: 1;
 }
 
-/* 검색 결과 */
+/* 검색 결과 — input 바로 아래 자동완성 드롭다운 */
 .port-search-results {
+    position: absolute;
+    top: calc(100% + 2px);          /* input 아래 2px 간격 */
+    left: 0;
+    right: 0;
+    z-index: 20;                    /* 모달 내부 다른 요소 위 */
     border: 1px solid var(--port-border);
     border-radius: 5px;
-    margin-top: 4px;
-    max-height: 180px;
+    max-height: 220px;
     overflow-y: auto;
-    background: var(--port-input-bg);
+    background: var(--port-card);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+[data-theme="light"] .port-search-results {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 .port-search-results:empty { display: none; }
 .port-search-result {
     padding: 8px 10px;
     cursor: pointer;
     font-size: 13px;
+    color: var(--port-text);
     border-bottom: 1px solid var(--port-card-divider);
 }
 .port-search-result:last-child { border-bottom: none; }
-.port-search-result:hover { background: var(--port-card-divider); }
+.port-search-result:hover,
+.port-search-result.kbd-active {
+    background: var(--port-card-divider);
+}
 .port-search-result.selected {
     background: var(--port-accent-bg);
     color: var(--port-accent);
