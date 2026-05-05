@@ -159,14 +159,25 @@ html, body {
     flex-wrap: wrap;
 }
 
+/* ───────────────────────────────────────────────────────────
+ * Phase 9 PR-9B — 헤더 버튼 높이 통일 (height 32px / padding 0 14px /
+ * line-height 1 / display inline-flex / align-items center /
+ * box-sizing border-box). .portfolio-link (portfolio.css) 와 일치.
+ * 📊 이모지가 다른 버튼보다 더 크게 보이는 문제 차단.
+ * ─────────────────────────────────────────────────────────── */
 .btn-link {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    line-height: 1;
+    box-sizing: border-box;
     background: transparent;
     border: 1px solid var(--acct-border);
     color: var(--acct-text);
-    padding: 9px 16px;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s;
@@ -178,13 +189,18 @@ html, body {
 }
 
 .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    line-height: 1;
+    box-sizing: border-box;
     background: var(--acct-accent);
     border: 1px solid var(--acct-accent);
     color: #fff;
-    padding: 9px 16px;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;

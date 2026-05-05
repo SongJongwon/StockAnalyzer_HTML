@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/portfolio.css">
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head>
 <body>
@@ -317,6 +318,8 @@
     <script src="js/auth.js"></script>
     <script src="js/modal-utils.js"></script>
     <script src="js/byok-store.js"></script>
+    <script src="js/kr-dict.js"></script>
+    <script src="js/header-menu.js"></script>
     <script src="js/app.js"></script>
     <script src="js/panel.js"></script>
 
@@ -335,15 +338,21 @@
         });
         document.body.appendChild(mount);
 
+        // Phase 9 PR-9B — 헤더 버튼 높이 통일 (height 32px / line-height 1 /
+        // padding 0 14px / inline-flex). .portfolio-link, .btn-link 와 정확히 일치.
         function makeBtn(label, href, onClick) {
             const a = document.createElement('a');
             a.href = href;
             a.textContent = label;
             Object.assign(a.style, {
-                padding: '6px 12px', borderRadius: '6px',
+                display: 'inline-flex', alignItems: 'center',
+                height: '32px', padding: '0 14px', lineHeight: '1',
+                boxSizing: 'border-box',
+                fontSize: '12px', fontWeight: '500',
+                borderRadius: '6px',
                 background: 'rgba(30,41,59,0.85)',
                 border: '1px solid rgba(148,163,184,0.3)',
-                color: '#e2e8f0', textDecoration: 'none', fontWeight: '500',
+                color: '#e2e8f0', textDecoration: 'none',
                 cursor: 'pointer', backdropFilter: 'blur(4px)',
             });
             if (onClick) a.addEventListener('click', onClick);
@@ -353,7 +362,10 @@
             const s = document.createElement('span');
             s.textContent = text;
             Object.assign(s.style, {
-                padding: '6px 10px', color: '#94a3b8',
+                display: 'inline-flex', alignItems: 'center',
+                height: '32px', padding: '0 10px', lineHeight: '1',
+                boxSizing: 'border-box', fontSize: '12px',
+                color: '#94a3b8',
                 background: 'rgba(15,23,42,0.6)', borderRadius: '6px',
                 border: '1px solid rgba(148,163,184,0.15)',
             });
@@ -380,6 +392,12 @@
                 mount.appendChild(makeInfo(display + (plan ? ' · ' + plan : '') + masterTag));
             }
             mount.appendChild(makeBtn('요금제', 'pricing.html'));
+            // Phase 9 — 포트폴리오 진입 버튼 (header-menu.js 가 active/숨김 자동 처리)
+            const portfolioLink = document.createElement('a');
+            portfolioLink.className = 'portfolio-link';
+            portfolioLink.href = 'portfolio.html';
+            portfolioLink.innerHTML = '📊<span class="portfolio-link-label">포트폴리오</span>';
+            mount.appendChild(portfolioLink);
             mount.appendChild(makeBtn('마이페이지', 'mypage.html'));
             // 🆕 마스터 계정 — 어떤 페이지에서든 admin 진입 가능 (캐시 영향 받지 않음)
             if (isMaster) {
