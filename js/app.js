@@ -831,6 +831,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         NexusByok.init().catch(e => console.warn('[init] NexusByok init 오류:', e));
     }
+
+    // Phase 9 — URL ?ticker= 자동 분석 (포트폴리오 / mypage 등에서 진입)
+    // 예: index.html?ticker=005930.KS → Tab 1 분석 자동 실행
+    try {
+        const params = new URLSearchParams(location.search);
+        const tk = (params.get('ticker') || '').trim();
+        if (tk) {
+            // KR_DICT 에 있으면 한글명도 함께 표시 (analyzeFromAnywhere 가 처리)
+            const found = window.NexusKrDict
+                ? window.NexusKrDict.KR_DICT.find(it => it.ticker.toUpperCase() === tk.toUpperCase())
+                : null;
+            // 다음 tick 으로 미루기 — searchInput 등 DOM 참조 보장
+            setTimeout(() => analyzeFromAnywhere(tk, found ? found.name : null), 0);
+        }
+    } catch (_) { /* URL 파싱 실패는 무시 */ }
 });
 
 // ═══════════════════════════════════════════════

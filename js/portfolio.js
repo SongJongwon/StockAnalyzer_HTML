@@ -140,6 +140,17 @@
         return escapeHtml(s).replace(/\n/g, ' ');
     }
 
+    // KR_DICT 우선 한글명 조회 — backend company_name (영문) 보다 한글명 선호
+    function localizedDisplayName(ticker, fallbackCompanyName) {
+        if (window.NexusKrDict && ticker) {
+            const found = window.NexusKrDict.KR_DICT.find(
+                it => it.ticker.toUpperCase() === String(ticker).toUpperCase()
+            );
+            if (found) return found.name;
+        }
+        return fallbackCompanyName || ticker || '';
+    }
+
     // ─── 가치 함정 자체 판단 (§8.1 B) ───────────────────────
     function detectValueTrap(item) {
         const cur = item.current || {};
@@ -328,13 +339,15 @@
         const interpV2 = cur.interpretations_v2 || {}; // 사용 안 하지만 참조
         const trap = detectValueTrap(it);
 
-        // 종목 컬럼
+        // 종목 컬럼 — 한글명 (KR_DICT) 우선, 없으면 영문 회사명
         const ticker = escapeHtml(it.ticker);
-        const company = escapeHtml(it.company_name || '');
+        const displayName = escapeHtml(localizedDisplayName(it.ticker, it.company_name));
         const sectorKr = escapeHtml(it.sector_kr || '');
         const warningHtml = trap.trap
             ? `<span class="port-warning-icon" data-tooltip="${escapeAttr(trap.reason)}">⚠️</span>`
             : '';
+        // 클릭 시 종목 분석 화면 이동 (URL ?ticker= 파라미터)
+        const analyzeUrl = `index.html?ticker=${encodeURIComponent(it.ticker || '')}`;
 
         // 수익률
         const ret = delta.price_pct;
@@ -358,9 +371,12 @@
 
         return `
         <tr class="${trap.trap ? 'port-warning' : ''}" data-id="${escapeAttr(it.id)}">
-            <td data-label="종목">
-                <div class="port-ticker">${warningHtml}${ticker}</div>
-                <div class="port-company">${company}${sectorKr ? ' · ' + sectorKr : ''}</div>
+            <td data-label="종목" class="port-ticker-cell">
+                <a class="port-ticker-link" href="${escapeAttr(analyzeUrl)}"
+                   title="종목 분석 화면으로 이동">
+                    <div class="port-ticker">${warningHtml}${displayName} <span class="port-ticker-code">(${ticker})</span></div>
+                    <div class="port-company">${sectorKr || '—'}</div>
+                </a>
             </td>
             <td data-label="현재가">${fmtPrice(cur.price, it.ticker)}</td>
             <td data-label="수익률" class="port-return ${retClass}">${fmtPct(ret)}</td>
