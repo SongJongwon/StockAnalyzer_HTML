@@ -1,0 +1,139 @@
+/*
+ * Phase 9 PR-9C — [📊 담기] 진입점 버튼 스타일 (.port-add-btn)
+ *
+ * 5 진입점 (Tab 1·2·3 + 패널 4-bucket) 공용. portfolio.css 의 --port-* 토큰 재활용
+ * (다크/라이트 자동 분기).
+ *
+ * 4 상태 (data-state):  idle / done / disabled / loading
+ * 2 크기 (modifier):    .port-add-btn--small (Tab 2/3 행) / --medium (banner / 패널)
+ *
+ * 사이드 이펙트 0 — 새 토큰 없음, 기존 .port-* 와 클래스 충돌 없음.
+ */
+
+/* ─────────────────────────────────────────────
+ * 공통
+ * ───────────────────────────────────────────── */
+.port-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 5px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1;
+    box-sizing: border-box;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s, opacity 0.12s;
+    cursor: pointer;
+    user-select: none;
+    /* 행 onclick 등 부모 이벤트 차단 — JS 에서도 stopPropagation, CSS isolation 보강 */
+    position: relative;
+    z-index: 1;
+}
+
+/* ── 크기 variant ── */
+.port-add-btn--small {
+    height: 26px;
+    padding: 0 8px;
+    font-size: 11px;
+    border-width: 0.5px;
+    border-style: solid;
+}
+.port-add-btn--medium {
+    height: 30px;
+    padding: 0 12px;
+    font-size: 12px;
+    border-width: 0.5px;
+    border-style: solid;
+}
+
+/* ─────────────────────────────────────────────
+ * 4 상태
+ * ───────────────────────────────────────────── */
+
+/* idle — 담기 가능 (헤더 [📊 포트폴리오] 와 같은 톤) */
+.port-add-btn--idle {
+    background: var(--port-accent-bg, rgba(46, 91, 255, 0.20));
+    color: var(--port-accent, #6B92FF);
+    border-color: var(--port-accent-border, #2E5BFF);
+}
+.port-add-btn--idle:hover {
+    background: var(--port-accent-bg-hover, rgba(46, 91, 255, 0.30));
+    color: var(--port-accent-hover, #8FAEFF);
+    transform: translateY(-1px);
+}
+.port-add-btn--idle:active {
+    transform: translateY(0);
+}
+
+/* done — 이미 담김 (회색 비활성) */
+.port-add-btn--done {
+    background: var(--port-card-divider, #1f2937);
+    color: var(--port-muted, #94a3b8);
+    border-color: var(--port-border, #334155);
+    cursor: default;
+}
+.port-add-btn--done:hover {
+    /* 변화 없음 — 클릭은 JS no-op, 시각적으로도 정적 */
+    transform: none;
+}
+
+/* disabled — 비로그인 / 미검증 */
+.port-add-btn--disabled {
+    background: var(--port-card-divider, #1f2937);
+    color: var(--port-muted, #94a3b8);
+    border-color: var(--port-border, #334155);
+    border-style: dashed;
+    cursor: help;
+    opacity: 0.65;
+}
+.port-add-btn--disabled:hover {
+    opacity: 0.85;
+    transform: none;
+}
+
+/* loading — POST 진행 중 */
+.port-add-btn--loading {
+    background: var(--port-accent-bg, rgba(46, 91, 255, 0.20));
+    color: var(--port-accent, #6B92FF);
+    border-color: var(--port-accent-border, #2E5BFF);
+    cursor: wait;
+    pointer-events: none;
+    animation: portAddBtnPulse 1.0s ease-in-out infinite;
+}
+@keyframes portAddBtnPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+}
+
+/* ─────────────────────────────────────────────
+ * Tab 3 호환 — 부모 행 hover 시에도 버튼 자체 hover 우선
+ * (theme-stock-row:hover 의 배경 변화에 묻히지 않도록)
+ * ───────────────────────────────────────────── */
+tr:hover .port-add-btn--idle {
+    /* hover 효과 유지 */
+}
+tr:hover .port-add-btn--done,
+tr:hover .port-add-btn--disabled {
+    /* 행 hover 시 비활성 버튼은 살짝 더 어둡게 보일 수 있는데 그대로 유지 */
+}
+
+/* ─────────────────────────────────────────────
+ * 셀 정렬 보조 (테이블에서 td 가운데 정렬)
+ * ───────────────────────────────────────────── */
+td.port-add-cell {
+    text-align: center;
+    width: 90px;
+    min-width: 78px;
+}
+@media (max-width: 768px) {
+    .port-add-btn--medium {
+        height: 28px;
+        padding: 0 10px;
+        font-size: 11px;
+    }
+    td.port-add-cell {
+        width: auto;
+    }
+}
