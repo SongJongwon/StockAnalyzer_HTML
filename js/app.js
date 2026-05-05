@@ -1581,6 +1581,9 @@ function renderAnalysis(data, container) {
             <h2>${verdictIcon(verdictTier)} ${L('verdict_label')}: ${dSignal(verdict)}</h2>
             ${d.one_line_reason ? `<div class="verdict-reason">${d.one_line_reason}</div>` : ''}
             <div class="sub">${L('buy_signals')} ${buy_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('sell_signals')} ${sell_cnt}${currentLang === 'ko' ? '개' : ''} · ${L('neutral')} ${5 - buy_cnt - sell_cnt}${d.overall_score != null ? ` · ${L('overall_score_label')} ${d.overall_score >= 0 ? '+' : ''}${d.overall_score.toFixed(2)}` : ''}${d.sector_kr ? ` · ${d.sector_kr}` : ''}</div>
+            ${window.NexusPortfolio ? `<div class="verdict-actions" style="margin-top:10px;">${
+                NexusPortfolio.renderPortfolioAddButton(sym, 'idle', { source: 'analysis', sourceMeta: {}, size: 'medium' })
+            }</div>` : ''}
         </div>
 
         <!-- AI 분석 (키 등록 시 자동 표시) -->
@@ -1720,6 +1723,11 @@ function renderAnalysis(data, container) {
 
     // AI 분석 (키 등록된 경우에만)
     _loadMainAI(sym, name, d, buy_cnt, sell_cnt, verdict);
+
+    // PR-9C — [📊 담기] 상태 동기화 (이미 담긴 종목 / 비로그인 자동 disabled)
+    if (window.NexusPortfolio) {
+        NexusPortfolio.fetchPortfolioCheck([sym]);
+    }
 }
 
 // ═══════════════════════════════════════════════

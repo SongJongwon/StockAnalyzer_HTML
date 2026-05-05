@@ -236,11 +236,30 @@
         refreshButtonsByTicker(ticker);
     }
 
+    // ─── 비로그인 ticker 의 모든 .port-add-btn 을 disabled(auth_required) 로 ──
+    function _markButtonsDisabledAuth(ticker) {
+        const safe = (window.CSS && CSS.escape) ? CSS.escape(ticker) : ticker.replace(/"/g, '\\"');
+        document.querySelectorAll(`.port-add-btn[data-ticker="${safe}"]`).forEach(btn => {
+            // loading / done 은 건드리지 않음
+            if (btn.dataset.state === 'loading' || btn.dataset.state === 'done') return;
+            btn.dataset.disabledReason = 'auth_required';
+            updateButtonState(btn);
+        });
+    }
+
     // ─── /api/portfolio/check 일괄 호출 + 캐시 + dedupe ───────
     async function fetchPortfolioCheck(tickers) {
         if (!tickers || !tickers.length) return _cache;
-        // 비로그인 → 빈 Set (cache 갱신 안 함)
-        if (!await _isAuthed()) return new Set();
+        // 비로그인 → 빈 Set + 모든 버튼 disabled(auth_required) 자동 마킹
+        if (!await _isAuthed()) {
+            const seen = new Set();
+            for (const t of tickers) {
+                if (!t || seen.has(t)) continue;
+                seen.add(t);
+                _markButtonsDisabledAuth(t);
+            }
+            return new Set();
+        }
 
         // _cache 또는 _inflight 에 없는 신규만 조회
         const newOnes = [];
