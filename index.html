@@ -333,13 +333,30 @@
 
         const mount = document.createElement('div');
         mount.id = 'nexusUserMenu';
-        // ⋮ 기존 상단 메뉴(.top-menu: right=0.75rem, width≈2rem)와 겹치지 않게 왼쪽으로 비켜 배치
+        // 사이드바 제외 메인 영역 상단 헤더 바 — 사이드바 너비 변화 시 ResizeObserver 가 left 동적 갱신
         Object.assign(mount.style, {
-            position: 'fixed', top: '10px', right: '56px', zIndex: '998',
-            display: 'flex', gap: '6px', alignItems: 'center',
+            position: 'fixed', top: '0', right: '0', height: '48px', zIndex: '1100',
+            display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
+            gap: '6px', padding: '0 56px 0 16px',
+            background: 'var(--bg, #0e1117)',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             fontSize: '12px', fontFamily: 'Pretendard, sans-serif',
         });
         document.body.appendChild(mount);
+
+        // 사이드바 너비 동적 추적 — 펼침/접힘 시 헤더 left 자동 업데이트
+        const sidebarEl = document.getElementById('sidebar');
+        const updateLeft = () => {
+            if (!sidebarEl) { mount.style.left = '0'; return; }
+            const rect = sidebarEl.getBoundingClientRect();
+            mount.style.left = Math.max(0, rect.right) + 'px';
+        };
+        updateLeft();
+        if (sidebarEl && 'ResizeObserver' in window) {
+            new ResizeObserver(updateLeft).observe(sidebarEl);
+        }
+        window.addEventListener('resize', updateLeft);
 
         // Phase 9 PR-9B — 헤더 버튼 높이 통일 (height 32px / line-height 1 /
         // padding 0 14px / inline-flex). .portfolio-link, .btn-link 와 정확히 일치.
