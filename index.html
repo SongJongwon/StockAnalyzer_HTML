@@ -21,6 +21,13 @@
             <button id="sidebarCollapse" class="sidebar-collapse-btn" data-i18n-title="sidebar_collapse_title" title="사이드바 접기">«</button>
             <button id="langToggleBtn" class="lang-toggle-btn" onclick="toggleLang()">🇺🇸 EN</button>
             <div class="sidebar-inner">
+                <!-- 모바일 헤더 (≤768px) — 데스크탑에서 inline style 로 base hide,
+                     모바일 미디어쿼리에서 display:flex 로 override -->
+                <div class="mobile-sidebar-header" style="display:none">
+                    <a href="pricing.html">요금제</a>
+                    <a href="login.html">로그인</a>
+                </div>
+
                 <!-- 자동 업데이트 설정 -->
                 <div class="sidebar-section">
                     <h3><span class="ms">schedule</span> <span data-i18n="auto_update">자동 업데이트</span></h3>
