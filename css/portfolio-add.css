@@ -62,6 +62,7 @@
     background: var(--port-accent-bg-hover, rgba(46, 91, 255, 0.30));
     color: var(--port-accent-hover, #8FAEFF);
     transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(46, 91, 255, 0.25);
 }
 .port-add-btn--idle:active {
     transform: translateY(0);
@@ -111,6 +112,11 @@
  * Tab 3 호환 — 부모 행 hover 시에도 버튼 자체 hover 우선
  * (theme-stock-row:hover 의 배경 변화에 묻히지 않도록)
  * ───────────────────────────────────────────── */
+/* 버튼 hover 시 부모 행의 hover 배경 차단 — 버튼 = 분리된 컨트롤 시그널 */
+.wl-table tbody tr:has(.port-add-btn--idle:hover),
+.theme-table tbody tr:has(.port-add-btn--idle:hover) {
+    background: transparent;
+}
 tr:hover .port-add-btn--idle {
     /* hover 효과 유지 */
 }
