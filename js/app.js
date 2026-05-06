@@ -2804,7 +2804,7 @@ function _buildChart(d, currencyMode) {
         // Plotly 내장 legend 는 끔 → 차트 위 커스텀 HTML legend(chart-legend) 로 대체
         showlegend: false,
         // legend 공간이 사라졌으므로 top margin 대폭 축소
-        margin: { l: 55, r: 115, t: 30, b: 30 },
+        margin: { l: 55, r: 90, t: 30, b: 30 },
         // 드래그 = 좌우 이동(팬), 마우스 휠 = 줌 (토스/TradingView 스타일)
         dragmode: 'pan',
         // x 축: 초기 범위는 데이터 구간, 사용자 팬/줌 허용 (autorange 제거 → 제약 없음)
