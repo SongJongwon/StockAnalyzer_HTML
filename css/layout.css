@@ -383,4 +383,44 @@ main {
     body.is-authed #menuLogout {
         display: flex !important;       /* .menu-item base 와 동일 (style.css:221) */
     }
+
+    /* ─ 재무제표 + 분석 그리드 모바일 정비 (390px 잘림 0) ─
+     * .fin-val-grid (밸류에이션 6열 base / 1200px 3열) → 모바일 2열
+     * .profitability-grid + .fair-value-grid (3열 base) → 1열 stack
+     * .my-buy-row (3열 base) → 1열 stack */
+    .fin-val-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .profitability-grid,
+    .fair-value-grid {
+        grid-template-columns: 1fr;
+    }
+    .my-buy-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    /* main 좌우 padding 축소 — 본문 + 메인 차트 영역 확장 (데스크탑 3rem 대비) */
+    main {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* 메인 차트 컨테이너 — Plotly modebar (우상단 떠있음) 와 제목 겹침 방지 */
+    #chartContainer {
+        margin-top: 1.5rem;
+    }
+
+    /* 연간 손익 & 현금흐름 차트 (#finChartContainer) — modebar 완전 hide
+     * (모바일 좁은 화면에서 차트 제목과 겹치는 문제 회피, 데스크탑 769px+ 정상 표시) */
+    #finChartContainer .modebar,
+    #finChartContainer .modebar-container {
+        display: none !important;
+    }
+
+    /* Plotly 내부 title (.gtitle) hide — 외부 HTML <h4> 제목 ("연간 손익 & 현금흐름")
+     * 과 layout.title 텍스트 겹침. 외부 라벨이 이미 제목 역할 → 내부 중복 제거. */
+    #finChartContainer .gtitle {
+        display: none !important;
+    }
 }
