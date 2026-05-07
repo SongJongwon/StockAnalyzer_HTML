@@ -562,6 +562,23 @@
                 }
             }).observe(document.body, { childList: true });
         }
+
+        // 탭 click hook — 추천종목/테마주 (또는 기타) 탭 렌더 후 #mobile-header 자식이
+        // 어떤 이유로 hide 되는 케이스 대비. element 자체는 MutationObserver 가 잡지만,
+        // 자식의 inline style.display 변화는 못 잡으므로 탭 전환 후 강제 reset.
+        document.querySelectorAll('.tab').forEach(tabBtn => {
+            tabBtn.addEventListener('click', () => {
+                setTimeout(() => {
+                    // 우리가 토글 안 하는 자식 (« / us EN / ⋮) 의 inline display reset
+                    ['mh-sidebar-toggle', 'mh-lang-toggle', 'mh-menu'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.display = '';
+                    });
+                    // data-anon-only / data-authed-only / body.is-authed 분기 재적용
+                    renderState();
+                }, 100);
+            });
+        });
     })();
     </script>
 
