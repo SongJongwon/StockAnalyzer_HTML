@@ -115,6 +115,11 @@
                     <button class="menu-item" id="menuPrint">
                         <span class="menu-icon ms">print</span> Print
                     </button>
+                    <!-- 모바일 전용 로그아웃 (≤768px + 로그인 시) — base inline display:none 으로 데스크탑 hide -->
+                    <hr class="menu-divider" id="menuLogoutDivider" style="display:none">
+                    <button class="menu-item" id="menuLogout" style="display:none">
+                        <span class="menu-icon ms">logout</span> 로그아웃
+                    </button>
                 </div>
             </div>
 
@@ -486,6 +491,10 @@
             mh.querySelectorAll('[data-authed-only]').forEach(el => {
                 el.style.display = (collapsed && authed) ? '' : 'none';
             });
+
+            // body 에 인증 클래스 토글 — 모바일 ⋮ 메뉴 로그아웃 항목 표시 분기 (CSS)
+            document.body.classList.toggle('is-authed', authed);
+            document.body.classList.toggle('is-anon', !authed);
         }
 
         if (mhToggle) mhToggle.addEventListener('click', () => {
@@ -505,6 +514,15 @@
         // 사이드바 안 « / 외부 » 클릭 시 헤더 토글 상태 동기화
         if (sidebarCollapse) sidebarCollapse.addEventListener('click', () => setTimeout(renderState, 0));
         if (sidebarExpand) sidebarExpand.addEventListener('click', () => setTimeout(renderState, 0));
+
+        // ⋮ 메뉴 로그아웃 항목 (모바일에서만 visible, 데스크탑은 inline display:none + nexusUserMenu 별도 button)
+        const menuLogout = document.getElementById('menuLogout');
+        if (menuLogout) menuLogout.addEventListener('click', async () => {
+            if (window.NexusAuth) {
+                try { await NexusAuth.logout(); } catch (_) {}
+            }
+            location.reload();
+        });
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', renderState);

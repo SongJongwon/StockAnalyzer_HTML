@@ -373,4 +373,14 @@ main {
         font-size: 1.25rem;
         line-height: 1.3;
     }
+
+    /* ─ ⋮ 메뉴 로그아웃 (모바일 + 로그인 시만 표시) ─
+     * data-anon/authed 분기는 mobile-header IIFE 가 body.is-authed 클래스로 토글.
+     * 데스크탑에서는 base inline display:none 으로 안 보임 (nexusUserMenu 별도 button 존재). */
+    body.is-authed #menuLogoutDivider {
+        display: block !important;
+    }
+    body.is-authed #menuLogout {
+        display: flex !important;       /* .menu-item base 와 동일 (style.css:221) */
+    }
 }
