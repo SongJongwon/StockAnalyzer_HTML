@@ -410,4 +410,11 @@ main {
     #chartContainer {
         margin-top: 1.5rem;
     }
+
+    /* 연간 손익 & 현금흐름 차트 (#finChartContainer) — modebar 완전 hide
+     * (모바일 좁은 화면에서 차트 제목과 겹치는 문제 회피, 데스크탑 769px+ 정상 표시) */
+    #finChartContainer .modebar,
+    #finChartContainer .modebar-container {
+        display: none !important;
+    }
 }
