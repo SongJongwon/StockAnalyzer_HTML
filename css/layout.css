@@ -286,3 +286,101 @@ main {
     .indices-grid         { grid-template-columns: 1fr; }
     .fib-grid             { grid-template-columns: repeat(2, 1fr); }
 }
+
+
+/* ─── 16. 모바일 (≤768px) — 풀폭 #mobile-header + #nexusUserMenu hide (2026-05-06) ───
+ * #mobile-header (body 끝 정적 HTML) 를 진입 동선으로 사용. 데스크탑 (≥769px) 영향 0.
+ * 토글 JS: 사이드바 펼침 [«] [us EN] [⋮] / 닫음 [»] [us EN] [요금제] [로그인] [⋮] */
+@media (max-width: 768px) {
+    /* 데스크탑용 nexusUserMenu hide */
+    #nexusUserMenu {
+        display: none !important;
+    }
+
+    /* 풀폭 fixed 헤더 — 검증된 콘솔 코드와 동일 */
+    #mobile-header {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 48px;
+        z-index: 1300;
+        align-items: center;
+        padding: 0 12px;
+        gap: 8px;
+        background: rgba(15, 17, 23, 0.85);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(8px);
+    }
+
+    /* 헤더 안 button / link 공통 — Phase 9 PR-9C 헤더 톤과 일관 */
+    #mobile-header > button,
+    #mobile-header > a {
+        height: 32px;
+        padding: 0 10px;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        color: #e2e8f0;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    /* « / » 토글은 좌측 끝 — 나머지 우측 정렬 */
+    #mh-sidebar-toggle {
+        margin-right: auto;
+    }
+
+    /* 사이드바 + main 본문 — fixed 헤더 48px 만큼 padding-top */
+    .sidebar,
+    main {
+        padding-top: 48px !important;
+    }
+
+    /* ─ 탭 가로 스크롤 (5개 탭 전체 접근) ─
+     * base .tabs { overflow: hidden } 을 overflow-x: auto 로 override.
+     * 스크롤바 hide (Chrome/Safari/FF/Edge 모두). */
+    .tabs {
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    /* ─ 제목 가독성 — 모바일 폰트 축소 + line-height 조정 ─ */
+    .app-title {
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+    main h1 {
+        font-size: 1.25rem;
+        line-height: 1.3;
+    }
+
+    /* ─ ⋮ 메뉴 로그아웃 (모바일 + 로그인 시만 표시) ─
+     * data-anon/authed 분기는 mobile-header IIFE 가 body.is-authed 클래스로 토글.
+     * 데스크탑에서는 base inline display:none 으로 안 보임 (nexusUserMenu 별도 button 존재). */
+    body.is-authed #menuLogoutDivider {
+        display: block !important;
+    }
+    body.is-authed #menuLogout {
+        display: flex !important;       /* .menu-item base 와 동일 (style.css:221) */
+    }
+}

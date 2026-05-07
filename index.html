@@ -115,6 +115,11 @@
                     <button class="menu-item" id="menuPrint">
                         <span class="menu-icon ms">print</span> Print
                     </button>
+                    <!-- 모바일 전용 로그아웃 (≤768px + 로그인 시) — base inline display:none 으로 데스크탑 hide -->
+                    <hr class="menu-divider" id="menuLogoutDivider" style="display:none">
+                    <button class="menu-item" id="menuLogout" style="display:none">
+                        <span class="menu-icon ms">logout</span> 로그아웃
+                    </button>
                 </div>
             </div>
 
@@ -437,5 +442,115 @@
         render();
     })();
     </script>
+
+    <!-- 모바일 전용 헤더 (≤768px) — 데스크탑에서 inline display:none 으로 base hide
+         data-anon-only: 사이드바 닫음 + 비로그인 시 표시
+         data-authed-only: 사이드바 닫음 + 로그인 시 표시 -->
+    <div id="mobile-header" style="display:none">
+        <button id="mh-sidebar-toggle" type="button" aria-label="사이드바 토글">«</button>
+        <button id="mh-lang-toggle" type="button" aria-label="언어 전환">🇺🇸 EN</button>
+        <a id="mh-pricing" href="pricing.html" data-anon-only>요금제</a>
+        <a id="mh-login" href="login.html" data-anon-only>로그인</a>
+        <a id="mh-portfolio" href="portfolio.html" data-authed-only aria-label="포트폴리오">📊</a>
+        <a id="mh-mypage" href="mypage.html" data-authed-only>마이페이지</a>
+        <button id="mh-menu" type="button" aria-label="설정 메뉴">⋮</button>
+    </div>
+    <script>
+    (function () {
+        const mh = document.getElementById('mobile-header');
+        if (!mh) return;
+        const sidebar = document.getElementById('sidebar');
+        const sidebarCollapse = document.getElementById('sidebarCollapse');
+        const sidebarExpand = document.getElementById('sidebarExpand');
+        const topMenuBtn = document.getElementById('topMenuBtn');
+
+        const mhToggle = document.getElementById('mh-sidebar-toggle');
+        const mhLang   = document.getElementById('mh-lang-toggle');
+        const mhMenu   = document.getElementById('mh-menu');
+
+        // 모바일 사이드바 초기 상태 + localStorage persist
+        // 데스크탑 (≥769px) 에서는 isMobile() false → 모든 함수 no-op (영향 0)
+        const STORAGE_KEY = 'mobileSidebarOpen';
+        const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+        function persistSidebarState() {
+            if (!isMobile() || !sidebar) return;
+            const open = !sidebar.classList.contains('collapsed');
+            try { localStorage.setItem(STORAGE_KEY, String(open)); } catch (_) {}
+        }
+        function applyInitialState() {
+            if (!isMobile() || !sidebar) return;
+            let saved = null;
+            try { saved = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+            // 저장값 'true' 만 펼침, 그 외 (null/undefined/'false') 모두 닫힘 — 첫 방문 closed default
+            if (saved === 'true') sidebar.classList.remove('collapsed');
+            else sidebar.classList.add('collapsed');
+        }
+        applyInitialState();
+
+        async function renderState() {
+            if (!sidebar) return;
+            const collapsed = sidebar.classList.contains('collapsed');
+            mhToggle.textContent = collapsed ? '»' : '«';
+
+            // 인증 상태 — 기존 nexusUserMenu IIFE 와 동일 NexusAuth 패턴
+            let authed = false;
+            if (window.NexusAuth) {
+                try {
+                    const dev = await NexusAuth.getDevStatus();
+                    const token = NexusAuth.getAccessToken();
+                    authed = !!(token || (dev && dev.dev_mode));
+                } catch (_) {}
+            }
+
+            // 사이드바 닫음 + 비로그인: 요금제/로그인 표시
+            mh.querySelectorAll('[data-anon-only]').forEach(el => {
+                el.style.display = (collapsed && !authed) ? '' : 'none';
+            });
+            // 사이드바 닫음 + 로그인: 마이페이지 표시
+            mh.querySelectorAll('[data-authed-only]').forEach(el => {
+                el.style.display = (collapsed && authed) ? '' : 'none';
+            });
+
+            // body 에 인증 클래스 토글 — 모바일 ⋮ 메뉴 로그아웃 항목 표시 분기 (CSS)
+            document.body.classList.toggle('is-authed', authed);
+            document.body.classList.toggle('is-anon', !authed);
+        }
+
+        if (mhToggle) mhToggle.addEventListener('click', () => {
+            if (!sidebar) return;
+            sidebar.classList.toggle('collapsed');
+            persistSidebarState();
+            renderState();
+        });
+        if (mhLang) mhLang.addEventListener('click', () => {
+            if (typeof window.toggleLang === 'function') window.toggleLang();
+        });
+        if (mhMenu) mhMenu.addEventListener('click', (e) => {
+            // stopPropagation 필수 — app.js setupTopMenu 의 document click handler 가
+            // (target !== topMenuBtn) 조건으로 dropdown 즉시 닫는 것 차단
+            e.stopPropagation();
+            if (topMenuBtn) topMenuBtn.click();
+        });
+        // 사이드바 안 « / 외부 » 클릭 시 헤더 토글 상태 동기화 + localStorage persist
+        if (sidebarCollapse) sidebarCollapse.addEventListener('click', () => setTimeout(() => { persistSidebarState(); renderState(); }, 0));
+        if (sidebarExpand) sidebarExpand.addEventListener('click', () => setTimeout(() => { persistSidebarState(); renderState(); }, 0));
+
+        // ⋮ 메뉴 로그아웃 항목 (모바일에서만 visible, 데스크탑은 inline display:none + nexusUserMenu 별도 button)
+        const menuLogout = document.getElementById('menuLogout');
+        if (menuLogout) menuLogout.addEventListener('click', async () => {
+            if (window.NexusAuth) {
+                try { await NexusAuth.logout(); } catch (_) {}
+            }
+            location.reload();
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderState);
+        } else {
+            renderState();
+        }
+    })();
+    </script>
+
 </body>
 </html>
