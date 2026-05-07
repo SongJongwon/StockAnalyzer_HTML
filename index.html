@@ -468,6 +468,25 @@
         const mhLang   = document.getElementById('mh-lang-toggle');
         const mhMenu   = document.getElementById('mh-menu');
 
+        // 모바일 사이드바 초기 상태 + localStorage persist
+        // 데스크탑 (≥769px) 에서는 isMobile() false → 모든 함수 no-op (영향 0)
+        const STORAGE_KEY = 'mobileSidebarOpen';
+        const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
+        function persistSidebarState() {
+            if (!isMobile() || !sidebar) return;
+            const open = !sidebar.classList.contains('collapsed');
+            try { localStorage.setItem(STORAGE_KEY, String(open)); } catch (_) {}
+        }
+        function applyInitialState() {
+            if (!isMobile() || !sidebar) return;
+            let saved = null;
+            try { saved = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+            // 저장값 'true' 만 펼침, 그 외 (null/undefined/'false') 모두 닫힘 — 첫 방문 closed default
+            if (saved === 'true') sidebar.classList.remove('collapsed');
+            else sidebar.classList.add('collapsed');
+        }
+        applyInitialState();
+
         async function renderState() {
             if (!sidebar) return;
             const collapsed = sidebar.classList.contains('collapsed');
@@ -500,6 +519,7 @@
         if (mhToggle) mhToggle.addEventListener('click', () => {
             if (!sidebar) return;
             sidebar.classList.toggle('collapsed');
+            persistSidebarState();
             renderState();
         });
         if (mhLang) mhLang.addEventListener('click', () => {
@@ -511,9 +531,9 @@
             e.stopPropagation();
             if (topMenuBtn) topMenuBtn.click();
         });
-        // 사이드바 안 « / 외부 » 클릭 시 헤더 토글 상태 동기화
-        if (sidebarCollapse) sidebarCollapse.addEventListener('click', () => setTimeout(renderState, 0));
-        if (sidebarExpand) sidebarExpand.addEventListener('click', () => setTimeout(renderState, 0));
+        // 사이드바 안 « / 외부 » 클릭 시 헤더 토글 상태 동기화 + localStorage persist
+        if (sidebarCollapse) sidebarCollapse.addEventListener('click', () => setTimeout(() => { persistSidebarState(); renderState(); }, 0));
+        if (sidebarExpand) sidebarExpand.addEventListener('click', () => setTimeout(() => { persistSidebarState(); renderState(); }, 0));
 
         // ⋮ 메뉴 로그아웃 항목 (모바일에서만 visible, 데스크탑은 inline display:none + nexusUserMenu 별도 button)
         const menuLogout = document.getElementById('menuLogout');
