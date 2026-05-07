@@ -476,7 +476,10 @@
         if (mhLang) mhLang.addEventListener('click', () => {
             if (typeof window.toggleLang === 'function') window.toggleLang();
         });
-        if (mhMenu) mhMenu.addEventListener('click', () => {
+        if (mhMenu) mhMenu.addEventListener('click', (e) => {
+            // stopPropagation 필수 — app.js setupTopMenu 의 document click handler 가
+            // (target !== topMenuBtn) 조건으로 dropdown 즉시 닫는 것 차단
+            e.stopPropagation();
             if (topMenuBtn) topMenuBtn.click();
         });
         // 사이드바 안 « / 외부 » 클릭 시 헤더 토글 상태 동기화
