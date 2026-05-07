@@ -549,6 +549,19 @@
         } else {
             renderState();
         }
+
+        // 탭 전환 등 DOM 조작으로 #mobile-header 가 body 에서 사라지면 자동 복구.
+        // headerNode 변수에 보존된 동일 element 를 재 append → 토글 상태 + 이벤트 리스너 유지.
+        // 데스크탑은 inline display:none 그대로 → 복구돼도 보이지 않음 (영향 0).
+        if ('MutationObserver' in window && document.body) {
+            const headerNode = mh;
+            new MutationObserver(() => {
+                if (!document.body.contains(headerNode)) {
+                    document.body.appendChild(headerNode);
+                    renderState();
+                }
+            }).observe(document.body, { childList: true });
+        }
     })();
     </script>
 
