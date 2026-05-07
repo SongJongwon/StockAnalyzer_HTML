@@ -417,4 +417,10 @@ main {
     #finChartContainer .modebar-container {
         display: none !important;
     }
+
+    /* Plotly 내부 title (.gtitle) hide — 외부 HTML <h4> 제목 ("연간 손익 & 현금흐름")
+     * 과 layout.title 텍스트 겹침. 외부 라벨이 이미 제목 역할 → 내부 중복 제거. */
+    #finChartContainer .gtitle {
+        display: none !important;
+    }
 }
