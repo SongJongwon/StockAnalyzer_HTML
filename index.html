@@ -522,9 +522,20 @@
             persistSidebarState();
             renderState();
         });
+        // #mh-lang-toggle 텍스트 sync — 사이드바 안 #langToggleBtn 의 textContent 그대로 복사
+        // (toggleLang() 이 #langToggleBtn 만 갱신하므로 모바일 헤더 button 도 동기화 필요)
+        const sourceLangBtn = document.getElementById('langToggleBtn');
+        function syncMhLangText() {
+            if (mhLang && sourceLangBtn) mhLang.textContent = sourceLangBtn.textContent;
+        }
         if (mhLang) mhLang.addEventListener('click', () => {
             if (typeof window.toggleLang === 'function') window.toggleLang();
+            syncMhLangText();
         });
+        // 사이드바 안 #langToggleBtn (inline onclick="toggleLang()") 클릭 시도 동기화
+        if (sourceLangBtn) sourceLangBtn.addEventListener('click', () => setTimeout(syncMhLangText, 0));
+        // 페이지 로드 시 초기 텍스트 맞춤
+        syncMhLangText();
         if (mhMenu) mhMenu.addEventListener('click', (e) => {
             // stopPropagation 필수 — app.js setupTopMenu 의 document click handler 가
             // (target !== topMenuBtn) 조건으로 dropdown 즉시 닫는 것 차단
