@@ -343,4 +343,34 @@ main {
     main {
         padding-top: 48px !important;
     }
+
+    /* ─ 탭 가로 스크롤 (5개 탭 전체 접근) ─
+     * base .tabs { overflow: hidden } 을 overflow-x: auto 로 override.
+     * 스크롤바 hide (Chrome/Safari/FF/Edge 모두). */
+    .tabs {
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    /* ─ 제목 가독성 — 모바일 폰트 축소 + line-height 조정 ─ */
+    .app-title {
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+    main h1 {
+        font-size: 1.25rem;
+        line-height: 1.3;
+    }
 }
