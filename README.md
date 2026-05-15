@@ -1,8 +1,3 @@
-# StockAnalyzer_HTML
-
-🔗 **라이브 데모**: [https://songjongwon.github.io/StockAnalyzer_HTML](https://songjongwon.github.io/StockAnalyzer_HTML)
-
-
 # StockAnalyzer — AI 기반 주식 분석 플랫폼
 
 > **기획 · 설계 · 개발 · 배포 · 운영 전 과정 단독 수행**  
