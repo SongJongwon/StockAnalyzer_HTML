@@ -53,38 +53,38 @@
 
 ### 데스크탑
 
-![종목 분석](docs/screenshots/01_analysis_main.png)
+![종목 분석](screenshots/01_analysis_main.png)
 *AAPL 종목 분석 — 5단계 verdict + AI 분석*
 
-![펀더멘털 6카드](docs/screenshots/02_fundamentals.png)
+![펀더멘털 6카드](screenshots/02_fundamentals.png)
 *펀더멘털 6지표 (PER/PBR/ROE/EPS/PEG/품질)*
 
-![캔들차트](docs/screenshots/03_chart.png)
+![캔들차트](screenshots/03_chart.png)
 *Plotly 캔들차트 + MACD + RSI + 매수/목표/손절가*
 
-![추천 종목](docs/screenshots/04_watchlist.png)
+![추천 종목](screenshots/04_watchlist.png)
 *AI·반도체 카테고리 추천 종목*
 
-![테마주](docs/screenshots/05_theme.png)
+![테마주](screenshots/05_theme.png)
 *항공·방산 테마 — 가치함정 자동 경고*
 
-![투자자 패널](docs/screenshots/06_panel.png)
+![투자자 패널](screenshots/06_panel.png)
 *7명 빌트인 페르소나 + 커스텀 페르소나*
 
-![관리자 대시보드](docs/screenshots/07_admin_users.png)
+![관리자 대시보드](screenshots/07_admin_users.png)
 *등급별 사용자 관리 + 차단/플랜 변경*
 
-![마이페이지](docs/screenshots/08_mypage.png)
+![마이페이지](screenshots/08_mypage.png)
 *BYOK AES-256-GCM 서버 암호화 + 커스텀 페르소나*
 
-![토큰 추적](docs/screenshots/12_admin_tokens.png)
+![토큰 추적](screenshots/12_admin_tokens.png)
 *ccusage 스타일 토큰·비용 추적 대시보드*
 
 ### 모바일
 
 | 메인 | 포트폴리오 | 분석 결과 |
 |---|---|---|
-| ![모바일 메인](docs/screenshots/09_mobile_main.png) | ![모바일 포트폴리오](docs/screenshots/10_mobile_portfolio.png) | ![모바일 분석](docs/screenshots/11_mobile_analysis.png) |
+| ![모바일 메인](screenshots/09_mobile_main.png) | ![모바일 포트폴리오](screenshots/10_mobile_portfolio.png) | ![모바일 분석](screenshots/11_mobile_analysis.png) |
 
 ---
 
